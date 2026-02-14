@@ -5,7 +5,13 @@
     },
     "retained": {
       "log": {
+        "Friction": {
+          "open": true
+        },
         "NeoVortexCANSparkMotor": {
+          "open": true
+        },
+        "SimpleDynamics": {
           "open": true
         },
         "open": true
