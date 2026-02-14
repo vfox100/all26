@@ -138,6 +138,7 @@ public class Binder {
         ///
         /// SUBSYSTEMS
         ///
+         
         whileTrue(driver::b, m_machinery.m_shooter.shoot());
 
         whileTrue(driver::x, m_machinery.m_intake.intake());
