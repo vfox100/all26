@@ -10,6 +10,7 @@ import org.team100.frc2026.Intake;
 import org.team100.frc2026.IntakeExtend;
 import org.team100.frc2026.Serializer;
 import org.team100.frc2026.Shooter;
+import org.team100.frc2026.ShooterHood;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.indicator.Beeper;
 import org.team100.lib.localization.AprilTagFieldLayoutWithCorrectOrientation;
@@ -68,7 +69,7 @@ public class Machinery {
     public final TrajectoryVisualization m_trajectoryViz;
     public final SwerveKinodynamics m_swerveKinodynamics;
     final AprilTagRobotLocalizer m_localizer;
-    public final SwerveDriveSubsystem m_drive;
+    public final static SwerveDriveSubsystem m_drive;
     final Beeper m_beeper;
     final Shooter m_shooter;
     final Intake m_intake;
@@ -76,6 +77,7 @@ public class Machinery {
     final Serializer m_serializer;
     final ClimberExtension m_ClimberExtension;
     final Climber m_Climber;
+    final ShooterHood m_shooterHood;
 
     public Machinery() {
 
@@ -94,6 +96,7 @@ public class Machinery {
         m_serializer = new Serializer(driveLog);
         m_ClimberExtension = new ClimberExtension(driveLog);
         m_Climber = new Climber(driveLog);
+        m_shooterHood = new ShooterHood(driveLog, null);
 
         ////////////////////////////////////////////////////////////
         //

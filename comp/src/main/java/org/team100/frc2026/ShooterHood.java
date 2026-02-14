@@ -1,6 +1,8 @@
 package org.team100.frc2026;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
@@ -22,11 +24,16 @@ import org.team100.lib.sensor.position.incremental.ctre.Talon6Encoder;
 import org.team100.lib.servo.AngularPositionServo;
 import org.team100.lib.servo.OnboardAngularPositionServo;
 import org.team100.lib.servo.OutboardAngularPositionServo;
+import org.team100.lib.state.ModelSE2;
+import org.team100.lib.subsystems.turret.Turret.Solution;
 import org.team100.lib.util.CanId;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 
 public class ShooterHood extends SubsystemBase {
     private final AngularPositionServo m_servo;
@@ -81,6 +88,16 @@ public class ShooterHood extends SubsystemBase {
                 m_servo = new OnboardAngularPositionServo(log, climberMech, ref, feedback);
             }
         }
+    }
+
+
+        private Optional<Solution> getAbsoluteBearingInstantaneous() {
+        ModelSE2 state = m_state.get();
+        Translation2d target = m_target.get();
+        return Optional.of(
+                new Solution(
+                        target.minus(state.translation()).getAngle(),
+                        Rotation2d.kZero));
     }
 
     @Override

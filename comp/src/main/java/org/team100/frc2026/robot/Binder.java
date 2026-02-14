@@ -120,6 +120,8 @@ public class Binder {
                 m_machinery.m_intake.stop());
         m_machinery.m_extender.setDefaultCommand(
                 m_machinery.m_extender.stop());
+        m_machinery.m_shooterHood.setDefaultCommand(
+                m_machinery.m_shooterHood.stop());
 
         ///////////////////////////
         //
