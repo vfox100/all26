@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj.DutyCycle;
  * counter.
  * 
  * Note that for the first few seconds after the sensor is constructed on the
- * RoboRIO, the duty cycle input produces garbage.  So the Robot class should sleep awhile.
+ * RoboRIO, the duty cycle input produces garbage. So the Robot class should
+ * sleep awhile.
  * 
  * Relies on Memo and Takt, so you must put Memo.resetAll() and Takt.update() in
  * Robot.robotPeriodic().
@@ -59,6 +60,14 @@ public abstract class DutyCycleRotaryPositionSensor extends RoboRioRotaryPositio
         m_log_frequency = log.intLogger(Level.TRACE, "frequency");
         m_log_connected = log.booleanLogger(Level.TRACE, "connected");
         log.intLogger(Level.COMP, "channel").log(() -> channel.channel);
+        waitForDutyCycleBug();
+    }
+
+    void waitForDutyCycleBug() {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+        }
     }
 
     @Override

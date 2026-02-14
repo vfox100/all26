@@ -16,6 +16,7 @@ import org.team100.lib.sensor.position.absolute.EncoderDrive;
 import org.team100.lib.sensor.position.absolute.wpi.AS5048RotaryPositionSensor;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
+import org.team100.lib.util.Rotation2dInterpolator;
 import org.team100.lib.util.TimeInterpolatableBuffer100;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -47,10 +48,10 @@ public class Robot extends TimedRobot100 {
                 log,
                 new CanId(1),
                 MotorPhase.FORWARD,
-                1, // current limit
+                20, // current limit
                 NeoVortexCANSparkMotor.ff(log),
                 NeoVortexCANSparkMotor.friction(log),
-                PIDConstants.makeVelocityPID(log, 0.0002));
+                PIDConstants.makeVelocityPID(log, 0.02));
 
         RoboRioChannel sensorChannel = new RoboRioChannel(1);
         m_sensor = new AS5048RotaryPositionSensor(
@@ -59,8 +60,8 @@ public class Robot extends TimedRobot100 {
                 0.0, // offset
                 EncoderDrive.DIRECT);
 
-        m_sensorBuffer = new TimeInterpolatableBuffer100<>(2, 0, Rotation2d.kZero);
-        m_cameraBuffer = new TimeInterpolatableBuffer100<>(2, 0, Rotation2d.kZero);
+        m_sensorBuffer = new TimeInterpolatableBuffer100<>(new Rotation2dInterpolator(), 2, 0, Rotation2d.kZero);
+        m_cameraBuffer = new TimeInterpolatableBuffer100<>(new Rotation2dInterpolator(), 2, 0, Rotation2d.kZero);
 
         // Update the buffer with the roll component, and accept the supplied timestamp
         // as true.
@@ -104,6 +105,9 @@ public class Robot extends TimedRobot100 {
         double laggedCamera = m_cameraBuffer.get(past).getRadians();
         m_logCamera.log(() -> laggedCamera);
         m_logDiff.log(() -> laggedSensor - laggedCamera);
+
+        m_motor.periodic();
+        m_sensor.periodic();
     }
 
     @Override
