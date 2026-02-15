@@ -90,6 +90,10 @@ public class Climber extends SubsystemBase {
         return runOnce(this::setL1);
     }
 
+    public Command setClimb3() { 
+        return runOnce(this::setL3);
+    }
+    
     private void setL0() {
         m_servo.setPositionProfiled(0, 0);
     }

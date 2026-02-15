@@ -150,6 +150,14 @@ public class Binder {
         whileTrue(driver::rightTrigger, m_machinery.m_ClimberExtension.setPosition());
         whileTrue(driver::x, m_machinery.m_Climber.setClimb0());
         whileTrue(driver::y, m_machinery.m_Climber.setClimb1());
+        whileTrue(driver::a,
+                     m_machinery.m_ClimberExtension.setPosition()
+                         .andThen(m_machinery.m_Climber.setClimb1()
+                             .andThen(m_machinery.m_Climber.setClimb0())));
+        whileTrue(driver::b,
+                 m_machinery.m_ClimberExtension.setPosition()
+                          .andThen(m_machinery.m_Climber.setClimb3()
+                                .andThen(m_machinery.m_Climber.setClimb0())));
 
         // The real bindings
         whileTrue(driver::leftBumper, m_machinery.m_extender.goToRetractedPosition());
