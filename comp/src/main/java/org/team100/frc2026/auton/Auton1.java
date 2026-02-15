@@ -5,6 +5,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.List;
 
+import org.team100.frc2026.auton.BumpZones;
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -18,6 +19,7 @@ import org.team100.lib.trajectory.TrajectorySE2Factory;
 import org.team100.lib.trajectory.TrajectorySE2Planner;
 import org.team100.lib.trajectory.constraint.TimingConstraint;
 import org.team100.lib.trajectory.constraint.TimingConstraintFactory;
+import org.team100.lib.trajectory.constraint.VelocityLimitRegionConstraint;
 import org.team100.lib.trajectory.path.PathSE2Factory;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,7 +27,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** An example of a simple sequence */
-public class AutonTest implements AnnotatedCommand {
+public class Auton1 implements AnnotatedCommand {
     private final LoggerFactory log;
     private final ControllerSE2 controller;
     private final Machinery machinery;
@@ -34,7 +36,7 @@ public class AutonTest implements AnnotatedCommand {
     private final PathSE2Factory pathFactory;
     private final TrajectorySE2Planner planner;
 
-    public AutonTest(
+    public Auton1(
             LoggerFactory parent,
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
@@ -43,6 +45,12 @@ public class AutonTest implements AnnotatedCommand {
         this.controller = controller;
         this.machinery = machinery;
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
+       // In meters/second
+        double maxBumpVelocity = 1;
+        // create a new VelocityRegionContstraint `slow_bump_zone`
+        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        // TODO: can't modify `constraints` by adding `slow_bump_zone`, but it doesn' crash
+        // constraints.add(slow_bump_zone);
         trajectoryFactory = new TrajectorySE2Factory(constraints);
         pathFactory = new PathSE2Factory();
         planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
@@ -50,39 +58,38 @@ public class AutonTest implements AnnotatedCommand {
 
     @Override
     public String name() {
-        return "Auton Test";
+        return "Auton 1";
     }
 
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(-1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(2, 4, Rotation2d.kZero),
-                        new DirectionSE2(-1, 1, 0), 1));
+                        new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(AutonPositions.ABOVE_BALL_FIELD,
+                        new DirectionSE2(1, 1, 0), 1));
         return planner.restToRest(waypoints);
     }
 
     TrajectorySE2 t2(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(1, 1, 0), 1),
-                new WaypointSE2(AutonPositions.ABOVE_BALL_FIELD,
-                        new DirectionSE2(1, 1, 0), 1),
-                new WaypointSE2(AutonPositions.BELOW_BALL_FIELD,
+                        new DirectionSE2(0, -1, 0), 1),
+                new WaypointSE2(AutonPositions.MIDDLE_BALL_FIELD,
                         new DirectionSE2(0, -1, 0), 1));
         return planner.restToRest(waypoints);
     }
 
-  // go back where we started.
     TrajectorySE2 t3(Pose2d startingPose) {
-        List<WaypointSE2> waypoints = List.of(      
+        List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(StartingPositions.RIGHT_BUMP,
-                        new DirectionSE2(-1, 0, 0), 1));
+                        new DirectionSE2(-1, 1, 0), 1),
+                new WaypointSE2(StartingPositions.LEFT_BUMP,
+                        new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(AutonPositions.CLIMB_LEFT,
+                        new DirectionSE2(-1, -1, 0), 1));
         return planner.restToRest(waypoints);
     }
-
+    
     @Override
     public Command command() {
         DriveWithTrajectoryFunction n1 = new DriveWithTrajectoryFunction(
@@ -104,7 +111,7 @@ public class AutonTest implements AnnotatedCommand {
 
     @Override
     public Pose2d start() {
-        return StartingPositions.RIGHT_BUMP;
+        return StartingPositions.LEFT_BUMP;
     }
 
 }
