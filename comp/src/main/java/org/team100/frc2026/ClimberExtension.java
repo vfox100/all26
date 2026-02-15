@@ -33,6 +33,7 @@ public class ClimberExtension extends SubsystemBase {
     private final LinearPositionServo m_servo;
 
     private final double m_maxExtension = 20;
+    private final double m_minextension = 0.01;
 
     public ClimberExtension(LoggerFactory parent) {
         LoggerFactory log = parent.type(this);
@@ -99,7 +100,7 @@ public class ClimberExtension extends SubsystemBase {
     }
 
     public void setInPosition() {
-        m_servo.setPositionProfiled(0, 0);
+        m_servo.setPositionProfiled(m_minextension, 0.01);
     }
 
         @Override

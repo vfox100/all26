@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climber extends SubsystemBase {
     private final BareMotor m_motor;
     private final OnboardAngularPositionServo m_servo;
+    private static final double m_level0 = 0.1;
     private static final double m_level1 = 90;
     private static final double m_level3 = 180;
 
@@ -95,14 +96,18 @@ public class Climber extends SubsystemBase {
     }
     
     private void setL0() {
-        m_servo.setPositionProfiled(0, 0);
+        m_servo.setPositionProfiled(m_level0, 0);
     }
 
     private void setL1() {
-        m_servo.setPositionProfiled(m_level1,0 );
+        m_servo.setPositionProfiled(m_level1, 0);
     }
 
     private void setL3() {
         m_servo.setPositionProfiled(m_level3, 0);
+    }
+        @Override
+    public void periodic() {
+        m_servo.periodic();
     }
 }
