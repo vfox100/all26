@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.team100.frc2026.auton.BumpZones;
 import org.team100.frc2026.robot.Machinery;
@@ -47,11 +48,14 @@ public class Auton1 implements AnnotatedCommand {
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
        // In meters/second
         double maxBumpVelocity = 1;
-        // create a new VelocityRegionContstraint `slow_bump_zone`
+        List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
+         
+        // create a new VelocityRegionContstraint `slow_bu  mp_zone`
         VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        new_constraints.add(slow_bump_zone);
         // TODO: can't modify `constraints` by adding `slow_bump_zone`, but it doesn' crash
         // constraints.add(slow_bump_zone);
-        trajectoryFactory = new TrajectorySE2Factory(constraints);
+        trajectoryFactory = new TrajectorySE2Factory(new_constraints);
         pathFactory = new PathSE2Factory();
         planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
     }
