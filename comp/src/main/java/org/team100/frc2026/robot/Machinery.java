@@ -74,8 +74,8 @@ public class Machinery {
     final Intake m_intake;
     final IntakeExtend m_extender;
     final Serializer m_serializer;
-    final ClimberExtension m_ClimberExtension;
-    final Climber m_Climber;
+   public final ClimberExtension m_ClimberExtension;
+    public final Climber m_Climber;
 
     public Machinery() {
 
