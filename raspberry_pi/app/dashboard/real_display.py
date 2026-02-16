@@ -26,6 +26,7 @@ class RealDisplay(Display):
     def __init__(self, width: int, height: int, name: str) -> None:
         self.width = width
         self.height = height
+        print("\n*** Display: RealDisplay")
         if system() == "Windows":
             from app.dashboard.mjpeg_streamer import MjpegServer, Stream
 

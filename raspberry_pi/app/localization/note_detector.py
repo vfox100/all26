@@ -36,6 +36,7 @@ class NoteDetector(Interpreter):
         self.cam = cam
         self.display = display
         self.network = network
+        print("\n*** Interpreter: NoteDetector")
 
         self.mtx = self.cam.get_intrinsic()
         self.dist = self.cam.get_dist()

@@ -48,14 +48,24 @@ class RealRequest(Request):
     @override
     def delay_us(self) -> int:
         metadata = self._req.get_metadata()  # type: ignore
-        # Time of first row received
+        # Time of first row received, this is roughly the "readout timestamp"
         sensor_timestamp_ns = cast(int, metadata["SensorTimestamp"])
 
-        # The actual exposure is slightly before the data arrives
-        # Take the midpoint of the exposure duration.
-        exposure_duration_us = cast(int, metadata["ExposureTime"])
-        exposure_duration_ns = exposure_duration_us * 1000
-        exposure_timestamp_ns = sensor_timestamp_ns - exposure_duration_ns // 2
+        # Some of the delay seems to scale with exposure time.
+        exposure_term_us = cast(int, metadata["ExposureTime"] * 0.5)
+        exposure_term_ns = exposure_term_us * 1000
+
+        # Some of the delay seems constant.
+        frame_term_ms = 0
+        frame_term_ns = cast(int, frame_term_ms * 1000000)
+
+        # count backwards one frame from the readout timestamp
+        # and then count forward one half of the exposure.
+        #exposure_timestamp_ns = sensor_timestamp_ns - exposure_start_ns + exposure_midpoint_ns
+
+        # exposure_timestamp_ns = sensor_timestamp_ns - frame_term_ns - exposure_term_ns
+        exposure_timestamp_ns = sensor_timestamp_ns
+
 
         if self._rolling:
             # For a global shutter, the whole frame is exposed at once,
@@ -140,9 +150,9 @@ class Model(Enum):
     @staticmethod
     def get(cam: Picamera2) -> "Model":
         model_str: str = cam.camera_properties["Model"]  # type:ignore
-        print(f"Camera model string: {model_str}")
+        print(f"\n*** Camera model string: {model_str}")
         model: Model = Model(model_str)
-        print(f"Camera model: {model.name}")
+        print(f"\n*** Camera model: {model.name}")
         return model
 
 
@@ -157,21 +167,21 @@ class RealCamera(Camera):
         )
         self.mtx = RealCamera.__mtx_from_model(identity, model)
         self.dist = RealCamera.__dist_from_model(identity, model)
-        print("MTX")
+        print("\n*** MTX")
         print(self.mtx)
-        print("DIST")
+        print("\n*** DIST")
         print(self.dist)
-        print("SENSOR MODES AVAILABLE")
+        print("\n*** SENSOR MODES AVAILABLE")
         pprint(self.cam.sensor_modes)  # type:ignore
         if (identity == Identity.FLIPPED or identity == Identity.FUNNEL  or identity == Identity.SWERVE_LEFT or identity == Identity.SWERVE_RIGHT):
             # see libcamera/src/libcamera/transform.cpp
             self.camera_config["transform"] = libcamera.Transform(rotation = 0, hflip = True, vflip = True, transpose = False)
 
-        print("\nREQUESTED CONFIG")
+        print("\n*** REQUESTED CONFIG")
         print(self.camera_config)
         # optimal alignment makes the ISP a little faster
         self.cam.align_configuration(self.camera_config, optimal=True)  # type:ignore
-        print("\nALIGNED CONFIG")
+        print("\n*** ALIGNED CONFIG")
         print(self.camera_config)
         self.cam.configure(self.camera_config)  # type:ignore
         if (
@@ -183,7 +193,7 @@ class RealCamera(Camera):
                 self.camera_config["sensor"]["output_size"],
                 self.cam.camera_config["sensor"]["output_size"],  # type:ignore
             )
-        print("\nCONTROLS")
+        print("\n*** CONTROLS")
         print(self.cam.camera_controls)  # type:ignore
         self.cam.start()  # type:ignore
         self.frame_time = Timer.time_ns()
@@ -262,9 +272,9 @@ class RealCamera(Camera):
             raw=None,
             controls={
                 "AnalogueGain": 8,
-                # "AeEnable": False,
+                "AeEnable": False,
                 # 3/29/25: JOEL changed AUTO EXPOSURE to TRUE here because we're OUTSIDE.
-                "AeEnable": True,
+                # "AeEnable": True,
                 "AwbEnable": False,
                 "ExposureTime": RealCamera.__get_exposure_time(identity),
                 # The first argument is the red gain, second is blue gain, values are from testing in the new gym lighting(1.2,2.2)
@@ -282,7 +292,12 @@ class RealCamera(Camera):
     @staticmethod
     def __get_exposure_time(identity: Identity) -> int:
         """exposure time in microseconds"""
-        return 1500
+        # 2/15/26 joel reduced exposure from 1500 to 500 us.
+        return 500
+        # return 2000
+
+        # 2/15/26 this is the old value
+        # return 1500
         # match identity:
         #     case Identity.GLOBAL_RIGHT | Identity.GLOBAL_LEFT:
         #         return 500  # from b5879a6, works with GS cameras

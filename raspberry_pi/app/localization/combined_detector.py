@@ -42,6 +42,8 @@ class CombinedDetector(Interpreter):
         self.display = display
         self.network = network
 
+        print("\n*** Interpreter: CombinedDetector")
+
         self.mtx: Mat = cam.get_intrinsic()
         self.dist: Mat = cam.get_dist()
 
@@ -178,7 +180,7 @@ class CombinedDetector(Interpreter):
         """Process both tags and objects from the BGR image."""
         with req.rgb() as buffer_rgb:
             # Get BGR image for both detectors
-            img_bgr = cast(Mat, np.frombuffer(buffer_rgb, dtype=np.uint8))
+            img_bgr = cast(Mat, np.frombuffer(buffer_rgb, dtype=np.uint8)) # type: ignore
             img_bgr = img_bgr.reshape((self.height, self.width, 3))
             img_display = img_bgr.copy()
             delay_us = req.delay_us()

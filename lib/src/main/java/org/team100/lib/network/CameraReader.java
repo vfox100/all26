@@ -86,6 +86,10 @@ public abstract class CameraReader<T> {
             }
             // key is "rootName/cameraId/cameraNumber/valueName"
             String cameraId = fields[1];
+            if (fields[3].equals("fps"))
+                continue;
+            if (fields[3].equals("temp"))
+                continue;
             if (!fields[3].equals(m_ntValueName)) {
                 System.out.println("WARNING: weird key: " + name);
                 continue;

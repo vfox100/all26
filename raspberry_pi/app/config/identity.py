@@ -62,9 +62,7 @@ class Identity(Enum):
     @staticmethod
     def get() -> "Identity":
         serial = _serial
-        # print(serial)
-        print(f"********** Coprocessor serial: {serial}")
+        print(f"\n*** Coprocessor serial: {serial}")
         identity: Identity = Identity(serial)
-        # print(identity)
-        print(f"********** Coprocessor identity: {identity.name}")
+        print(f"\n*** Coprocessor identity: {identity.name}")
         return identity

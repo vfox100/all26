@@ -20,6 +20,7 @@ class NullDetector(Interpreter):
         display: Display,
     ) -> None:
         self.display = display
+        print("\n*** Interpreter: NullDetector")
         size: Size = cam.get_size()
         self.width: int = size.width
         self.height: int = size.height

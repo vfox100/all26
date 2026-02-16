@@ -31,7 +31,7 @@ public class Robot extends TimedRobot100 {
      * The position sensor is assumed to have a fixed delay of 600 us.
      */
     private static final double SENSOR_DELAY_S = 0.0006;
-    private static final double MOTOR_SPEED_RAD_S = 1.0;
+    private static final double MOTOR_SPEED_RAD_S = 50.0;
 
     private final BareMotor m_motor;
     private final AS5048RotaryPositionSensor m_sensor;
@@ -65,17 +65,19 @@ public class Robot extends TimedRobot100 {
                     20, // current limit
                     NeoVortexCANSparkMotor.ff(log),
                     NeoVortexCANSparkMotor.friction(log),
-                    PIDConstants.makePositionPID(log, 1));
+                    PIDConstants.makePositionPID(log, 0.25));
         } else {
             m_motor = new SimulatedBareMotor(log, 600);
         }
 
         RoboRioChannel sensorChannel = new RoboRioChannel(1);
+        // The offset here is from the testboard, experimenting until the "sensor minus camera" is zero
+        // at rest.
         m_sensor = new AS5048RotaryPositionSensor(
                 log,
                 sensorChannel,
-                0.0, // offset
-                EncoderDrive.DIRECT);
+                0.402, // offset in turns
+                EncoderDrive.INVERSE);
 
         m_motorBuffer = new TimeInterpolatableBuffer100<>(
                 new Rotation2dInterpolator(), 2, 0, Rotation2d.kZero);
@@ -86,9 +88,8 @@ public class Robot extends TimedRobot100 {
 
         // Update the buffer with the roll component, and accept the
         // supplied timestamp as true.
-        m_rawTags = new RawTags(
-                log,
-                new Roll((r, t) -> m_cameraBuffer.put(t, r)));
+        Roll sink = new Roll(log, (r, t) -> m_cameraBuffer.put(t, r));
+        m_rawTags = new RawTags(log, sink);
 
         m_logMotor = log.rotation2dLogger(Level.TRACE, "lagged motor");
         m_logSensor = log.rotation2dLogger(Level.TRACE, "lagged sensor");

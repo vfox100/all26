@@ -20,7 +20,7 @@ from app.network.network import Network
 
 
 def main() -> None:
-    print("main")
+    print("*** main")
     identity: Identity = Identity.get()
     network = Network(identity)
 
