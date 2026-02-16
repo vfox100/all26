@@ -6,14 +6,12 @@ public class SawtoothTest {
 
     private static final boolean DEBUG = false;
 
-    double t = 0;
-
     @Test
     void test0() {
-        Sawtooth fn = new Sawtooth(() -> t, 1.0, 1.0, 1.0);
-        for (t = 0; t < 5; t += 0.1) {
+        Sawtooth fn = new Sawtooth(1.0, 1.0, 1.0);
+        for (double t = 0; t < 5; t += 0.1) {
             if (DEBUG)
-                System.out.printf("%5.1f %6.3f\n", t, fn.getAsDouble());
+                System.out.printf("%5.1f %6.3f\n", t, fn.applyAsDouble(t));
         }
     }
 

@@ -1,24 +1,20 @@
 package org.team100.lib.util.wave;
 
-import java.util.function.DoubleSupplier;
+import java.util.function.DoubleUnaryOperator;
 
-/** A stair step proxy. */
-public class Stair implements DoubleSupplier {
-    private final DoubleSupplier f;
+/** A stair step. */
+public class Stair implements DoubleUnaryOperator {
     private final double a;
 
     /**
-     * @param f time
      * @param a scale
      */
-    public Stair(DoubleSupplier f, double a) {
-        this.f = f;
+    public Stair(double a) {
         this.a = a;
     }
 
     @Override
-    public double getAsDouble() {
-        double t = f.getAsDouble();
+    public double applyAsDouble(double t) {
         return Math.ceil(a * t);
     }
 }
