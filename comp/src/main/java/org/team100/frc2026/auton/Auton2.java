@@ -52,9 +52,15 @@ public class Auton2 implements AnnotatedCommand {
         double maxBumpVelocity = 1;
         List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
          
-        // create a new VelocityRegionContstraint `slow_bu  mp_zone`
+        // create a new VelocityRegionContstraint `slow_bump_zone`
         VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
         new_constraints.add(slow_bump_zone);
+        new_constraints.add(slow_bump_zone2);
+        new_constraints.add(slow_bump_zone3);
+        new_constraints.add(slow_bump_zone4);
         // constraints.add(slow_bump_zone);
         trajectoryFactory = new TrajectorySE2Factory(new_constraints);
         pathFactory = new PathSE2Factory();
@@ -88,7 +94,7 @@ public class Auton2 implements AnnotatedCommand {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
                         new DirectionSE2(-1, 1, 0), 1),
-                new WaypointSE2(new Pose2d(5.25, 5.5, Rotation2d.kZero), 
+                new WaypointSE2(AutonPositions.LEFT_BUMP_MID, 
                         new DirectionSE2(-1, 0, 0), 1),
                 new WaypointSE2(StartingPositions.LEFT_BUMP,
                         new DirectionSE2(-1, 0, 0), 1),
@@ -113,7 +119,7 @@ public class Auton2 implements AnnotatedCommand {
         return sequence(
                 parallel(
                 IntakeSetUp.until(IntakeSetUp::isDone),
-                // Assumed that the intake shouldn't deploy over the bump
+                // Assumed that the intake shouldn't deploy while going over the bump
                 waitSeconds(1).andThen(machinery.m_extender.goToExtendedPosition())), 
                 waitSeconds(1),
 
@@ -130,8 +136,8 @@ public class Auton2 implements AnnotatedCommand {
                 ScoreSetUp.until(ScoreSetUp::isDone),
                 machinery.m_shooter.shoot().withTimeout(1),
                 waitSeconds(2),
-                machinery.m_shooter.stop().withTimeout(1));
-    }
+                machinery.m_shooter.stop().withTimeout(1));    
+        }
 
     @Override
     public Pose2d start() {
