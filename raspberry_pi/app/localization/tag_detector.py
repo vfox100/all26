@@ -115,10 +115,16 @@ class TagDetector(Interpreter):
         # network output for camera FPS
         self._fps = network.get_double_sender(path + "/fps")
         self._temp = network.get_double_sender(path + "/temp")
-        self._offset = network.get_double_sender(path + "/offset")
-        self._now = network.get_double_sender(path + "/now")
-        self._servernow = ntcore.NetworkTableInstance.getDefault().getDoubleTopic("servernow").subscribe(0)
-        self._nowdiff = network.get_double_sender(path + "/nowdiff")
+
+        self._offset = network.get_int_sender("/offset")
+        self._nowpi = network.get_int_sender("/nowpi")
+        # listen here
+        self._servernowsub = ntcore.NetworkTableInstance.getDefault().getIntegerTopic("servernow").subscribe(0)
+        # publish here
+        # self._servernowpub = network.get_int_sender("/servernowpi")
+        self._nowdiff = network.get_int_sender("/nowdiff")
+        self._servernowtime = network.get_int_sender("/servernowtime")
+
         # to keep track of images to write
         self.img_ts_sec = 0
         if self.debug:
@@ -223,14 +229,22 @@ class TagDetector(Interpreter):
                 temp_c = raw_temp / 1000
                 self._temp.send(temp_c, 0)
 
+            # microseconds
+            now = ntcore._now()
+            self._nowpi.send(now, 0)  
+            servernow = self._servernowsub.getAtomic()
+
+            # microseconds
             offset = ntcore.NetworkTableInstance.getDefault().getServerTimeOffset()
             if offset is not None:
-                self._offset.send((float)(offset/1000000), 0)
+                self._offset.send(offset, 0)
+                self._servernowtime.send(servernow.time, 0)
+                self._nowdiff.send(servernow.time - now, 0)
 
-            now = ntcore._now()
-            self._now.send((float)(now), 0)
-            servernow = self._servernow.getAtomic()
-            self._nowdiff.send(servernow.value - now, 0)
+            
+            # self._servernowpub.send(servernow.value, 0)
+          
+            # self._nowdiff.send(servernow.time - now, 0)
             # self._nowdiff.send(servernow.time - now, 0)
             # self._nowdiff.send(servernow.serverTime - now, 0)
 

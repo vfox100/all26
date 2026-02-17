@@ -26,6 +26,12 @@ class DoubleSender:
     def send(self, val: float, delay_us: int) -> None:
         self.pub.set(val, int(ntcore._now() - delay_us))
 
+class IntSender:
+    def __init__(self, pub:ntcore.IntegerPublisher) -> None:
+        self.pub = pub
+    
+    def send(self, val:int, delay_us: int) -> None:
+        self.pub.set(val, int(ntcore._now() - delay_us))
 
 class BlipSender:
     def __init__(self, pub: ntcore.StructArrayPublisher) -> None:
@@ -74,6 +80,9 @@ class Network:
     def get_double_sender(self, name: str) -> DoubleSender:
         return DoubleSender(self._inst.getDoubleTopic(name).publish())
 
+    def get_int_sender(self, name: str) -> IntSender:
+        return IntSender(self._inst.getIntegerTopic(name).publish())
+    
     def get_blip_sender(self, name: str) -> BlipSender:
         return BlipSender(self._inst.getStructArrayTopic(name, Blip24).publish())
 

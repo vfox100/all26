@@ -46,9 +46,6 @@
       }
     },
     "transitory": {
-      "LiveWindow": {
-        "open": true
-      },
       "vision": {
         "1e5acbaa5a7f9d10": {
           "0": {
@@ -62,7 +59,8 @@
               "open": true
             },
             "open": true
-          }
+          },
+          "open": true
         },
         "open": true
       }
@@ -78,11 +76,30 @@
       "open": true
     },
     "Server": {
-      "open": true
-    }
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      }
+    },
+    "glass@1": {
+      "Subscribers": {
+        "open": true
+      }
+    },
+    "sync_client@2": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      }
+    },
+    "visible": true
   },
   "NetworkTables Settings": {
-    "mode": "Client (NT4)",
+    "mode": "Server",
     "serverTeam": "100"
   },
   "Plots": {
@@ -359,6 +376,30 @@
                 1.0
               ],
               "id": "NT:log/RawTags/age (s)"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <6>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.9399999976158142,
+            0.9399999976158142,
+            0.9399999976158142,
+            1.0
+          ],
+          "height": 338,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/nowdiff"
             }
           ]
         }

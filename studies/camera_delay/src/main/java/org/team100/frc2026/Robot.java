@@ -28,8 +28,10 @@ import org.team100.lib.util.TimeInterpolatableBuffer100;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.ConnectionInfo;
-import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.TimestampedInteger;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
@@ -79,7 +81,12 @@ public class Robot extends TimedRobot100 {
 
     private final DoubleLogger m_logActualSpeed;
 
-    DoublePublisher servernowpub;
+    private final IntegerPublisher servernowpub;
+    // IntegerSubscriber nowpi;
+    // IntegerPublisher nowdiff;
+    // IntegerSubscriber servernowpi;
+    // IntegerSubscriber servernowtime;
+    // IntegerPublisher servernowpipub;
 
     private final LongLogger m_logTimeOffset;
 
@@ -151,7 +158,14 @@ public class Robot extends TimedRobot100 {
         m_logActualSpeed = log.doubleLogger(Level.TRACE, "actual speed (rad_s)");
         m_logTimeOffset = log.longLogger(Level.TRACE, "server time offset (us)");
 
-        servernowpub = NetworkTableInstance.getDefault().getDoubleTopic("servernow").publish();
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        servernowpub = inst.getIntegerTopic("servernow").publish();
+
+        // nowpi = inst.getIntegerTopic("nowpi").subscribe(0);
+        // servernowpi = inst.getIntegerTopic("servernowpi").subscribe(0);
+        // servernowtime = inst.getIntegerTopic("servernowtime").subscribe(0);
+        // servernowpipub = inst.getIntegerTopic("servernowpirio").publish();
+        // nowdiff = inst.getIntegerTopic("nowdiff").publish();
 
         if (RobotBase.isSimulation()) {
             // these extra additions are to wrap the result.
@@ -259,6 +273,15 @@ public class Robot extends TimedRobot100 {
 
         servernowpub.set(RobotController.getFPGATime());
 
+        // the value is the (pi local) timestamp of servernow.
+        // TimestampedInteger tsi = servernowtime.getAtomic();
+        // long servernowdt = RobotController.getFPGATime() - tsi.value;
+        // servernowpipub.set(servernowdt);
+
+        // long fpgadiff = nowRioInit - RobotController.getFPGATime();
+        // long pidiff = nowpiinit - nowpi.get();
+        // nowdiff.set(fpgadiff - pidiff);
+
         // microsec
         m_logTimeOffset.log(() -> NetworkTableInstance.getDefault().getServerTimeOffset().orElse(0));
         m_motor.periodic();
@@ -268,8 +291,15 @@ public class Robot extends TimedRobot100 {
 
     double prevTime2 = 0;
 
+    // value of nowpi upon init
+    // long nowpiinit = 0;
+    // value of fpgatime upon init
+    // long nowRioInit = 0;
+
     @Override
     public void teleopInit() {
+        // nowpiinit = nowpi.get();
+        // nowRioInit = RobotController.getFPGATime();
         m_positionRad = 0;
         prevTime2 = Takt.actual();
         m_motor.setUnwrappedEncoderPositionRad(m_positionRad);
