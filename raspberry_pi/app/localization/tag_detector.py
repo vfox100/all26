@@ -229,8 +229,10 @@ class TagDetector(Interpreter):
 
             now = ntcore._now()
             self._now.send((float)(now), 0)
-            servernow = self._servernow.get()
-            self._nowdiff.send(servernow - now, 0)
+            servernow = self._servernow.getAtomic()
+            self._nowdiff.send(servernow.value - now, 0)
+            # self._nowdiff.send(servernow.time - now, 0)
+            # self._nowdiff.send(servernow.serverTime - now, 0)
 
             # do the drawing (after the NT payload is written)
             # to minimize latency
