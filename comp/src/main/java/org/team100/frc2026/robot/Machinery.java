@@ -69,7 +69,7 @@ public class Machinery {
     public final TrajectoryVisualization m_trajectoryViz;
     public final SwerveKinodynamics m_swerveKinodynamics;
     final AprilTagRobotLocalizer m_localizer;
-    public final static SwerveDriveSubsystem m_drive;
+    public final SwerveDriveSubsystem m_drive;
     final Beeper m_beeper;
     public final Shooter m_shooter;
     public final Intake m_intake;
