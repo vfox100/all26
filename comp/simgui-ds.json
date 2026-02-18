@@ -4,9 +4,9 @@
       "visible": false
     }
   },
-  "Keyboard 0 Settings": {
+  "Joysticks": {
     "window": {
-      "visible": true
+      "visible": false
     }
   },
   "System Joysticks": {
@@ -18,8 +18,8 @@
     {
       "axisConfig": [
         {
-          "decKey": 81,
-          "incKey": 69
+          "decKey": 69,
+          "incKey": 82
         },
         {},
         {
@@ -28,24 +28,24 @@
         },
         {},
         {
-          "decKey": 87,
-          "incKey": 83
+          "decKey": 65,
+          "incKey": 68
         },
         {
-          "decKey": 68,
-          "incKey": 65
+          "decKey": 87,
+          "incKey": 83
         }
       ],
       "axisCount": 6,
       "buttonCount": 7,
       "buttonKeys": [
-        90,
-        88,
-        67,
-        86,
-        66,
-        78,
-        77
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
       ],
       "povConfig": [
         {
@@ -75,18 +75,17 @@
           "incKey": 76
         },
         {
-          "decKey": 73,
           "incKey": 75
         }
       ],
       "axisCount": 6,
       "buttonCount": 5,
       "buttonKeys": [
-        49,
-        50,
-        51,
-        52,
-        53
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
       ],
       "povCount": 0
     },
@@ -125,6 +124,11 @@
     },
     {
       "useGamepad": true
+    },
+    {},
+    {},
+    {
+      "name": "keyboard"
     }
   ]
 }
