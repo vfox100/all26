@@ -21,11 +21,9 @@ import org.team100.lib.trajectory.constraint.TimingConstraintFactory;
 import org.team100.lib.trajectory.path.PathSE2Factory;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
-/** An example of a simple sequence */
-public class LeftSequenceExample implements AnnotatedCommand {
+public class BClimberAutonLeft implements AnnotatedCommand {
     private final LoggerFactory log;
     private final ControllerSE2 controller;
     private final Machinery machinery;
@@ -34,42 +32,31 @@ public class LeftSequenceExample implements AnnotatedCommand {
     private final PathSE2Factory pathFactory;
     private final TrajectorySE2Planner planner;
 
-    public LeftSequenceExample(
-            LoggerFactory parent,
-            SwerveKinodynamics kinodynamics,
-            ControllerSE2 controller,
-            Machinery machinery) {
-        log = parent.name(name());
-        this.controller = controller;
-        this.machinery = machinery;
-        constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
-        trajectoryFactory = new TrajectorySE2Factory(constraints);
-        pathFactory = new PathSE2Factory();
-        planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
+    public  BClimberAutonLeft(
+        LoggerFactory parent,
+        SwerveKinodynamics kinodynamics,
+        ControllerSE2 controller,
+        Machinery machinery) {
+            log = parent.name(name());
+            this.controller = controller;
+            this.machinery = machinery;
+            constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
+            trajectoryFactory = new TrajectorySE2Factory(constraints);
+            pathFactory = new PathSE2Factory();
+            planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
     }
 
     @Override
     public String name() {
-        return "Left Sequence Example";
+        return "BClimber Auton Left";
     }
 
-    // go to the middle while spinning 90 degrees
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
                         new DirectionSE2(-1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(2, 4, Rotation2d.kCW_Pi_2),
+                new WaypointSE2(AutonPositions.CLIMB_LEFT,
                         new DirectionSE2(0, -1, 0), 1));
-        return planner.restToRest(waypoints);
-    }
-
-    // go back where we started.
-    TrajectorySE2 t2(Pose2d startingPose) {
-        List<WaypointSE2> waypoints = List.of(
-                new WaypointSE2(startingPose,
-                        new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(StartingPositions.LEFT_TRENCH,
-                        new DirectionSE2(1, 0, 0), 1));
         return planner.restToRest(waypoints);
     }
 
@@ -78,18 +65,16 @@ public class LeftSequenceExample implements AnnotatedCommand {
         DriveWithTrajectoryFunction n1 = new DriveWithTrajectoryFunction(
                 log, machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t1);
-        DriveWithTrajectoryFunction n2 = new DriveWithTrajectoryFunction(
-                log, machinery.m_drive, controller,
-                machinery.m_trajectoryViz, this::t2);
         return sequence(
                 n1.until(n1::isDone),
                 waitSeconds(1),
-                n2.until(n2::isDone));
+                    machinery.m_ClimberExtension.setPosition(),
+                waitSeconds(1));
     }
 
     @Override
     public Pose2d start() {
-        return StartingPositions.LEFT_TRENCH;
+        return StartingPositions.LEFT_BUMP;
     }
 
 }

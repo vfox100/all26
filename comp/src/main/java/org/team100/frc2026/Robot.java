@@ -65,6 +65,7 @@ public class Robot extends TimedRobot100 {
         m_autonAlerts = new AutonAlerts(
                 m_allAutons::getAnnotated,
                 m_alerts,
+                m_machinery.m_drive::getPose,
                 m_machinery::resetPose);
 
         Prewarmer.init(m_machinery);

@@ -11,6 +11,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.geometry.Twist3d;
 
+/**
+ * Replacements for WPILib geometry toString methods.
+ */
 public class StrUtil {
 
     public static String pose2Str(Pose2d p) {

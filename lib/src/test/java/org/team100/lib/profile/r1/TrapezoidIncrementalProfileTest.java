@@ -64,7 +64,8 @@ class TrapezoidIncrementalProfileTest implements Timeless {
     }
 
     /** Around 25 us at 0.1 DT */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testSolvePerformance() {
         double maxVel = 2;
         double maxAccel = 10;

@@ -30,6 +30,12 @@ public class DeltaSE2 {
         m_rotation = rotation;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%6.3f, %6.3f, %6.3f",
+                getX(), getY(), getRotation().getRadians());
+    }
+
     /** Return a delta from start to end. Wraps heading. */
     public static DeltaSE2 delta(Pose2d start, Pose2d end) {
         Translation2d t = end.getTranslation().minus(start.getTranslation());

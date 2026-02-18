@@ -161,7 +161,8 @@ class TrajectorySE2Test implements Timeless {
      * 
      * There's no need to run this all the time
      */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testSamplePerformance() {
         WaypointSE2 p0 = new WaypointSE2(new Pose2d(new Translation2d(), Rotation2d.kZero),
                 new DirectionSE2(1, 0, 0), 1);

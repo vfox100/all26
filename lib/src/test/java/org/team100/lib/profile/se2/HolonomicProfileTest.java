@@ -101,7 +101,8 @@ class HolonomicProfileTest implements Timeless {
      * 
      * The SOLVE_DT constant in HolonomicProfile affects performance ~linearly.
      */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testSolvePerformance() {
         HolonomicProfile hp = HolonomicProfileFactory.trapezoidal(logger, 1, 1, 0.01, 1, 1, 0.01);
         ModelSE2 i = new ModelSE2(new Pose2d(), new VelocitySE2(1, 0, 0));

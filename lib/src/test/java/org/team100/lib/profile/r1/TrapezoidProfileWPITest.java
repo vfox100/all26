@@ -67,7 +67,8 @@ class TrapezoidProfileWPITest {
     }
 
     /** Around 14 us per solve, using DT of 0.1. */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testSolvePerformance() {
         double maxVel = 2;
         double maxAccel = 10;

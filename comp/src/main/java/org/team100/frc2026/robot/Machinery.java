@@ -71,14 +71,15 @@ public class Machinery {
     final AprilTagRobotLocalizer m_localizer;
     public final static SwerveDriveSubsystem m_drive;
     final Beeper m_beeper;
-    final Shooter m_shooter;
-    final Intake m_intake;
-    final IntakeExtend m_extender;
+    public final Shooter m_shooter;
+    public final Intake m_intake;
+    public final IntakeExtend m_extender;
     final Serializer m_serializer;
-    final ClimberExtension m_ClimberExtension;
-    final Climber m_Climber;
-    final ShooterHood m_shooterHood;
 
+    public final ClimberExtension m_ClimberExtension;
+    public final Climber m_Climber;  
+    final ShooterHood m_shooterHood;
+  
     public Machinery() {
 
         final LoggerFactory driveLog = logger.name("Drive");
@@ -95,8 +96,8 @@ public class Machinery {
         m_extender = new IntakeExtend(driveLog, new CanId(19));
         m_serializer = new Serializer(driveLog);
         m_ClimberExtension = new ClimberExtension(driveLog);
-        m_Climber = new Climber(driveLog);
         m_shooterHood = new ShooterHood(driveLog, null);
+        m_Climber = new Climber(driveLog, new CanId(32));
 
         ////////////////////////////////////////////////////////////
         //

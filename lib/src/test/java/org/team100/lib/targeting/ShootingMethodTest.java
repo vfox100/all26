@@ -261,7 +261,8 @@ public class ShootingMethodTest {
      * Seems like using the cache is a good idea, especially once we add muzzle
      * velocity to the optimization.
      */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPerformance() {
         Drag d = new Drag(0.5, 0.025, 0.1, 0.1, 0.1);
         RangeSolver rangeSolver = new RangeSolver(d, 0);

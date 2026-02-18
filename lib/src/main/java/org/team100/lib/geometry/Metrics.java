@@ -131,7 +131,7 @@ public class Metrics {
      * @see https://vnav.mit.edu/material/04-05-LieGroups-notes.pdf
      * @see https://rpk.lcsr.jhu.edu/wp-content/uploads/2017/08/Partial-Bi-Invariance-of-SE3-Metrics1.pdf
      */
-    static double doubleGeodesicDistance(Pose2d a, Pose2d b) {
+    public static double doubleGeodesicDistance(Pose2d a, Pose2d b) {
         Translation2d tDiff = a.getTranslation().minus(b.getTranslation());
         double tSqDist = GeometryUtil.dot(tDiff, tDiff);
         double aDiff = a.getRotation().minus(b.getRotation()).getRadians();

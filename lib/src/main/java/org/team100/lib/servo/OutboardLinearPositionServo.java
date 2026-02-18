@@ -17,8 +17,8 @@ import org.team100.lib.state.ModelR1;
 public class OutboardLinearPositionServo implements LinearPositionServo {
     private final LinearMechanism m_mechanism;
     private final ProfileReferenceR1 m_ref;
-    private final double m_positionTolerance; // 0.01
-    private final double m_velocityTolerance; // 0.01
+    private final double m_positionTolerance;
+    private final double m_velocityTolerance;
 
     private final DoubleLogger m_log_goal;
     private final DoubleLogger m_log_ff_torque;

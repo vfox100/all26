@@ -63,7 +63,8 @@ public class RangeSolverTest {
      * On my machine, which is ~4x faster than a RoboRIO, I get something like 6 us
      * per solve, so the RoboRIO might get 25 us (!).
      */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPerformance() {
         Drag d = new Drag(0.5, 0, 0.1, 0.1, 0);
         RangeSolver rangeSolver = new RangeSolver(d, 0);

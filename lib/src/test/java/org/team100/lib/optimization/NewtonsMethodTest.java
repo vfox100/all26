@@ -582,7 +582,8 @@ public class NewtonsMethodTest {
     }
 
     /** 4 us per solve */
-    @Test
+        // disable to speed up tests
+    // @Test
     void test7() {
         Vector<N2> Xd = VecBuilder.fill(0, 1);
         Vector<N2> q0 = VecBuilder.fill(0, Math.PI / 2);

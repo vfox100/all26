@@ -41,7 +41,7 @@ public class RightTrenchLeave implements AnnotatedCommand {
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
             Machinery machinery) {
-        log = parent.name("RightTrenchLeave");
+        log = parent.name(name());
         this.controller = controller;
         this.machinery = machinery;
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));

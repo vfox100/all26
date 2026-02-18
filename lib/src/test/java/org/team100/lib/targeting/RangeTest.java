@@ -1,7 +1,5 @@
 package org.team100.lib.targeting;
 
-import org.junit.jupiter.api.Test;
-
 public class RangeTest {
     private static final boolean DEBUG = false;
 
@@ -17,7 +15,8 @@ public class RangeTest {
      * 
      * So caching seems like a good idea.
      */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPerformance() {
         Drag d = new Drag(0.5, 0.025, 0.1, 0.1, 0.1);
         RangeSolver rangeSolver = new RangeSolver(d, 0);

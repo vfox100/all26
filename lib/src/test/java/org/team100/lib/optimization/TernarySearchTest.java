@@ -48,7 +48,8 @@ public class TernarySearchTest {
     }
 
     /** 0.1 us per solve on my laptop */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPerformance() {
         DoubleUnaryOperator f = (x) -> Math.pow((x - 1), 2) + 1;
         TernarySearch s = new TernarySearch(f, 1e-3, 100);
@@ -85,7 +86,8 @@ public class TernarySearchTest {
     }
 
     /** about 20 us per solve on my laptop */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPosePerformance() {
         Pose3d desired = new Pose3d(new Translation3d(1, 1, 1), new Rotation3d(0, 0, 1));
         Vector<N3> axis = VecBuilder.fill(0, 0, 1);
@@ -138,7 +140,8 @@ public class TernarySearchTest {
     }
 
     /** 3.5 us per solve, using the faster metric and 1e-3 tolerance. */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testFasterPosePerformance() {
         Pose3d desired = new Pose3d(new Translation3d(1, 1, 1), new Rotation3d(0, 0, 1));
         Translation3d t0 = desired.getTranslation();

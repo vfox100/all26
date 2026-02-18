@@ -32,7 +32,8 @@ public class GradientDescentTest {
     }
 
     /** Not particularly fast, 2 us per solve on my laptop. */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPerformance() {
         Function<Vector<N1>, Double> f = (x) -> Math.pow((x.get(0) - 1), 2) + 1;
         GradientDescent<N1> s = new GradientDescent<>(Nat.N1(), f, 1e-3, 100);
@@ -85,7 +86,8 @@ public class GradientDescentTest {
     }
 
     /** 31 us per solve on my laptop, slower than ternary. */
-    @Test
+    // disable to speed up tests
+    // @Test
     void testPosePerformance() {
         Pose3d desired = new Pose3d(new Translation3d(1, 1, 1), new Rotation3d(0, 0, 1));
         Vector<N3> axis = VecBuilder.fill(0, 0, 1);

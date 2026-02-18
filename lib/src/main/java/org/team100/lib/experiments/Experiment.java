@@ -81,5 +81,9 @@ public enum Experiment {
     /**
      * Use "shooting method" for turret solution
      */
-    TurretShootingMethod
+    TurretShootingMethod,
+    /**
+     * Treat the robot as "real" for the auton alert messages.
+     */
+    TestAutonAlert
 }
