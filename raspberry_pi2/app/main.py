@@ -13,10 +13,6 @@ import time
 import ntcore
 from typing import cast
 
-def consume(e:ntcore.Event):
-    if isinstance(e, ntcore.TimeSyncEventData):
-        tsed = cast(ntcore.TimeSyncEventData, e.data)
-        print(f"Time Sync Event: {tsed.serverTimeOffset} {tsed.rtt2} {tsed.valid}")
 
 def main() -> None:
     print("*** main")
@@ -32,8 +28,8 @@ def main() -> None:
     nowdiff_pub = inst.getIntegerTopic("/nowdiff").publish()
     offset_pub = inst.getIntegerTopic("/offset").publish()
 
-    listener = ntcore.NetworkTableListener.createTimeSyncListener(
-            inst, True, consume);
+    poller = ntcore.NetworkTableListenerPoller(inst)
+    poller.addTimeSyncListener(False)
 
     while True:
         # the value and the servertime are the same
@@ -52,6 +48,13 @@ def main() -> None:
         offset = ntcore.NetworkTableInstance.getDefault().getServerTimeOffset()
         if offset is not None:
             offset_pub.set(offset)
+
+        for e in poller.readQueue():
+            if isinstance(e, ntcore.TimeSyncEventData):
+                tsed = cast(ntcore.TimeSyncEventData, e.data)
+                print(f"Time Sync Event: {tsed.serverTimeOffset} {tsed.rtt2} {tsed.valid}")
+            else:
+                print("weird type")
 
         # avoid spinning too fast
         time.sleep(0.02)
