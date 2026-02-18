@@ -3,6 +3,7 @@ package org.team100.frc2026.auton;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.team100.frc2026.robot.Machinery;
@@ -18,6 +19,7 @@ import org.team100.lib.trajectory.TrajectorySE2Factory;
 import org.team100.lib.trajectory.TrajectorySE2Planner;
 import org.team100.lib.trajectory.constraint.TimingConstraint;
 import org.team100.lib.trajectory.constraint.TimingConstraintFactory;
+import org.team100.lib.trajectory.constraint.VelocityLimitRegionConstraint;
 import org.team100.lib.trajectory.path.PathSE2Factory;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -43,7 +45,17 @@ public class AutonTest implements AnnotatedCommand {
         this.controller = controller;
         this.machinery = machinery;
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
-        trajectoryFactory = new TrajectorySE2Factory(constraints);
+        double maxBumpVelocity = 0.2;
+        List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
+        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
+        new_constraints.add(slow_bump_zone);
+        new_constraints.add(slow_bump_zone2);
+        new_constraints.add(slow_bump_zone3);
+        new_constraints.add(slow_bump_zone4);
+        trajectoryFactory = new TrajectorySE2Factory(new_constraints);
         pathFactory = new PathSE2Factory();
         planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
     }
@@ -56,30 +68,20 @@ public class AutonTest implements AnnotatedCommand {
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(-1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(2, 4, Rotation2d.kZero),
-                        new DirectionSE2(-1, 1, 0), 1));
+                        new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(6, 5.5, Rotation2d.k180deg),
+                        new DirectionSE2(1, 0, 0), 1));
         return planner.restToRest(waypoints);
     }
 
     TrajectorySE2 t2(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(1, 1, 0), 1),
-                new WaypointSE2(AutonPositions.ABOVE_BALL_FIELD,
-                        new DirectionSE2(1, 1, 0), 1),
-                new WaypointSE2(AutonPositions.BELOW_BALL_FIELD,
-                        new DirectionSE2(0, -1, 0), 1));
-        return planner.restToRest(waypoints);
-    }
-
-  // go back where we started.
-    TrajectorySE2 t3(Pose2d startingPose) {
-        List<WaypointSE2> waypoints = List.of(      
-                new WaypointSE2(startingPose,
-                        new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(StartingPositions.RIGHT_BUMP,
+                        new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(StartingPositions.LEFT_BUMP,
                         new DirectionSE2(-1, 0, 0), 1));
+                 new WaypointSE2(AutonPositions.LEFT_BUMP_PAST,
+                  new DirectionSE2(1, 0, 0), 1);
         return planner.restToRest(waypoints);
     }
 
@@ -91,20 +93,15 @@ public class AutonTest implements AnnotatedCommand {
         DriveWithTrajectoryFunction n2 = new DriveWithTrajectoryFunction(
                 log, machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t2);
-        DriveWithTrajectoryFunction n3 = new DriveWithTrajectoryFunction(
-                log, machinery.m_drive, controller,
-                machinery.m_trajectoryViz, this::t3);
         return sequence(
                 n1.until(n1::isDone),
                 waitSeconds(1),
-                n2.until(n2::isDone),
-                waitSeconds(1),
-                n3.until(n3::isDone));
+                n2.until(n2::isDone));
     }
 
     @Override
     public Pose2d start() {
-        return StartingPositions.RIGHT_BUMP;
+        return StartingPositions.LEFT_BUMP;
     }
 
 }

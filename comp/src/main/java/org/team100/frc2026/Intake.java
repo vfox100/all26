@@ -1,5 +1,6 @@
 package org.team100.frc2026;
 
+import org.team100.frc2026.auton.BumpZones;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
 import org.team100.lib.logging.LoggerFactory;
@@ -69,7 +70,7 @@ public class Intake extends SubsystemBase {
         double velocityRad_S = 450;
         m_motor.setVelocity(velocityRad_S, 0, 0);
         // m_motor.setDutyCycle(1);
-        System.out.println(velocityRad_S);
+        System.out.println(BumpZones.BLUE_BUMP_LEFT);
     }
 
 }
