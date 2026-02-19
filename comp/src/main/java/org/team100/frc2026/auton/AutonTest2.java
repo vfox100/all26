@@ -27,7 +27,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** An example of a simple sequence */
-public class AutonTest implements AnnotatedCommand {
+public class AutonTest2 implements AnnotatedCommand {
     private final LoggerFactory log;
     private final ControllerSE2 controller;
     private final Machinery machinery;
@@ -36,7 +36,7 @@ public class AutonTest implements AnnotatedCommand {
     private final PathSE2Factory pathFactory;
     private final TrajectorySE2Planner planner;
 
-    public AutonTest(
+    public AutonTest2(
             LoggerFactory parent,
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
@@ -62,24 +62,24 @@ public class AutonTest implements AnnotatedCommand {
 
     @Override
     public String name() {
-        return "Auton Test";
+        return "Auton Test2";
     }
 
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(6, 5.5, new Rotation2d(225 * (Math.PI / 180))),
-                        new DirectionSE2(1, 0, 0), 1));
+                        new DirectionSE2(1, -1, 0), 1),
+                new WaypointSE2(new Pose2d(2, 2.5, new Rotation2d(225 * (Math.PI / 180))),
+                        new DirectionSE2(1, -1, 0), 1));
         return planner.restToRest(waypoints);
     }
 
     TrajectorySE2 t2(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
-                        new DirectionSE2(-1, 0, 0), 1),
+                        new DirectionSE2(-0.2, 1, 0), 1),
                 new WaypointSE2(new Pose2d(3, 5.5, new Rotation2d(225 * (Math.PI / 180))),
-                        new DirectionSE2(-1, 0, 0), 1));
+                        new DirectionSE2(-1, 1, 0), 1));
                  new WaypointSE2(AutonPositions.LEFT_BUMP_PAST,
                   new DirectionSE2(1, 0, 1), 1);
         return planner.restToRest(waypoints);
