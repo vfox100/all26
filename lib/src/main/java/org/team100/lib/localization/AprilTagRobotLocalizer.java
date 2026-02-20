@@ -41,7 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
  * *estimate*. The camera input doesn't require fresh odometry, it modifies the
  * past (and replays up to the present).
  */
-public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
+public class AprilTagRobotLocalizer extends CameraReader<Blip> {
     private static final boolean DEBUG = false;
 
     /** Maximum age of the sights we publish for diagnosis. */
@@ -139,7 +139,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
             DoubleFunction<ModelSE2> history,
             VisionUpdater visionUpdater,
             double tagRotationBeliefThreshold) {
-        super(parent, "vision", "blips", StructBuffer.create(Blip24.struct));
+        super(parent, "vision", "blips", StructBuffer.create(Blip.struct));
         m_tagRotationBeliefThreshold = tagRotationBeliefThreshold;
         LoggerFactory log = parent.type(this);
         m_layout = layout;
@@ -172,7 +172,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
     protected void perValue(
             Transform3d cameraOffset,
             double valueTimestamp,
-            Blip24[] blips) {
+            Blip[] blips) {
         estimateRobotPose(
                 cameraOffset,
                 blips,
@@ -213,7 +213,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
      */
     void estimateRobotPose(
             final Transform3d cameraOffset,
-            Blip24[] blips,
+            Blip[] blips,
             double valueTimestamp,
             Optional<Alliance> optAlliance) {
 
@@ -231,7 +231,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
         Pose2d samplePose = sample(correctedTimestamp);
 
         for (int i = 0; i < blips.length; ++i) {
-            Blip24 blip = blips[i];
+            Blip blip = blips[i];
 
             printBlip(blip);
 
@@ -398,7 +398,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
         return historicalPose;
     }
 
-    private void printBlip(Blip24 blip) {
+    private void printBlip(Blip blip) {
         if (!DEBUG)
             return;
         Translation3d t = blip.getRawPose().getTranslation();
@@ -411,7 +411,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
      * This is used for camera offset calibration. Place a tag at a known position,
      * observe the offset, and add it to Camera.java, inverted.
      */
-    private void printForCalibration(Transform3d cameraOffset, Blip24 blip, Transform3d tagInCamera) {
+    private void printForCalibration(Transform3d cameraOffset, Blip blip, Transform3d tagInCamera) {
         if (!DEBUG)
             return;
         Transform3d tagInRobot = cameraOffset.plus(tagInCamera);
@@ -436,7 +436,7 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip24> {
     }
 
     /** Camera-to-tag, as it appears in the camera frame. */
-    private Transform3d tagInCamera(Blip24 blip) {
+    private Transform3d tagInCamera(Blip blip) {
         Transform3d blipTransform = blip.blipToTransform();
         m_log_tag_in_camera.log(() -> blipTransform);
         return blipTransform;

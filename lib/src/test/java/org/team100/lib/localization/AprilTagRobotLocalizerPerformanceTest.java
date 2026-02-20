@@ -52,7 +52,7 @@ class AprilTagRobotLocalizerPerformanceTest {
 
         // camera sees the tag straight ahead in the center of the frame,
         // but rotated pi/4 to the left. this is ignored anyway.
-        Blip24 blip = new Blip24(7,
+        Blip blip = new Blip(0, 7,
                 new Transform3d(
                         new Translation3d(0, 0, Math.sqrt(2)),
                         new Rotation3d(0, -Math.PI / 4, 0)));
@@ -66,7 +66,7 @@ class AprilTagRobotLocalizerPerformanceTest {
         assertEquals(0, tagPose.getRotation().getY(), DELTA);
         assertEquals(0, tagPose.getRotation().getZ(), DELTA);
 
-        final Blip24[] blips = new Blip24[] { blip };
+        final Blip[] blips = new Blip[] { blip };
 
         // run forever so i can use the profiler
         while (true)

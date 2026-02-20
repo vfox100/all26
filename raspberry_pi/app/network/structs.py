@@ -13,11 +13,12 @@ F = ".3f"
 
 @wpistruct.make_wpistruct  # type:ignore
 @dataclasses.dataclass
-class Blip24:
+class Blip:
     """AprilTag target pose used in 2024"""
 
-    id: int
-    pose: Transform3d
+    timestamp: wpistruct.int64  # server time
+    id: int  # tag id
+    pose: Transform3d  # camera-relative
 
 
 @wpistruct.make_wpistruct

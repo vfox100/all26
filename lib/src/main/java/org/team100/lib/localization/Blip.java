@@ -7,26 +7,36 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /**
- * Mirrors tag_finder24.py Blip24.
+ * Mirrors raspberry_pi Blip.
  */
-public class Blip24 {
+public class Blip {
+    private final long timestamp;
     private final int id;
     private final Transform3d pose;
 
     /**
-     * @param id   AprilTag id
-     * @param pose This uses the camera coordinate system, which has X to
-     *             the right, Y down, and Z forward.
+     * @param timestamp server time microseconds
+     * @param id        AprilTag id
+     * @param pose      This uses the camera coordinate system, which has X to
+     *                  the right, Y down, and Z forward.
      */
-    public Blip24(int id, Transform3d pose) {
+    public Blip(long timestamp, int id, Transform3d pose) {
+        this.timestamp = timestamp;
         this.id = id;
         this.pose = pose;
     }
 
-    public static Blip24 fromXForward(int id, Transform3d pose) {
-        return new Blip24(id, new Transform3d(
+    public static Blip fromXForward(long timestamp, int id, Transform3d pose) {
+        return new Blip(timestamp, id, new Transform3d(
                 GeometryUtil.xForwardToZForward(pose.getTranslation()),
                 GeometryUtil.xForwardToZForward(pose.getRotation())));
+    }
+
+    /**
+     * Microseconds
+     */
+    public long getTimestamp() {
+        return timestamp;
     }
 
     /**
@@ -56,10 +66,10 @@ public class Blip24 {
 
     @Override
     public String toString() {
-        return "Blip24 [id=" + id + ", pose=" + pose + "]";
+        return "Blip [timestamp = " + timestamp + ", id=" + id + ", pose=" + pose + "]";
     }
 
-    public static final Blip24Struct struct = new Blip24Struct();
+    public static final BlipStruct struct = new BlipStruct();
 
     /**
      * Extract the translation from a "z-forward" blip and return the same

@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * Publishes AprilTag Blip24 sightings on Network Tables, just like real
+ * Publishes AprilTag Blip sightings on Network Tables, just like real
  * cameras would.
  * 
  * This uses a separate client NT instance, so there will be weird delays due to
@@ -61,7 +61,7 @@ public class SimulatedTagDetector {
     private final AprilTagFieldLayoutWithCorrectOrientation m_layout;
     private final DoubleFunction<ModelSE2> m_history;
 
-    private final Map<Camera, StructArrayPublisher<Blip24>> m_publishers;
+    private final Map<Camera, StructArrayPublisher<Blip>> m_publishers;
     /** client instance, not the default */
     private final NetworkTableInstance m_inst;
     private final Random m_rand;
@@ -92,7 +92,7 @@ public class SimulatedTagDetector {
             m_publishers.put(
                     camera,
                     m_inst.getStructArrayTopic(
-                            name, Blip24.struct).publish(PubSubOption.keepDuplicates(true)));
+                            name, Blip.struct).publish(PubSubOption.keepDuplicates(true)));
         }
     }
 
@@ -128,6 +128,9 @@ public class SimulatedTagDetector {
         double timestampS = Takt.get() - actualDelay;
         Pose2d pose = m_history.apply(timestampS).pose();
 
+        // Use exactly the history lookup timestamp.
+        long time = (long) (timestampS * 1000000.0);
+
         Pose3d robotPose3d = new Pose3d(pose);
         if (DEBUG) {
             System.out.printf("robot pose X %6.2f Y %6.2f Z %6.2f R %6.2f P %6.2f Y %6.2f \n",
@@ -135,11 +138,11 @@ public class SimulatedTagDetector {
                     robotPose3d.getTranslation().getZ(), robotPose3d.getRotation().getX(),
                     robotPose3d.getRotation().getY(), robotPose3d.getRotation().getZ());
         }
-        for (Map.Entry<Camera, StructArrayPublisher<Blip24>> entry : m_publishers.entrySet()) {
+        for (Map.Entry<Camera, StructArrayPublisher<Blip>> entry : m_publishers.entrySet()) {
             Camera camera = entry.getKey();
-            StructArrayPublisher<Blip24> publisher = entry.getValue();
+            StructArrayPublisher<Blip> publisher = entry.getValue();
 
-            List<Blip24> blips = new ArrayList<>();
+            List<Blip> blips = new ArrayList<>();
             Transform3d cameraOffset = camera.getOffset();
             Pose3d cameraPose3d = robotPose3d.plus(cameraOffset);
             Alliance alliance = opt.get();
@@ -157,12 +160,13 @@ public class SimulatedTagDetector {
                 }
                 Transform3d tagInCamera = tagInCamera(
                         () -> m_rand.nextGaussian(), cameraPose3d, tagPose);
+
                 if (visible(tagInCamera)) {
                     // publish it
                     if (DEBUG) {
                         System.out.print("VISIBLE ");
                     }
-                    blips.add(Blip24.fromXForward(tagId, tagInCamera));
+                    blips.add(Blip.fromXForward(time, tagId, tagInCamera));
                 } else {
                     // ignore it
                     if (DEBUG) {
@@ -181,13 +185,10 @@ public class SimulatedTagDetector {
                             tagTranslationInCamera.getZ(), tagRotationInCamera.getX(), tagRotationInCamera.getY(),
                             tagRotationInCamera.getZ());
                 }
-
             }
 
-            // Use exactly the history lookup timestamp.
-            long time = (long) (timestampS * 1000000.0);
             publisher.set(
-                    blips.toArray(new Blip24[0]), time);
+                    blips.toArray(new Blip[0]), time);
             if (PUBLISH_DEBUG) {
                 System.out.printf("%s\n", blips);
             }

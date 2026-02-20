@@ -5,26 +5,26 @@ import java.nio.ByteBuffer;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.struct.Struct;
 
-public class Blip24Struct implements Struct<Blip24> {
+public class BlipStruct implements Struct<Blip> {
 
     @Override
-    public Class<Blip24> getTypeClass() {
-        return Blip24.class;
+    public Class<Blip> getTypeClass() {
+        return Blip.class;
     }
 
     @Override
     public String getTypeName() {
-        return "Blip24";
+        return "Blip";
     }
 
     @Override
     public int getSize() {
-        return kSizeInt32 + Transform3d.struct.getSize();
+        return kSizeInt64 + kSizeInt32 + Transform3d.struct.getSize();
     }
 
     @Override
     public String getSchema() {
-        return "int32 id;Transform3d pose";
+        return "int64 timestamp; int32 id;Transform3d pose";
     }
 
     @Override
@@ -33,14 +33,16 @@ public class Blip24Struct implements Struct<Blip24> {
     }
 
     @Override
-    public Blip24 unpack(ByteBuffer bb) {
+    public Blip unpack(ByteBuffer bb) {
+        long timestamp = bb.getLong();
         int id = bb.getInt();
         Transform3d pose = Transform3d.struct.unpack(bb);
-        return new Blip24(id, pose);
+        return new Blip(timestamp, id, pose);
     }
 
     @Override
-    public void pack(ByteBuffer bb, Blip24 value) {
+    public void pack(ByteBuffer bb, Blip value) {
+        bb.putLong(value.getTimestamp());
         bb.putInt(value.getId());
         Transform3d.struct.pack(bb, value.getRawPose());
     }

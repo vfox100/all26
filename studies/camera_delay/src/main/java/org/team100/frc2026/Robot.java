@@ -8,7 +8,6 @@ import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
-import org.team100.lib.logging.LoggerFactory.LongLogger;
 import org.team100.lib.logging.LoggerFactory.Rotation2dLogger;
 import org.team100.lib.logging.Logging;
 import org.team100.lib.motor.BareMotor;
@@ -29,10 +28,8 @@ import org.team100.lib.util.TimeInterpolatableBuffer100;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.ConnectionInfo;
-import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class Robot extends TimedRobot100 {
@@ -52,7 +49,7 @@ public class Robot extends TimedRobot100 {
     private static final double SENSOR_DELAY_S = 0.0011;
     // Note with positional control very high speeds don't work
     // because of the discretization of the goal
-    private static final double MOTOR_SPEED_RAD_S = 100.0;
+    private static final double MOTOR_SPEED_RAD_S = 50.0;
 
     private final BareMotor m_motor;
     private final AS5048RotaryPositionSensor m_sensor;
@@ -81,15 +78,6 @@ public class Robot extends TimedRobot100 {
     private final Rotation2dLogger m_logMotorMeasurement;
 
     private final DoubleLogger m_logActualSpeed;
-
-    private final IntegerPublisher servernowpub;
-    // IntegerSubscriber nowpi;
-    // IntegerPublisher nowdiff;
-    // IntegerSubscriber servernowpi;
-    // IntegerSubscriber servernowtime;
-    // IntegerPublisher servernowpipub;
-
-    private final LongLogger m_logTimeOffset;
 
     private final SimulatedAS5048 m_simSensor;
     private final SimulatedCamera m_simCamera;
@@ -159,16 +147,7 @@ public class Robot extends TimedRobot100 {
         m_logMotorCmd = log.rotation2dLogger(Level.TRACE, "motor cmd now (rad)");
         m_logMotorMeasurement = log.rotation2dLogger(Level.TRACE, "motor measurement now (rad)");
         m_logActualSpeed = log.doubleLogger(Level.TRACE, "actual speed (rad_s)");
-        m_logTimeOffset = log.longLogger(Level.TRACE, "server time offset (us)");
 
-
-        servernowpub = inst.getIntegerTopic("servernow").publish();
-
-        // nowpi = inst.getIntegerTopic("nowpi").subscribe(0);
-        // servernowpi = inst.getIntegerTopic("servernowpi").subscribe(0);
-        // servernowtime = inst.getIntegerTopic("servernowtime").subscribe(0);
-        // servernowpipub = inst.getIntegerTopic("servernowpirio").publish();
-        // nowdiff = inst.getIntegerTopic("nowdiff").publish();
 
         if (RobotBase.isSimulation()) {
             // these extra additions are to wrap the result.
@@ -202,7 +181,6 @@ public class Robot extends TimedRobot100 {
 
         Takt.update();
         // reply to sync requests.
-        // TODO: reply to each raspberry pi separately
         sync.run();
 
         if (DEBUG)
@@ -278,19 +256,6 @@ public class Robot extends TimedRobot100 {
         m_logMotorMinusSensor.log(() -> laggedMotor.minus(laggedSensor));
         m_logMotorCmdMinusMotor.log(() -> laggedMotorCmd.minus(laggedMotor));
 
-        servernowpub.set(RobotController.getFPGATime());
-
-        // the value is the (pi local) timestamp of servernow.
-        // TimestampedInteger tsi = servernowtime.getAtomic();
-        // long servernowdt = RobotController.getFPGATime() - tsi.value;
-        // servernowpipub.set(servernowdt);
-
-        // long fpgadiff = nowRioInit - RobotController.getFPGATime();
-        // long pidiff = nowpiinit - nowpi.get();
-        // nowdiff.set(fpgadiff - pidiff);
-
-        // microsec
-        m_logTimeOffset.log(() -> NetworkTableInstance.getDefault().getServerTimeOffset().orElse(0));
         m_motor.periodic();
         m_sensor.periodic();
         NetworkTableInstance.getDefault().flush();
@@ -323,7 +288,7 @@ public class Robot extends TimedRobot100 {
         double dt = t - prevTime2;
         prevTime2 = t;
 
-        double motorSpeedRadS = MOTOR_SPEED_RAD_S * (m_controller.getLeftTriggerAxis() + 0.1);
+        double motorSpeedRadS = MOTOR_SPEED_RAD_S * (m_controller.getLeftTriggerAxis());
         m_positionRad += motorSpeedRadS * dt;
 
         m_motor.setUnwrappedPosition(m_positionRad, motorSpeedRadS, 0, 0);

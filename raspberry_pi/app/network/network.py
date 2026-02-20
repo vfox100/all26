@@ -12,7 +12,7 @@ from app.network.sync_loop import SyncLoop
 from app.network.drift import Drift
 from app.config.identity import Identity
 from app.network.structs import (
-    Blip24,
+    Blip,
     PoseEstimate25,
 )
 
@@ -45,7 +45,7 @@ class BlipSender:
         self.drift = drift
         self.pub = pub
 
-    def send(self, val: list[Blip24], delay_us: int) -> None:
+    def send(self, val: list[Blip], delay_us: int) -> None:
         self.drift.get()
         self.pub.set(val, int(ntcore._now() - delay_us))
 
@@ -80,7 +80,6 @@ class Network:
 
         self._inst.startClient4("tag_finder24")
 
-        # ntcore._now()
 
         # roboRio address. windows machines can impersonate this for simulation.
         # also localhost for testing
@@ -95,10 +94,13 @@ class Network:
         done = Event()
 
         # Fill the queue at 50 hz
-        syncloop = SyncLoop(self._inst, self._queue, done)
-        self._drift = Drift(self._inst, self._queue)
+        syncloop = SyncLoop(self._inst, self._queue, identity, done)
+        self._drift = Drift(self._inst, self._queue, identity)
         Thread(target=syncloop.run).start()
 
+    def server_time(self, localtime:int) -> int:
+        return localtime + self._drift.get()
+    
     def now(self) -> int:
         return ntcore._now() - start_time_us
 
@@ -110,7 +112,7 @@ class Network:
 
     def get_blip_sender(self, name: str) -> BlipSender:
         return BlipSender(
-            self._drift, self._inst.getStructArrayTopic(name, Blip24).publish()
+            self._drift, self._inst.getStructArrayTopic(name, Blip).publish()
         )
 
     def get_note_sender(self, name: str) -> NoteSender:

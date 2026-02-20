@@ -1,9 +1,12 @@
+# pylint: disable=R0902,R0903,W0212
+
 import time
 from queue import Queue, Full
 from threading import Event
 from typing_extensions import override
 
 import ntcore
+from app.config.identity import Identity
 from app.framework.looper import Looper
 from app.network.structs import SyncRequest, SyncReply
 
@@ -12,7 +15,11 @@ class SyncLoop(Looper):
     """Fills the queue with timing offset estimates."""
 
     def __init__(
-        self, inst: ntcore.NetworkTableInstance, queue: Queue, done: Event
+        self,
+        inst: ntcore.NetworkTableInstance,
+        queue: Queue,
+        identity: Identity,
+        done: Event,
     ) -> None:
         super().__init__(done)
         print("*** SyncLoop")
@@ -20,10 +27,12 @@ class SyncLoop(Looper):
         self._queue = queue
         self._offset: int = 0
         # TODO: use raspberry pi identity
-        self._request_pub = inst.getStructTopic("syncrequest", SyncRequest).publish()
-        self._reply_sub = inst.getStructTopic("syncreply", SyncReply).subscribe(
-            SyncReply(0, 0, 0)
-        )
+        self._request_pub = inst.getStructTopic(
+            "sync/" + identity.value + "/request", SyncRequest
+        ).publish()
+        self._reply_sub = inst.getStructTopic(
+            "sync/" + identity.value + "/reply", SyncReply
+        ).subscribe(SyncReply(0, 0, 0))
 
     @override
     def execute(self) -> None:

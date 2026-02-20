@@ -1,23 +1,25 @@
 # pylint: disable=R0902,R0903,W0212
 
-
 from queue import Queue, Empty
 import ntcore
+from app.config.identity import Identity
 
 
 class Drift:
-    """Maintain the offset and publish the drift."""
+    """Consume updates from the queue, maintain the offset, and publish the drift."""
 
-    def __init__(self, inst: ntcore.NetworkTableInstance, queue: Queue) -> None:
+    def __init__(
+        self, inst: ntcore.NetworkTableInstance, queue: Queue, identity: Identity
+    ) -> None:
         self._inst: ntcore.NetworkTableInstance = inst
         self._queue: Queue = queue
         self._first_estimate: int = 0
         self._offset: int = 0
         self._offset_pub: ntcore.IntegerPublisher = self._inst.getIntegerTopic(
-            "offset (us)"
+            "sync/" + identity.value + "/offset (us)"
         ).publish()
         self._drift_pub: ntcore.IntegerPublisher = inst.getIntegerTopic(
-            "drift (us)"
+            "sync/" + identity.value + "/drift (us)"
         ).publish()
 
     def get(self) -> int:

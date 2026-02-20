@@ -16,7 +16,7 @@ from app.camera.camera_protocol import Camera, Request, Size
 from app.camera.interpreter_protocol import Interpreter
 from app.config.identity import Identity
 from app.dashboard.display import Display
-from app.network.network import Blip24, Network
+from app.network.network import Blip, Network
 
 Mat = NDArray[np.uint8]
 
@@ -115,18 +115,12 @@ class TagDetector(Interpreter):
         self._fps = network.get_double_sender(path + "/fps")
         self._temp = network.get_double_sender(path + "/temp")
 
-        self._offset = network.get_int_sender("/offset")
-        self._nowpi = network.get_int_sender("/nowpi")
         # listen here
         self._servernowsub = (
             ntcore.NetworkTableInstance.getDefault()
             .getIntegerTopic("servernow")
             .subscribe(0)
         )
-        # publish here
-        # self._servernowpub = network.get_int_sender("/servernowpi")
-        self._nowdiff = network.get_int_sender("/nowdiff")
-        self._servernowtime = network.get_int_sender("/servernowtime")
 
         # to keep track of images to write
         self.img_ts_sec = 0
@@ -172,7 +166,14 @@ class TagDetector(Interpreter):
 
             result: list[AprilTagDetection] = self.at_detector.detect(img.data)
 
-            blips: list[Blip24] = []
+            # microsecond age of frame
+            delay_us = req.delay_us()
+
+            # localtime in microseconds
+            localtime: int = int(ntcore._now() - delay_us)
+            servertime: int = self.network.server_time(localtime)
+
+            blips: list[Blip] = []
             result_item: AprilTagDetection
             for result_item in result:
                 if result_item.getHamming() > 0:
@@ -209,10 +210,8 @@ class TagDetector(Interpreter):
                 homography = result_item.getHomography()
                 pose = self.estimator.estimate(homography, corners)
 
-                blips.append(Blip24(result_item.getId(), pose))
+                blips.append(Blip(servertime, result_item.getId(), pose))
                 self.display.tag(img, result_item, pose)
-
-            delay_us = req.delay_us()
 
             # send sightings to network
             self._blips.send(blips, delay_us)
@@ -232,24 +231,6 @@ class TagDetector(Interpreter):
                 raw_temp = int(f.read().strip())
                 temp_c = raw_temp / 1000
                 self._temp.send(temp_c, 0)
-
-            # microseconds
-            now = ntcore._now()
-            self._nowpi.send(now, 0)
-            servernow = self._servernowsub.getAtomic()
-
-            # microseconds
-            offset = ntcore.NetworkTableInstance.getDefault().getServerTimeOffset()
-            if offset is not None:
-                self._offset.send(offset, 0)
-                self._servernowtime.send(servernow.time, 0)
-                self._nowdiff.send(servernow.time - now, 0)
-
-            # self._servernowpub.send(servernow.value, 0)
-
-            # self._nowdiff.send(servernow.time - now, 0)
-            # self._nowdiff.send(servernow.time - now, 0)
-            # self._nowdiff.send(servernow.serverTime - now, 0)
 
             # do the drawing (after the NT payload is written)
             # to minimize latency

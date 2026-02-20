@@ -1,4 +1,4 @@
-""" A combined detector for AprilTags and colored objects (notes) using BGR image only."""
+"""A combined detector for AprilTags and colored objects (notes) using BGR image only."""
 
 # pylint: disable=C0103,E0611,E1101,R0902,R0903,R0913,R0914,W0212,W0612
 
@@ -7,6 +7,7 @@ from typing import cast
 import cv2
 import numpy as np
 from numpy.typing import NDArray
+import ntcore
 from robotpy_apriltag import AprilTagDetection, AprilTagDetector, AprilTagPoseEstimator
 from typing_extensions import override
 from wpimath.geometry import Rotation3d
@@ -15,7 +16,7 @@ from app.camera.camera_protocol import Camera, Request, Size
 from app.camera.interpreter_protocol import Interpreter
 from app.config.identity import Identity
 from app.dashboard.display import Display
-from app.network.network import Blip24, Network
+from app.network.network import Blip, Network
 
 Mat = NDArray[np.uint8]
 
@@ -29,7 +30,7 @@ class CombinedDetector(Interpreter):
         display: Display,
         network: Network,
         object_lower: np.ndarray,
-        object_higher: np.ndarray
+        object_higher: np.ndarray,
     ) -> None:
         """
         Parameters:
@@ -62,7 +63,7 @@ class CombinedDetector(Interpreter):
             tag_size = 0.033  # 33 mm for distortion rig
         else:
             tag_size = 0.1651  # normal tag size (6.5 inches)
-        
+
         self.estimator = AprilTagPoseEstimator(
             AprilTagPoseEstimator.Config(
                 tag_size,
@@ -89,12 +90,12 @@ class CombinedDetector(Interpreter):
         undistorted = cv2.undistortPoints(points, self.mtx, self.dist, P=self.mtx)
         return undistorted.reshape(-1, 2)
 
-    def detect_tags(self, img_bgr, img_display, delay_us: int) -> None:
+    def detect_tags(self, img_bgr, img_display, delay_us: int, servertime:int) -> None:
         """Detect AprilTags in a BGR image by converting to grayscale internally."""
         # Convert BGR to grayscale for tag detection
         img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
         result: list[AprilTagDetection] = self.at_detector.detect(img_gray.data)
-        blips: list[Blip24] = []
+        blips: list[Blip] = []
 
         for result_item in result:
             if result_item.getHamming() > 0:
@@ -102,21 +103,26 @@ class CombinedDetector(Interpreter):
 
             # Undistort tag corners
             corners: tuple[float, float, float, float, float, float, float, float] = (
-                result_item.getCorners((0, 0, 0, 0, 0, 0, 0, 0)))
+                result_item.getCorners((0, 0, 0, 0, 0, 0, 0, 0))
+            )
             pairs = np.reshape(corners, [4, 2])
             pairs = cv2.undistortImagePoints(pairs, self.mtx, self.dist)
-            
+
             # Reformat corners for pose estimation
             corners = (
-                pairs[0][0][0], pairs[0][0][1],
-                pairs[1][0][0], pairs[1][0][1],
-                pairs[2][0][0], pairs[2][0][1],
-                pairs[3][0][0], pairs[3][0][1],
+                pairs[0][0][0],
+                pairs[0][0][1],
+                pairs[1][0][0],
+                pairs[1][0][1],
+                pairs[2][0][0],
+                pairs[2][0][1],
+                pairs[3][0][0],
+                pairs[3][0][1],
             )
 
             homography = result_item.getHomography()
             pose = self.estimator.estimate(homography, corners)
-            blips.append(Blip24(result_item.getId(), pose))
+            blips.append(Blip(servertime, result_item.getId(), pose))
             self.display.tag(img_display, result_item, pose)  # Display on BGR image
 
         self._blips.send(blips, delay_us)
@@ -128,7 +134,7 @@ class CombinedDetector(Interpreter):
 
         # Threshold for object color
         img_range = cv2.inRange(img_hsv, self.object_lower, self.object_higher)
-        
+
         # Clean up the mask
         floodfill = img_range.copy()
         mask = np.zeros((self.height + 2, self.width + 2), np.uint8)
@@ -142,56 +148,65 @@ class CombinedDetector(Interpreter):
         objects: list[Rotation3d] = []
         points_to_undistort = []
         contour_info = []
-        
+
         for c in contours:
             mmnts = cv2.moments(c)
-            if ( mmnts["m00"] == 0):
+            if mmnts["m00"] == 0:
                 continue
             cY = int(mmnts["m01"] / mmnts["m00"])
-            if (mmnts["m00"] < 500 or mmnts["m00"] > ((30000)*((self.height/2)/(self.height-cY+1))))  :  # Minimum contour area
+            if mmnts["m00"] < 500 or mmnts["m00"] > (
+                (30000) * ((self.height / 2) / (self.height - cY + 1))
+            ):  # Minimum contour area
                 continue
-                #calculates how big the object is based on how far it is.
+                # calculates how big the object is based on how far it is.
             cX = int(mmnts["m10"] / mmnts["m00"])
-            
-            
+
             points_to_undistort.append([cX, cY])
             contour_info.append((c, cX, cY))
 
         if points_to_undistort:
             # Undistort all object centers at once
             undistorted_points = self.undistort_points(points_to_undistort)
-            
-            for (c, orig_cX, orig_cY), (undist_cX, undist_cY) in zip(contour_info, undistorted_points):
+
+            for (c, orig_cX, orig_cY), (undist_cX, undist_cY) in zip(
+                contour_info, undistorted_points
+            ):
                 yNormalized = (self.height / 2 - undist_cY) / self.mtx[1, 1]
                 xNormalized = (self.width / 2 - undist_cX) / self.mtx[0, 0]
 
                 initial = np.array([1, 0, 0], dtype=np.float64)
                 final = np.array([1, xNormalized, yNormalized], dtype=np.float64)
                 rotation = Rotation3d(initial=initial, final=final)
-                
+
                 objects.append(rotation)
                 self.display.note(img_display, c, orig_cX, orig_cY)
 
         self._notes.send(objects, delay_us)
-        #self.display.put(img_range)
+        # self.display.put(img_range)
 
     @override
     def analyze(self, req: Request) -> None:
         """Process both tags and objects from the BGR image."""
         with req.rgb() as buffer_rgb:
             # Get BGR image for both detectors
-            img_bgr = cast(Mat, np.frombuffer(buffer_rgb, dtype=np.uint8)) # type: ignore
+            img_bgr = cast(Mat, np.frombuffer(buffer_rgb, dtype=np.uint8))  # type: ignore
             img_bgr = img_bgr.reshape((self.height, self.width, 3))
             img_display = img_bgr.copy()
+
+              # microsecond age of frame
             delay_us = req.delay_us()
-            
+
+            # localtime in microseconds
+            localtime: int = int(ntcore._now() - delay_us)
+            servertime: int = self.network.server_time(localtime)
+
             # Run both detectors on the BGR image
-            self.detect_tags(img_bgr, img_display,delay_us)
-            self.detect_objects(img_bgr,img_display, delay_us)
+            self.detect_tags(img_bgr, img_display, delay_us, servertime)
+            self.detect_objects(img_bgr, img_display, delay_us)
 
             # Network flush and display
             self.network.flush()
-            
+
             fps = req.fps()
             self.display.text(img_display, f"FPS {fps:2.0f}", (5, 65))
             self.display.text(img_display, f"delay (ms) {delay_us/1000:2.0f}", (5, 105))

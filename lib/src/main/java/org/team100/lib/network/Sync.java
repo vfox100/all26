@@ -1,9 +1,18 @@
 package org.team100.lib.network;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
+import edu.wpi.first.networktables.MultiSubscriber;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableListenerPoller;
+import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.networktables.StructSubscriber;
-import edu.wpi.first.networktables.TimestampedObject;
+import edu.wpi.first.networktables.ValueEventData;
+import edu.wpi.first.util.struct.StructBuffer;
 import edu.wpi.first.wpilibj.RobotController;
 
 /**
@@ -12,28 +21,88 @@ import edu.wpi.first.wpilibj.RobotController;
  * TODO: reply to each raspberry pi individually
  */
 public class Sync implements Runnable {
+    private static final int QUEUE_DEPTH = 10;
     private final NetworkTableInstance inst;
-    private final StructSubscriber<SyncRequest> sub;
-    private final StructPublisher<SyncReply> pub;
+    private final StructBuffer<SyncRequest> m_buf;
+    private final NetworkTableListenerPoller m_poller;
+
+    // private final StructSubscriber<SyncRequest> sub;
+    private final Map<String, StructPublisher<SyncReply>> m_pubmap;
+    // private final StructPublisher<SyncReply> pub;
 
     public Sync(NetworkTableInstance i) {
         inst = i;
-        sub = inst.getStructTopic("syncrequest", SyncRequest.struct).subscribe(
-                new SyncRequest(0));
-        pub = inst.getStructTopic("syncreply", SyncReply.struct).publish();
+        m_buf = StructBuffer.create(SyncRequest.struct);
+        m_poller = new NetworkTableListenerPoller(inst);
+
+        m_poller.addListener(
+                new MultiSubscriber(
+                        inst,
+                        new String[] { "sync" },
+                        PubSubOption.keepDuplicates(true),
+                        PubSubOption.pollStorage(QUEUE_DEPTH)),
+                EnumSet.of(NetworkTableEvent.Kind.kValueAll));
+        m_pubmap = new HashMap<>();
+        // sub = inst.getStructTopic("syncrequest", SyncRequest.struct).subscribe(
+        // new SyncRequest(0));
+        // TODO: map of these
+        // pub = inst.getStructTopic("sync/reply", SyncReply.struct).publish();
     }
 
+    /**
+     * Reply if a message is waiting.
+     */
     @Override
     public void run() {
-        // Reply if a message is waiting.
-        TimestampedObject<SyncRequest>[] queue = sub.readQueue();
-        int n = queue.length;
-        if (n > 0) {
-            // reply to the most recent, ignore stale entries
-            long org = queue[n - 1].value.org();
-            long now = RobotController.getFPGATime();
-            pub.set(new SyncReply(org, now, now));
-            inst.flush();
+        for (NetworkTableEvent e : m_poller.readQueue()) {
+            // these events might be for any camera
+            ValueEventData valueEventData = e.valueData;
+            NetworkTableValue ntValue = valueEventData.value;
+            String name = valueEventData.getTopic().getName();
+            String[] fields = name.split("/");
+            // for now,
+            // key is "sync/ID/request" or "sync/ID/reply"
+            // String type = fields[1];
+            if (fields.length != 3) {
+                System.out.printf("WARNING: weird event name: %s\n", name);
+                continue;
+            }
+            String cameraId = fields[1];
+            if (fields[2].equals("request")) {
+                // reply to this request
+                byte[] valueBytes = ntValue.getRaw();
+                if (valueBytes.length == 0) {
+                    // this should never happen, but it does, very occasionally.
+                    continue;
+                }
+
+                SyncRequest request;
+                try {
+                    request = m_buf.read(valueBytes);
+                } catch (RuntimeException ex) {
+                    System.out.printf("WARNING: decoding failed for name: %s\n", name);
+                    continue;
+                }
+
+                long org = request.org();
+                long now = RobotController.getFPGATime();
+                StructPublisher<SyncReply> p = m_pubmap.computeIfAbsent(
+                        cameraId,
+                        x -> inst.getStructTopic(
+                                "sync/" + x + "/reply", SyncReply.struct).publish());
+                p.set(new SyncReply(org, now, now));
+                inst.flush();
+            }
         }
+
+        // TimestampedObject<SyncRequest>[] queue = sub.readQueue();
+        // int n = queue.length;
+        // if (n > 0) {
+        // // reply to the most recent, ignore stale entries
+        // long org = queue[n - 1].value.org();
+        // long now = RobotController.getFPGATime();
+        // pub.set(new SyncReply(org, now, now));
+        // inst.flush();
+        // }
     }
 }
