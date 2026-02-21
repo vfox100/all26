@@ -2,23 +2,22 @@ import unittest
 
 import ntcore
 import numpy as np
-from wpimath.geometry import Rotation3d
 
 from app.camera.fake_camera import FakeCamera
 from app.config.identity import Identity
 from app.dashboard.fake_display import FakeDisplay
-from app.localization.note_detector import NoteDetector
-from app.network.network import Network
+from app.localization.target_detector import TargetDetector
+from app.network.network import Network, Target
 
 
-class NoteDetectorTest(unittest.TestCase):
-    KEY = "objectVision/unknown/0/Rotation3d"
+class TargetDetectorTest(unittest.TestCase):
+    KEY = "objectVision/unknown/0/targets"
 
     def test_one_note_found(self) -> None:
 
         inst = ntcore.NetworkTableInstance.getDefault()
         inst.startServer()
-        sub = inst.getStructArrayTopic(self.KEY, Rotation3d).subscribe([])
+        sub = inst.getStructArrayTopic(self.KEY, Target).subscribe([])
 
         identity = Identity.UNKNOWN
         network = Network(identity)
@@ -31,11 +30,11 @@ class NoteDetectorTest(unittest.TestCase):
         # GREEN PRACTICE TARGET
         camera = FakeCamera("green_blob.jpg")
         display = FakeDisplay()
-        
+
         # GREEN TARGET VALUES
         object_lower = np.array((40, 50, 100))
         object_higher = np.array((70, 255, 255))
-        note_detector = NoteDetector(
+        note_detector = TargetDetector(
             identity, camera, 0, display, network, object_lower, object_higher
         )
         request = camera.capture_request()
@@ -52,7 +51,7 @@ class NoteDetectorTest(unittest.TestCase):
 
         rots = sub.get()
         self.assertEqual(1, len(rots))
-        rot = rots[0]
+        rot = rots[0].sight
         # NOTE: 0.01 rad resolution is all that can be expected.
         # ~zero
         self.assertAlmostEqual(-0.01, rot.x, 2)
@@ -72,7 +71,7 @@ class NoteDetectorTest(unittest.TestCase):
     def test_zero_notes_found(self) -> None:
         inst = ntcore.NetworkTableInstance.getDefault()
         inst.startServer()
-        sub = inst.getStructArrayTopic(self.KEY, Rotation3d).subscribe([])
+        sub = inst.getStructArrayTopic(self.KEY, Target).subscribe([])
 
         identity = Identity.UNKNOWN
         network = Network(identity)
@@ -84,7 +83,7 @@ class NoteDetectorTest(unittest.TestCase):
         # GREEN TARGET VALUES
         object_lower = np.array((40, 50, 100))
         object_higher = np.array((70, 255, 255))
-        note_detector = NoteDetector(
+        note_detector = TargetDetector(
             identity, camera, 0, display, network, object_lower, object_higher
         )
         request = camera.capture_request()

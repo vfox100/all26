@@ -5,7 +5,7 @@ Don't put anything in this class about the actual configuration, use a different
 Keep this synchronized with java team100.config.Camera.
 """
 
-# pylint: disable=C0103,
+# pylint: disable=C0103
 
 from enum import Enum, unique
 from typing import Any
@@ -20,8 +20,6 @@ def _read_cpu_info() -> str:
 
 
 try:
-    # the raspberry pi 4 puts a sort-of-unique number here
-    # TODO: does the rpi 5 do the same thing?
     _serial = _read_cpu_info()
 except FileNotFoundError:
     # windows doesn't have this file

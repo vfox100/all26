@@ -1,13 +1,13 @@
 """A wrapper for the AprilTag detector."""
 
-# pylint: disable=E0611,R0902,R0903,R0913,R0914,W0212
+# pylint: disable=E0611,R0902,R0903,R0913,R0914,R0917,W0212
 
 import os
 from typing import cast
 
 import ntcore
 import numpy as np
-from cv2 import imwrite, undistort, undistortImagePoints
+from cv2 import imwrite, undistort, undistortImagePoints  # pylint: disable=W0611
 from numpy.typing import NDArray
 from robotpy_apriltag import AprilTagDetection, AprilTagDetector, AprilTagPoseEstimator
 from typing_extensions import override
@@ -33,7 +33,10 @@ class TagDetector(Interpreter):
         network: Network,
         debug: bool = False,
     ) -> None:
-        """debug is very slow, writes apriltag detector debug images into the same filenames over and over, and also writes timestamped images for later analysis"""
+        """Debug is very slow.  It writes apriltag detector debug images
+        into the same filenames over and over, and also writes
+        timestamped images for later analysis.
+        """
         self.identity = identity
         self.cam = cam
         self.camera_num = camera_num
@@ -107,20 +110,14 @@ class TagDetector(Interpreter):
             )
         )
 
-        # TODO: move the identity part of this path to the Network object
         path = "vision/" + identity.value + "/" + str(camera_num)
+
         # network output for the tag sightings
         self._blips = network.get_blip_sender(path + "/blips")
+
         # network output for camera FPS
         self._fps = network.get_double_sender(path + "/fps")
         self._temp = network.get_double_sender(path + "/temp")
-
-        # listen here
-        self._servernowsub = (
-            ntcore.NetworkTableInstance.getDefault()
-            .getIntegerTopic("servernow")
-            .subscribe(0)
-        )
 
         # to keep track of images to write
         self.img_ts_sec = 0
@@ -214,23 +211,27 @@ class TagDetector(Interpreter):
                 self.display.tag(img, result_item, pose)
 
             # send sightings to network
-            self._blips.send(blips, delay_us)
+            self._blips.send(blips)
 
             # send camera FPS to network
             fps = req.fps()
-            self._fps.send(fps, delay_us)
+            self._fps.send(fps)
 
             # must flush!  otherwise 100ms update rate.
             self.network.flush()
 
             # log the CPU temperature in C
             # raspberry pi throttles at 80
-            with open(
-                "/sys/class/thermal/thermal_zone0/temp", "r", encoding="ascii"
-            ) as f:
-                raw_temp = int(f.read().strip())
-                temp_c = raw_temp / 1000
-                self._temp.send(temp_c, 0)
+            try:
+                with open(
+                    "/sys/class/thermal/thermal_zone0/temp", "r", encoding="ascii"
+                ) as f:
+                    raw_temp = int(f.read().strip())
+                    temp_c = raw_temp / 1000
+                    self._temp.send(temp_c)
+            except IOError:
+                # if this file does not exist
+                pass
 
             # do the drawing (after the NT payload is written)
             # to minimize latency

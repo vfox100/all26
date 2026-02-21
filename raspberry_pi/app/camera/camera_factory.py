@@ -1,6 +1,6 @@
-""" Choose a camera implementation based on identity."""
+"""Choose a camera implementation based on identity."""
 
-# pylint: disable=C0415
+# pylint: disable=C0415,R0903
 
 from app.camera.camera_protocol import Camera
 from app.config.identity import Identity
@@ -24,30 +24,3 @@ class CameraFactory:
                 # full-size (huge)
                 return FakeCamera("tag_and_board.jpg", (5504, 3096), -0.1)
             return FakeCamera("blob.jpg")
-
-    @staticmethod
-    def get_num_cameras(identity: Identity) -> int:
-        match identity:
-            case Identity.UNKNOWN:
-                return 1
-            case (
-                Identity.RIGHTAMP
-                | Identity.LEFTAMP
-                | Identity.SHOOTER
-                | Identity.GAME_PIECE
-                | Identity.GLOBAL_GAME_PIECE
-                | Identity.CORAL_RIGHT
-                | Identity.CORAL_LEFT
-                | Identity.SWERVE_RIGHT
-                | Identity.SWERVE_LEFT
-                | Identity.FUNNEL
-                | Identity.DEV 
-                | Identity.DEV2 
-                | Identity.DIST_TEST
-                | Identity.JOELS_TEST
-            ):
-                return 1
-            case Identity.FLIPPED:
-                return 0
-            case _:
-                raise ValueError(f"Unknown identity: {identity}")

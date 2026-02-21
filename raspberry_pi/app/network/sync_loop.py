@@ -12,7 +12,10 @@ from app.network.structs import SyncRequest, SyncReply
 
 
 class SyncLoop(Looper):
-    """Fills the queue with timing offset estimates."""
+    """Fills the queue with timing offset estimates.
+
+    See lib/network/SYNC.md.
+    """
 
     def __init__(
         self,
@@ -22,7 +25,6 @@ class SyncLoop(Looper):
         done: Event,
     ) -> None:
         super().__init__(done)
-        print("*** SyncLoop")
         self._inst = inst
         self._queue = queue
         self._offset: int = 0

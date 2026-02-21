@@ -7,89 +7,49 @@ from threading import Event, Thread
 from queue import Queue
 
 import ntcore
-from wpimath.geometry import Rotation3d
 from app.network.sync_loop import SyncLoop
 from app.network.drift import Drift
 from app.config.identity import Identity
-from app.network.structs import (
-    Blip,
-    PoseEstimate25,
-    Target
-)
-
-# global singleton
-start_time_us = ntcore._now()
-
+from app.network.structs import Blip, Target
 
 class DoubleSender:
-    def __init__(self, drift: Drift, pub: ntcore.DoublePublisher) -> None:
-        self.drift = drift
+    def __init__(self, pub: ntcore.DoublePublisher) -> None:
         self.pub = pub
 
-    def send(self, val: float, delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
+    def send(self, val: float) -> None:
+        self.pub.set(val)
 
 
 class IntSender:
-    def __init__(self, drift: Drift, pub: ntcore.IntegerPublisher) -> None:
-        self.drift = drift
+    def __init__(self, pub: ntcore.IntegerPublisher) -> None:
         self.pub = pub
 
-    def send(self, val: int, delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
+    def send(self, val: int) -> None:
+        self.pub.set(val)
 
 
 class BlipSender:
-    def __init__(self, drift: Drift, pub: ntcore.StructArrayPublisher) -> None:
-        self.drift = drift
+    def __init__(self, pub: ntcore.StructArrayPublisher) -> None:
         self.pub = pub
 
-    def send(self, val: list[Blip], delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
+    def send(self, val: list[Blip]) -> None:
+        self.pub.set(val)
 
-
-class NoteSender:
-    def __init__(self, drift: Drift, pub: ntcore.StructArrayPublisher) -> None:
-        self.drift = drift
-        self.pub = pub
-
-    def send(self, val: list[Rotation3d], delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
 
 class TargetSender:
-    def __init__(self, drift: Drift, pub: ntcore.StructArrayPublisher) -> None:
-        self.drift = drift
+    def __init__(self, pub: ntcore.StructArrayPublisher) -> None:
         self.pub = pub
 
-    def send(self, val: list[Target], delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
-
-
-class PoseSender:
-    def __init__(self, drift: Drift, pub: ntcore.StructPublisher) -> None:
-        self.drift = drift
-        self.pub = pub
-
-    def send(self, val: PoseEstimate25, delay_us: int) -> None:
-        self.drift.get()
-        self.pub.set(val, int(ntcore._now() - delay_us))
+    def send(self, val: list[Target]) -> None:
+        self.pub.set(val)
 
 
 class Network:
     def __init__(self, identity: Identity) -> None:
-        # TODO: use identity.name instead
-        self._serial: str = identity.value
         self._inst: ntcore.NetworkTableInstance = (
             ntcore.NetworkTableInstance.getDefault()
         )
-
-        self._inst.startClient4("tag_finder24")
-
+        self._inst.startClient4("raspberry_pi")
 
         # roboRio address. windows machines can impersonate this for simulation.
         # also localhost for testing
@@ -108,37 +68,20 @@ class Network:
         self._drift = Drift(self._inst, self._queue, identity)
         Thread(target=syncloop.run).start()
 
-    def server_time(self, localtime:int) -> int:
+    def server_time(self, localtime: int) -> int:
         return localtime + self._drift.get()
-    
-    def now(self) -> int:
-        return ntcore._now() - start_time_us
 
     def get_double_sender(self, name: str) -> DoubleSender:
-        return DoubleSender(self._drift, self._inst.getDoubleTopic(name).publish())
+        return DoubleSender(self._inst.getDoubleTopic(name).publish())
 
     def get_int_sender(self, name: str) -> IntSender:
-        return IntSender(self._drift, self._inst.getIntegerTopic(name).publish())
+        return IntSender(self._inst.getIntegerTopic(name).publish())
 
     def get_blip_sender(self, name: str) -> BlipSender:
-        return BlipSender(
-            self._drift, self._inst.getStructArrayTopic(name, Blip).publish()
-        )
+        return BlipSender(self._inst.getStructArrayTopic(name, Blip).publish())
 
-    def get_note_sender(self, name: str) -> NoteSender:
-        return NoteSender(
-            self._drift, self._inst.getStructArrayTopic(name, Rotation3d).publish()
-        )
-    
     def get_target_sender(self, name: str) -> TargetSender:
-        return TargetSender(
-            self._drift, self._inst.getStructArrayTopic(name, Target).publish()
-        )
-
-    def get_pose_sender(self, name: str) -> PoseSender:
-        return PoseSender(
-            self._drift, self._inst.getStructTopic(name, PoseEstimate25).publish()
-        )
+        return TargetSender(self._inst.getStructArrayTopic(name, Target).publish())
 
     def flush(self) -> None:
         self._inst.flush()

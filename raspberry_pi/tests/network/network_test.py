@@ -15,5 +15,5 @@ class NetworkTest(unittest.TestCase):
 
         network = Network(Identity.UNKNOWN)
         sender = network.get_double_sender("foo")
-        sender.send(1.0, 0)
+        sender.send(1.0)
         self.assertEqual(1.0, sub.get())

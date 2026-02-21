@@ -1,6 +1,6 @@
 """A combined detector for AprilTags and colored objects (notes) using BGR image only."""
 
-# pylint: disable=C0103,E0611,E1101,R0902,R0903,R0913,R0914,W0212,W0612
+# pylint: disable=C0103,E0611,E1101,E1121,R0902,R0903,R0913,R0914,R0917,W0212,W0612
 
 from typing import cast
 
@@ -22,6 +22,7 @@ Mat = NDArray[np.uint8]
 
 
 class CombinedDetector(Interpreter):
+    """TODO: remove this, use the multiple interpreter capability instead."""
     def __init__(
         self,
         identity: Identity,
@@ -90,7 +91,7 @@ class CombinedDetector(Interpreter):
         undistorted = cv2.undistortPoints(points, self.mtx, self.dist, P=self.mtx)
         return undistorted.reshape(-1, 2)
 
-    def detect_tags(self, img_bgr, img_display, delay_us: int, servertime: int) -> None:
+    def detect_tags(self, img_bgr, img_display, servertime: int) -> None:
         """Detect AprilTags in a BGR image by converting to grayscale internally."""
         # Convert BGR to grayscale for tag detection
         img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
@@ -125,11 +126,9 @@ class CombinedDetector(Interpreter):
             blips.append(Blip(servertime, result_item.getId(), pose))
             self.display.tag(img_display, result_item, pose)  # Display on BGR image
 
-        self._blips.send(blips, delay_us)
+        self._blips.send(blips)
 
-    def detect_objects(
-        self, img_bgr: Mat, img_display: Mat, delay_us: int, servertime: int
-    ) -> None:
+    def detect_objects(self, img_bgr: Mat, img_display: Mat, servertime: int) -> None:
         """Detect colored objects in a BGR image."""
         img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
         img_hsv = np.ascontiguousarray(img_hsv)
@@ -183,7 +182,9 @@ class CombinedDetector(Interpreter):
                 targets.append(Target(servertime, rotation))
                 self.display.note(img_display, c, orig_cX, orig_cY)
 
-        self._targets.send(targets, delay_us)
+            # only send if there's anything to say
+            self._targets.send(targets)
+
         # self.display.put(img_range)
 
     @override
@@ -203,8 +204,8 @@ class CombinedDetector(Interpreter):
             servertime: int = self.network.server_time(localtime)
 
             # Run both detectors on the BGR image
-            self.detect_tags(img_bgr, img_display, delay_us, servertime)
-            self.detect_objects(img_bgr, img_display, delay_us, servertime)
+            self.detect_tags(img_bgr, img_display, servertime)
+            self.detect_objects(img_bgr, img_display, servertime)
 
             # Network flush and display
             self.network.flush()

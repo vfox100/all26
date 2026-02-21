@@ -11,6 +11,9 @@ and the source:
 https://github.com/raspberrypi/picamera2/
 """
 
+# pylint: disable=E0401
+
+
 from contextlib import AbstractContextManager
 from enum import Enum, unique
 from pprint import pprint
@@ -282,7 +285,8 @@ class RealCamera(Camera):
                 # "AeEnable": True,
                 "AwbEnable": False,
                 "ExposureTime": RealCamera.__get_exposure_time(identity),
-                # The first argument is the red gain, second is blue gain, values are from testing in the new gym lighting(1.2,2.2)
+                # The first argument is the red gain, second is blue gain.
+                # values are from testing in the new gym lighting(1.2,2.2)
                 # "ColourGains": (1.2,2.0),
                 # limit auto: go as fast as possible but no slower than 30fps
                 # without a duration limit, we slow down in the dark, which is fine
@@ -467,7 +471,9 @@ class RealCamera(Camera):
                         )
                 # if identity == Identity.DIST_TEST:
                 #     # this is for the 3.2 mm lens from 9/15/25 testing
-                #     return np.array([[-0.280215963, 0.1410181344, -0.0004975099487, -0.0003688145196, -0.008688430095, 0.03172761625, -0.001268540923, 0.04303604588]])
+                #     return np.array([[-0.280215963, 0.1410181344,
+                #  -0.0004975099487, -0.0003688145196, -0.008688430095,
+                #  0.03172761625, -0.001268540923, 0.04303604588]])
                 # # this is for the 6 mm lens from 2/1/25 testing
                 #     return np.array([[-0.510, 0.335, 0, 0]])
                 # else:
