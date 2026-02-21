@@ -280,9 +280,9 @@ class RealCamera(Camera):
             raw=None,
             controls={
                 "AnalogueGain": 8,
-                "AeEnable": False,
+                # "AeEnable": False,
                 # 3/29/25: JOEL changed AUTO EXPOSURE to TRUE here because we're OUTSIDE.
-                # "AeEnable": True,
+                "AeEnable": True,
                 "AwbEnable": False,
                 "ExposureTime": RealCamera.__get_exposure_time(identity),
                 # The first argument is the red gain, second is blue gain.
