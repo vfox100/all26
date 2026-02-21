@@ -246,11 +246,6 @@ public class SwerveDriveSubsystem extends SubsystemBase implements VelocitySubsy
                 IsotropicNoiseSE2.high()));
     }
 
-    /** Erase the pose history, use high variance for pose estimate. */
-    public Command disorient() {
-        return runOnce(() -> resetPose(getPose(), IsotropicNoiseSE2.high()));
-    }
-
     @Override
     public Command play(double freq) {
         return run(() -> {

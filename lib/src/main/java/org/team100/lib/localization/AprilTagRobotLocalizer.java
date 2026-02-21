@@ -42,7 +42,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
  * past (and replays up to the present).
  */
 public class AprilTagRobotLocalizer extends CameraReader<Blip> {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /** Maximum age of the sights we publish for diagnosis. */
     private static final double HISTORY_DURATION = 1.0;
@@ -258,6 +258,8 @@ public class AprilTagRobotLocalizer extends CameraReader<Blip> {
 
             // Compute the pose implied by the vision input.
             Pose2d robotPose2d = robotPose2d(samplePose, cameraOffset, tagInField, tagInCamera);
+            if (DEBUG)
+                System.out.printf("robotPose2d %s\n", robotPose2d);
 
             // Clean the used-tags collection in case we don't end up writing to it.
             m_usedTags.cleanup(timeSec);

@@ -30,7 +30,7 @@ import edu.wpi.first.util.struct.StructBuffer;
  * awhile.
  */
 public class Targets extends CameraReader<Target> {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /** Forget sights older than this. */
     private static final double HISTORY_DURATION = 1.0;

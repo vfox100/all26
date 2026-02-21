@@ -115,8 +115,8 @@ public enum Camera {
 
     DEV("364f07fb090a3bf7",
             new Transform3d(
-                    new Translation3d(1.365-1.21, .255, .155+.21),
-                    new Rotation3d(0.05, -0.14,-.33).unaryMinus())),
+                    new Translation3d(1.365 - 1.21, .255, .155 + .21),
+                    new Rotation3d(0.05, -0.14, -.33).unaryMinus())),
 
     TEST6("test6",
             new Transform3d(
@@ -126,7 +126,6 @@ public enum Camera {
 
     UNKNOWN(null, new Transform3d());
 
-    private static final boolean DEBUG = false;
     private static Map<String, Camera> cameras = new HashMap<>();
     static {
         for (Camera i : Camera.values()) {
@@ -144,8 +143,8 @@ public enum Camera {
     public static Camera get(String serialNumber) {
         if (cameras.containsKey(serialNumber))
             return cameras.get(serialNumber);
-        if (DEBUG)
-            System.out.printf("*** Using Camera UNKNOWN for serial number %s\n", serialNumber);
+        // Always warn about missing camera ID.
+        System.out.printf("*** Using Camera UNKNOWN for serial number %s\n", serialNumber);
         return UNKNOWN;
     }
 

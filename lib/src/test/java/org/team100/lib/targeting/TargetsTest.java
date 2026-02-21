@@ -36,7 +36,7 @@ public class TargetsTest implements Timeless {
         stepTime();
 
         ModelSE2 p = new ModelSE2();
-        Targets t = new Targets(logger, logger, 1, (x) -> p);
+        Targets t = new Targets(logger, logger, 100, (x) -> p);
         t.update();
         assertTrue(t.getTargets().isEmpty());
         // send some blips
@@ -80,7 +80,7 @@ public class TargetsTest implements Timeless {
         stepTime();
 
         ModelSE2 p = new ModelSE2();
-        Targets reader = new Targets(logger, logger, 1, (x) -> p);
+        Targets reader = new Targets(logger, logger, 100, (x) -> p);
         Thread.sleep(200);
         SimulatedTargetWriter writer = new SimulatedTargetWriter(
                 logger,
@@ -119,7 +119,7 @@ public class TargetsTest implements Timeless {
         stepTime();
 
         ModelSE2 p = new ModelSE2();
-        Targets reader = new Targets(logger, logger, 10, (x) -> p);
+        Targets reader = new Targets(logger, logger, 100, (x) -> p);
         Thread.sleep(100);
         SimulatedTargetWriter writer = new SimulatedTargetWriter(
                 logger,
@@ -161,7 +161,7 @@ public class TargetsTest implements Timeless {
         stepTime();
 
         ModelSE2 p = new ModelSE2();
-        Targets reader = new Targets(logger, logger, 1, x -> p);
+        Targets reader = new Targets(logger, logger, 100, x -> p);
         Thread.sleep(100);
         SimulatedTargetWriter writer = new SimulatedTargetWriter(
                 logger,
@@ -204,7 +204,7 @@ public class TargetsTest implements Timeless {
         stepTime();
 
         ModelSE2 p = new ModelSE2();
-        Targets reader = new Targets(logger, logger, 1, (x) -> p);
+        Targets reader = new Targets(logger, logger, 100, (x) -> p);
         Thread.sleep(50);
         SimulatedTargetWriter writer = new SimulatedTargetWriter(
                 logger,
