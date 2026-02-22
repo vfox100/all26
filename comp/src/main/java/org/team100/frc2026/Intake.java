@@ -1,6 +1,5 @@
 package org.team100.frc2026;
 
-import org.team100.frc2026.auton.BumpZones;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
 import org.team100.lib.logging.LoggerFactory;
@@ -19,7 +18,7 @@ public class Intake extends SubsystemBase {
     private final BareMotor m_motor;
     private final BareMotor m_motor2;
 
-    public Intake(LoggerFactory parent, CanId canID, CanId canID2) {
+    public Intake(LoggerFactory parent, CanId canID) {
         LoggerFactory log = parent.type(this);
 
         switch (Identity.instance) {
@@ -30,7 +29,7 @@ public class Intake extends SubsystemBase {
                 double supplyLimit = 50;
                 double statorLimit = 20;
                 m_motor = new KrakenX44Motor(
-                        log, // LoggerFactory parent,
+                        log.name("motor1"), // LoggerFactory parent,
                         canID, // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
                         MotorPhase.REVERSE, // MotorPhase motorPhase,
@@ -42,7 +41,7 @@ public class Intake extends SubsystemBase {
                 );
 
                 m_motor2 = new KrakenX44Motor(
-                        log, // LoggerFactory parent,
+                        log.name("motor2"), // LoggerFactory parent,
                         canID, // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
                         MotorPhase.REVERSE, // MotorPhase motorPhase,
@@ -56,8 +55,8 @@ public class Intake extends SubsystemBase {
             }
 
             default -> {
-                m_motor = new SimulatedBareMotor(log, 600);
-                m_motor2 = new SimulatedBareMotor(log, 600);
+                m_motor = new SimulatedBareMotor(log.name("motor1"), 600);
+                m_motor2 = new SimulatedBareMotor(log.name("motor2"), 600);
             }
         }
     }
@@ -65,6 +64,7 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         m_motor.periodic();
+        m_motor2.periodic();
     }
 
     public Command intake() {
