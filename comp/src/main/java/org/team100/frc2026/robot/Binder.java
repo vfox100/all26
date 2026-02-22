@@ -19,12 +19,10 @@ import org.team100.lib.subsystems.swerve.commands.manual.ManualWithFullStateHead
 import org.team100.lib.subsystems.swerve.commands.manual.ManualWithProfiledHeading;
 import org.team100.lib.subsystems.swerve.commands.manual.ManualWithTargetLock;
 import org.team100.lib.subsystems.swerve.commands.manual.SimpleManualModuleStates;
-import org.team100.lib.subsystems.swerve.kinodynamics.limiter.SwerveLimiter;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -59,17 +57,17 @@ public class Binder {
         // DEFAULT COMMANDS
         //
 
-        SwerveLimiter limiter = new SwerveLimiter(
-                m_log,
-                m_machinery.m_swerveKinodynamics,
-                RobotController::getBatteryVoltage);
-        limiter.updateSetpoint(m_machinery.m_drive.getVelocity());
+        // SwerveLimiter limiter = new SwerveLimiter(
+        //         m_log,
+        //         m_machinery.m_swerveKinodynamics,
+        //         RobotController::getBatteryVoltage);
+        // limiter.updateSetpoint(m_machinery.m_drive.getVelocity());
 
         final DriveManually driveManually = new DriveManually(
                 driver::velocity,
                 m_machinery.m_localizer::setHeedRadiusM,
                 m_machinery.m_drive,
-                limiter);
+                m_machinery.m_drive.getLimiter());
         m_machinery.m_drive.setDefaultCommand(driveManually.withName("drive default"));
         final LoggerFactory manLog = m_log.type(driveManually);
 

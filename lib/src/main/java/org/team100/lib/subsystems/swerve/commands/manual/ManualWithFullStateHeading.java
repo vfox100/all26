@@ -2,9 +2,6 @@ package org.team100.lib.subsystems.swerve.commands.manual;
 
 import java.util.function.Supplier;
 
-import org.team100.lib.experiments.Experiment;
-import org.team100.lib.experiments.Experiments;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 import org.team100.lib.logging.Level;
@@ -19,7 +16,6 @@ import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.util.Math100;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
@@ -29,18 +25,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * Rotation uses simple full-state feedback and that's all..
  */
 public class ManualWithFullStateHeading implements FieldRelativeDriver {
-    /**
-     * in "gentle snaps" mode this is the max omega allowed. The
-     * idea is to get to the setpoint over a few seconds, so plan ahead!
-     */
-    private static final double GENTLE_OMEGA = Math.PI / 2;
     private final SwerveKinodynamics m_swerveKinodynamics;
     /** Absolute input supplier, null if free */
     private final Supplier<Rotation2d> m_desiredRotation;
     private final HeadingLatch m_latch;
     // feedback gains
     private final double[] m_K;
-    private final LinearFilter m_outputFilter;
 
     private final BooleanLogger m_log_snap_mode;
     private final DoubleLogger m_log_goal_theta;
@@ -75,7 +65,6 @@ public class ManualWithFullStateHeading implements FieldRelativeDriver {
         m_desiredRotation = desiredRotation;
         m_K = k;
         m_latch = new HeadingLatch();
-        m_outputFilter = LinearFilter.singlePoleIIR(0.01, TimedRobot100.LOOP_PERIOD_S);
         m_log_snap_mode = log.booleanLogger(Level.TRACE, "snap mode");
         m_log_goal_theta = log.doubleLogger(Level.DEBUG, "goal/theta");
         m_log_setpoint_theta = log.ControlR1Logger(Level.DEBUG, "setpoint/theta");
@@ -153,8 +142,6 @@ public class ManualWithFullStateHeading implements FieldRelativeDriver {
         final double omegaFB = getOmegaFB(omegaError);
         final double thetaFB = getThetaFB(thetaError);
         double totalFB = thetaFB + omegaFB;
-        if (Experiments.instance.enabled(Experiment.SnapGentle))
-            totalFB = MathUtil.clamp(totalFB, -1.0 * GENTLE_OMEGA, GENTLE_OMEGA);
 
         final double omega = MathUtil.clamp(
                 totalFB,
@@ -179,11 +166,6 @@ public class ManualWithFullStateHeading implements FieldRelativeDriver {
 
     private double getOmegaFB(final double omegaError) {
         final double omegaFB = m_K[1] * omegaError;
-
-        if (Experiments.instance.enabled(Experiment.SnapThetaFilter)) {
-            // output filtering to prevent oscillation due to delay
-            return m_outputFilter.calculate(omegaFB);
-        }
         if (Math.abs(omegaFB) < 0.05) {
             return 0;
         }

@@ -9,15 +9,12 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.controller.r1.PIDFeedback;
-import org.team100.lib.experiments.Experiment;
-import org.team100.lib.experiments.Experiments;
 import org.team100.lib.geometry.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
 import org.team100.lib.profile.r1.TrapezoidIncrementalProfile;
-import org.team100.lib.sensor.gyro.MockGyro;
 import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.ModelR1;
 import org.team100.lib.state.ModelSE2;
@@ -37,7 +34,6 @@ class ManualWithProfiledHeadingTest implements Timeless {
 
     @Test
     void testModeSwitching() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, false);
         SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
         Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
 
@@ -67,7 +63,6 @@ class ManualWithProfiledHeadingTest implements Timeless {
 
     @Test
     void testNotSnapMode() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, false);
         SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
         Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
 
@@ -102,7 +97,6 @@ class ManualWithProfiledHeadingTest implements Timeless {
 
     @Test
     void testSnapMode() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, false);
         SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
         Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
 
@@ -182,7 +176,6 @@ class ManualWithProfiledHeadingTest implements Timeless {
     /** if you hold the POV the same thing should happen as above. */
     @Test
     void testSnapHeld() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, false);
         SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
         Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
 
@@ -246,138 +239,6 @@ class ManualWithProfiledHeadingTest implements Timeless {
         assertNotNull(m_manualWithHeading.m_goal);
         // there should be no more profile to follow
         verify(0, 0, 0, v);
-    }
-
-    @Test
-    void testStickyHeading() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, true);
-        MockGyro gyro = new MockGyro();
-        SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
-        assertEquals(2.828, swerveKinodynamics.getMaxAngleSpeedRad_S(), DELTA);
-        Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
-
-        // NOTE no feedback here.
-        FeedbackR1 thetaFeedback = new PIDFeedback(logger, 0, 0, 0, true, 0.05, 1);
-
-        final ManualWithProfiledHeading m_manualWithHeading = new ManualWithProfiledHeading(
-                logger,
-                swerveKinodynamics,
-                rotationSupplier,
-                thetaFeedback);
-
-        // driver rotates a bit
-        Velocity control = new Velocity(0, 0, 1);
-
-        ModelSE2 currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 0));
-        // no POV
-        desiredRotation = null;
-
-        VelocitySE2 v = m_manualWithHeading.apply(currentState, control);
-        // scale 1.0 input to max omega
-        assertNull(m_manualWithHeading.m_goal);
-        assertNull(m_manualWithHeading.m_thetaSetpoint);
-        verify(0, 0, 2.828, v);
-
-        // already going full speed:
-        currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 2.828));
-        // gyro indicates the correct speed
-        gyro.rate = 2.828;
-        v = m_manualWithHeading.apply(currentState, control);
-        assertNull(m_manualWithHeading.m_goal);
-        assertNull(m_manualWithHeading.m_thetaSetpoint);
-        verify(0, 0, 2.828, v);
-
-        // let go of the stick
-        control = new Velocity(0, 0, 0);
-        currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 2.828));
-        // gyro rate is still full speed.
-        gyro.rate = 2.828;
-
-        TrapezoidIncrementalProfile profile = m_manualWithHeading.makeProfile(0);
-        // profile speed is half max.
-        assertEquals(1.414, profile.getMaxVelocity(), DELTA);
-        // profile accel is half max
-        assertEquals(0.848, profile.getMaxAcceleration(), DELTA);
-
-        v = m_manualWithHeading.apply(currentState, control);
-
-        // goal is the current state but at rest; the latch calculates a goal that is
-        // uses the profile max braking.
-        assertEquals(-1.570, m_manualWithHeading.m_goal.getRadians(), DELTA);
-        // setpoint respects velocity (though it's trying to slow down)
-        // v(2.828) * dt(0.02) = 0.0566, but slowing a little
-        assertEquals(0.056, m_manualWithHeading.m_thetaSetpoint.x(), DELTA);
-        // braking
-        assertEquals(2.811, m_manualWithHeading.m_thetaSetpoint.v(), DELTA);
-        // just feedforward, which is just the setpoint velocity
-        verify(0, 0, 2.811, v);
-    }
-
-    @Test
-    void testStickyHeading2() {
-        Experiments.instance.testOverride(Experiment.StickyHeading, true);
-        MockGyro gyro = new MockGyro();
-        SwerveKinodynamics swerveKinodynamics = SwerveKinodynamicsFactory.forTest(logger);
-        assertEquals(2.828, swerveKinodynamics.getMaxAngleSpeedRad_S(), DELTA);
-        assertEquals(8.485, swerveKinodynamics.getMaxAngleAccelRad_S2(), DELTA);
-        Supplier<Rotation2d> rotationSupplier = () -> desiredRotation;
-
-        FeedbackR1 thetaFeedback = new PIDFeedback(logger, 3.5, 0, 0, true, 0.05, 1);
-
-        final ManualWithProfiledHeading m_manualWithHeading = new ManualWithProfiledHeading(
-                logger,
-                swerveKinodynamics,
-                rotationSupplier,
-                thetaFeedback);
-
-        // driver rotates a bit
-        Velocity twist1_1 = new Velocity(0, 0, 1);
-
-        ModelSE2 currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 0));
-        // no POV
-        desiredRotation = null;
-
-        VelocitySE2 v = m_manualWithHeading.apply(currentState, twist1_1);
-        // scale 1.0 input to max omega
-        assertNull(m_manualWithHeading.m_goal);
-        assertNull(m_manualWithHeading.m_thetaSetpoint);
-        verify(0, 0, 2.828, v);
-
-        // already going full speed:
-        currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 2.828));
-        // gyro indicates the correct speed
-        gyro.rate = 2.828;
-        v = m_manualWithHeading.apply(currentState, twist1_1);
-        assertNull(m_manualWithHeading.m_goal);
-        assertNull(m_manualWithHeading.m_thetaSetpoint);
-        verify(0, 0, 2.828, v);
-
-        // let go of the stick
-        twist1_1 = new Velocity(0, 0, 0);
-        currentState = new ModelSE2(
-                Pose2d.kZero,
-                new VelocitySE2(0, 0, 2.828));
-        // gyro rate is still full speed.
-        gyro.rate = 2.828;
-        v = m_manualWithHeading.apply(currentState, twist1_1);
-
-        assertEquals(-1.571, m_manualWithHeading.m_goal.getRadians(), DELTA);
-        // velocity carries forward
-        assertEquals(0.056, m_manualWithHeading.m_thetaSetpoint.x(), DELTA);
-        // not sure how it can slow down so fast
-        assertEquals(2.811, m_manualWithHeading.m_thetaSetpoint.v(), DELTA);
-        // includes some feedback
-        verify(0, 0, 2.811, v);
     }
 
     /**

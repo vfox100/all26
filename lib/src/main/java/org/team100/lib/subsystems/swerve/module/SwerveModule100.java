@@ -5,8 +5,6 @@ import java.util.Optional;
 
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.config.Identity;
-import org.team100.lib.experiments.Experiment;
-import org.team100.lib.experiments.Experiments;
 import org.team100.lib.music.Player;
 import org.team100.lib.servo.AngularPositionServo;
 import org.team100.lib.servo.LinearVelocityServo;
@@ -197,27 +195,12 @@ public abstract class SwerveModule100 implements Player {
         double dt = dt();
         double nextOmega = omega(nextWrappedAngle, dt);
 
-        if (Experiments.instance.enabled(Experiment.CorrectSpeedForSteering)) {
-            // help drive motors overcome steering.
-            nextSpeed = correctSpeedForSteering(nextSpeed, nextOmega, dt);
-        }
-        if (Experiments.instance.enabled(Experiment.ReduceCrossTrackError)) {
-            double measuredAngleRad = m_turningServo.getWrappedPositionRad();
-            nextSpeed = reduceCrossTrackError(measuredAngleRad, nextSpeed, nextWrappedAngle);
-
-        }
-
-        if (Experiments.instance.enabled(Experiment.SwerveModuleDeadband)) {
-            if (nextSpeed < 0.001) {
-                nextSpeed = 0;
-                nextWrappedAngle = m_previousDesiredWrappedAngle;
-                nextOmega = 0;
-            }
-        }
+        // help drive motors overcome steering.
+        nextSpeed = correctSpeedForSteering(nextSpeed, nextOmega, dt);
 
         m_driveServo.setVelocity(nextSpeed);
 
-        // Don't use a profile.  This uses more current, but only briefly,
+        // Don't use a profile. This uses more current, but only briefly,
         // and it's crisper.
         m_turningServo.setPositionDirect(nextWrappedAngle.getRadians(), nextOmega, 0);
 
@@ -266,7 +249,6 @@ public abstract class SwerveModule100 implements Player {
      */
     private double correctPositionForSteering(double drive_M, double unwrappedAngleRad) {
         // steering opposes driving.
-        // TODO: double-check that.
         return drive_M - m_wheelRadiusM * unwrappedAngleRad / m_finalDriveRatio;
     }
 

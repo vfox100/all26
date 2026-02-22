@@ -77,6 +77,10 @@ public class SwerveDriveSubsystem extends SubsystemBase implements VelocitySubsy
     // ACTUATORS
     //
 
+    public SwerveLimiter getLimiter() {
+        return m_limiter;
+    }
+
     /**
      * Skip all scaling, limits generator, etc.
      * 
