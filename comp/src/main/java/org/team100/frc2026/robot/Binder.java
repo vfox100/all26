@@ -2,6 +2,9 @@ package org.team100.frc2026.robot;
 
 import java.util.function.BooleanSupplier;
 
+import org.team100.frc2026.field.FieldConstants2026;
+import org.team100.lib.controller.r1.FeedbackR1;
+import org.team100.lib.controller.r1.PIDFeedback;
 import org.team100.lib.controller.se2.ControllerFactorySE2;
 import org.team100.lib.controller.se2.ControllerSE2;
 import org.team100.lib.hid.DriverXboxControl;
@@ -11,9 +14,11 @@ import org.team100.lib.profile.se2.HolonomicProfile;
 import org.team100.lib.profile.se2.HolonomicProfileFactory;
 import org.team100.lib.subsystems.se2.commands.DriveToPoseWithProfile;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveFieldRelative;
+import org.team100.lib.subsystems.swerve.commands.manual.DriveTargetLock;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,7 +28,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class Binder {
     private static final LoggerFactory rootLogger = Logging.instance().rootLogger;
-    @SuppressWarnings("unused") // to show the target
     private static final LoggerFactory fieldLogger = Logging.instance().fieldLogger;
     private final Machinery m_machinery;
     public final ControllerSE2 m_holonomicController;
@@ -55,15 +59,14 @@ public class Binder {
         // RobotController::getBatteryVoltage);
         // limiter.updateSetpoint(m_machinery.m_drive.getVelocity());
 
-        DriveFieldRelative driveManually = new DriveFieldRelative(
-                m_log,
-                m_machinery.m_swerveKinodynamics,
-                driver::velocity,
-                m_machinery.m_localizer::setHeedRadiusM,
-                m_machinery.m_drive,
-                m_machinery.m_drive.getLimiter());
-
-        m_machinery.m_drive.setDefaultCommand(driveManually.withName("drive default"));
+        m_machinery.m_drive.setDefaultCommand(
+                new DriveFieldRelative(
+                        m_log,
+                        m_machinery.m_swerveKinodynamics,
+                        driver::velocity,
+                        m_machinery.m_localizer::setHeedRadiusM,
+                        m_machinery.m_drive,
+                        m_machinery.m_drive.getLimiter()).withName("drive default"));
 
         // m_machinery.m_shooter.setDefaultCommand(
         // m_machinery.m_shooter.stop());
@@ -122,6 +125,40 @@ public class Binder {
         whileTrue(driver::leftTrigger,
                 m_machinery.m_extender.goToExtendedPosition());
         // .andThen(m_machinery.m_intake.intake()));
+
+        FeedbackR1 thetaFeedback = new PIDFeedback(
+                m_log, 3.2, 0, 0, true, 0.05, 1);
+        // aim at the hub, button 6 and also in the alliance zone
+        whileTrue(() -> driver.rightBumper()
+                && FieldConstants2026.ALLIANCE_ZONE.contains(m_machinery.m_drive.getPose().getTranslation()),
+                new DriveTargetLock(
+                        fieldLogger,
+                        m_log,
+                        m_machinery.m_swerveKinodynamics,
+                        () -> FieldConstants2026.HUB.toTranslation2d(),
+                        thetaFeedback,
+                        driver::velocity,
+                        m_machinery.m_localizer::setHeedRadiusM,
+                        m_machinery.m_drive,
+                        m_machinery.m_drive.getLimiter())
+                        .withName("Aim to shoot"));
+        // aim at our zone, button 6 and in the neutral zone
+        whileTrue(() -> driver.rightBumper()
+                && FieldConstants2026.NEUTRAL_ZONE.contains(m_machinery.m_drive.getPose().getTranslation()),
+                new DriveTargetLock(
+                        fieldLogger,
+                        m_log,
+                        m_machinery.m_swerveKinodynamics,
+                        () -> {
+                            Translation2d t = m_machinery.m_drive.getPose().getTranslation();
+                            return new Translation2d(0, t.getY());
+                        },
+                        thetaFeedback,
+                        driver::velocity,
+                        m_machinery.m_localizer::setHeedRadiusM,
+                        m_machinery.m_drive,
+                        m_machinery.m_drive.getLimiter())
+                        .withName("Aim to lob"));
 
         ///////////////////////////////////////////////////////////
         //
