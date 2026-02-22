@@ -78,9 +78,6 @@ public class Machinery {
 
     public Machinery() {
 
-        final LoggerFactory driveLog = logger.name("Drive");
-        m_swerveKinodynamics = SwerveKinodynamicsFactory.get(driveLog);
-
         ////////////////////////////////////////////////////////////
         //
         // SUBSYSTEMS
@@ -89,7 +86,7 @@ public class Machinery {
         // Subsystem initializers go here.
         // m_shooter = new Shooter(driveLog);
         // m_intake = new Intake(driveLog, new CanId(14));
-        m_extender = new IntakeExtend(driveLog, new CanId(20));
+        m_extender = new IntakeExtend(logger, new CanId(20));
         // m_serializer = new Serializer(driveLog);
         // m_ClimberExtension = new ClimberExtension(driveLog);
         // m_shooterHood = new ShooterHood(driveLog, null);
@@ -106,6 +103,9 @@ public class Machinery {
         //
         // POSE ESTIMATION
         //
+        LoggerFactory driveLog = logger.name("Drive");
+        m_swerveKinodynamics = SwerveKinodynamicsFactory.get(driveLog);
+
         m_modules = SwerveModuleCollection.get(
                 driveLog,
                 DRIVE_SUPPLY_LIMIT,
