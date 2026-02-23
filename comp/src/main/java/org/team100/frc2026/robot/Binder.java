@@ -1,7 +1,5 @@
 package org.team100.frc2026.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-
 import java.util.function.BooleanSupplier;
 
 import org.team100.frc2026.field.FieldConstants2026;
@@ -68,7 +66,8 @@ public class Binder {
                         driver::velocity,
                         m_machinery.m_localizer::setHeedRadiusM,
                         m_machinery.m_drive,
-                        m_machinery.m_drive.getLimiter()).withName("drive default"));
+                        m_machinery.m_limiter)
+                        .withName("drive default"));
 
         // m_machinery.m_shooter.setDefaultCommand(
         // m_machinery.m_shooter.stop());
@@ -102,7 +101,7 @@ public class Binder {
 
         // whileTrue(driver::b, m_machinery.m_shooter.shoot());
 
-         whileTrue(driver::x, m_machinery.m_intake.intake());
+        whileTrue(driver::x, m_machinery.m_intake.intake());
 
         // whileTrue(driver::y, m_machinery.m_serializer.serialize());
 
@@ -123,9 +122,10 @@ public class Binder {
         // .andThen(m_machinery.m_ClimberExtension.setHomePosition()));
 
         // The real bindings
-       // whileTrue(driver::leftBumper, m_machinery.m_extender.goToRetractedPosition());
-      //  whileTrue(driver::leftTrigger,
-        //        m_machinery.m_extender.goToExtendedPosition()
+        // whileTrue(driver::leftBumper,
+        // m_machinery.m_extender.goToRetractedPosition());
+        // whileTrue(driver::leftTrigger,
+        // m_machinery.m_extender.goToExtendedPosition()
         // .andThen(m_machinery.m_intake.intake()));
 
         FeedbackR1 thetaFeedback = new PIDFeedback(
@@ -142,9 +142,9 @@ public class Binder {
                         driver::velocity,
                         m_machinery.m_localizer::setHeedRadiusM,
                         m_machinery.m_drive,
-                        m_machinery.m_drive.getLimiter())
+                        m_machinery.m_limiter)
                         .withName("Aim to shoot"));
-        //aim at our zone, button 6 and in the neutral zone
+        // aim at our zone, button 6 and in the neutral zone
         whileTrue(() -> driver.rightBumper()
                 && FieldConstants2026.NEUTRAL_ZONE.contains(m_machinery.m_drive.getPose().getTranslation()),
                 new DriveTargetLock(
@@ -159,7 +159,7 @@ public class Binder {
                         driver::velocity,
                         m_machinery.m_localizer::setHeedRadiusM,
                         m_machinery.m_drive,
-                        m_machinery.m_drive.getLimiter())
+                        m_machinery.m_limiter)
                         .withName("Aim to lob"));
 
         ///////////////////////////////////////////////////////////
