@@ -8,26 +8,20 @@ import org.team100.lib.config.DriverSkill;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.experiments.Experiment;
 import org.team100.lib.experiments.Experiments;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.GeometryUtil;
 import org.team100.lib.geometry.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
 import org.team100.lib.logging.LoggerFactory.DoubleArrayLogger;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.logging.LoggerFactory.ModelR1Logger;
-import org.team100.lib.profile.r1.IncrementalProfile;
-import org.team100.lib.profile.r1.TrapezoidIncrementalProfile;
-import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.ModelR1;
 import org.team100.lib.state.ModelSE2;
 import org.team100.lib.subsystems.swerve.SwerveDriveSubsystem;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.subsystems.swerve.kinodynamics.limiter.SwerveLimiter;
 import org.team100.lib.targeting.TargetUtil;
-import org.team100.lib.util.Math100;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,12 +33,13 @@ import edu.wpi.first.wpilibj2.command.Command;
  * This is useful for shooting solutions, or for keeping the camera pointed at
  * something.
  * 
- * Rotation uses a profile, velocity feedforward, and positional feedback.
+ * Rotation uses velocity feedforward and feedback, but no profile, because I
+ * think the profile might be a source of noise.
  * 
  * The targeting solution is based on bearing alone, so it won't work if the
  * robot or target is moving. That effect can be compensated, though.
  */
-public class DriveTargetLock extends Command {
+public class DriveTargetLockDirect extends Command {
     /**
      * While driving manually, pay attention to tags even if they are somewhat far
      * away.
@@ -60,27 +55,17 @@ public class DriveTargetLock extends Command {
     private final SwerveDriveSubsystem m_drive;
     private final SwerveLimiter m_limiter;
 
-    /**
-     * Relative rotational speed. Use a moderate value to trade rotation for
-     * translation
-     */
-    private static final double ROTATION_SPEED = 0.5;
-
     private final SwerveKinodynamics m_swerveKinodynamics;
     private final Supplier<Translation2d> m_target;
     private final FeedbackR1 m_thetaController;
-    private final IncrementalProfile m_profile;
 
     private final DoubleLogger m_log_apparent_motion;
-    public final DoubleArrayLogger m_log_target;
-    private final ControlR1Logger m_log_setpoint;
+    private final DoubleArrayLogger m_log_target;
     private final ModelR1Logger m_log_goal;
     private final DoubleLogger m_log_thetaFB;
     private final DoubleLogger m_log_thetaFF;
 
-    private ControlR1 m_thetaSetpoint;
-
-    public DriveTargetLock(
+    public DriveTargetLockDirect(
             LoggerFactory fieldLogger,
             LoggerFactory parent,
             SwerveKinodynamics swerveKinodynamics,
@@ -91,7 +76,6 @@ public class DriveTargetLock extends Command {
             SwerveDriveSubsystem drive,
             SwerveLimiter limiter) {
         LoggerFactory log = parent.type(this);
-        m_log_setpoint = log.ControlR1Logger(Level.TRACE, "setpoint");
         m_log_goal = log.ModelR1Logger(Level.TRACE, "goal");
         m_log_thetaFB = log.doubleLogger(Level.TRACE, "thetaFB");
         m_log_thetaFF = log.doubleLogger(Level.TRACE, "thetaFF");
@@ -103,11 +87,6 @@ public class DriveTargetLock extends Command {
         m_swerveKinodynamics = swerveKinodynamics;
         m_target = target;
         m_thetaController = thetaController;
-        m_profile = new TrapezoidIncrementalProfile(
-                log,
-                swerveKinodynamics.getMaxAngleSpeedRad_S() * ROTATION_SPEED,
-                swerveKinodynamics.getMaxAngleAccelRad_S2() * ROTATION_SPEED,
-                0.01);
         m_log_apparent_motion = log.doubleLogger(Level.TRACE, "apparent motion");
         addRequirements(m_drive);
     }
@@ -116,27 +95,12 @@ public class DriveTargetLock extends Command {
     public void initialize() {
         m_heedRadiusM.accept(HEED_RADIUS_M);
         m_limiter.updateSetpoint(m_drive.getVelocity());
-        ModelSE2 state = m_drive.getState();
-        // always use zero initial setpoint velocity to avoid "jerk" on init.
-        // TODO: is this ok?
-        // m_thetaSetpoint = p.theta().control();
-        m_thetaSetpoint = new ControlR1(state.theta().x(), 0);
         m_thetaController.reset();
     }
 
     @Override
     public void execute() {
         ModelSE2 state = m_drive.getState();
-
-        // Feedback based on the current state and the previous setpoint.
-        double thetaFB1 = m_thetaController.calculate(state.theta(), m_thetaSetpoint.model());
-        m_log_thetaFB.log(() -> thetaFB1);
-
-        double thetaFB = thetaFB1;
-        if (m_thetaController.atSetpoint()) {
-            // apply controller deadband
-            thetaFB = 0;
-        }
 
         // the goal omega should match the target's apparent motion
         Translation2d target = m_target.get();
@@ -154,18 +118,19 @@ public class DriveTargetLock extends Command {
         // final ModelR1 goal = new ModelR1(unwrappedBearing, targetMotion);
         m_log_goal.log(() -> goal);
 
-        // Make sure the old setpoint uses the modulus close to the measurement.
-        m_thetaSetpoint = new ControlR1(
-                Math100.getMinDistance(state.theta().x(), m_thetaSetpoint.x()),
-                m_thetaSetpoint.v());
-
-        // New setpoint for the next timestep.
-        m_thetaSetpoint = m_profile.calculate(TimedRobot100.LOOP_PERIOD_S, m_thetaSetpoint, goal);
-        m_log_setpoint.log(() -> m_thetaSetpoint);
-
-        // Feedforward is for the next time step.
-        double thetaFF = m_thetaSetpoint.v();
+        // Feedforward is the goal velocity
+        double thetaFF = goal.v();
         m_log_thetaFF.log(() -> thetaFF);
+
+        // Feedback uses the goal, there's no profile.
+        double thetaFB1 = m_thetaController.calculate(state.theta(), goal);
+        m_log_thetaFB.log(() -> thetaFB1);
+
+        double thetaFB = thetaFB1;
+        if (m_thetaController.atSetpoint()) {
+            // apply controller deadband
+            thetaFB = 0;
+        }
 
         double omega = MathUtil.clamp(
                 thetaFF + thetaFB,
@@ -178,9 +143,6 @@ public class DriveTargetLock extends Command {
                 m_swerveKinodynamics.getMaxDriveVelocityM_S(),
                 m_swerveKinodynamics.getMaxAngleSpeedRad_S());
 
-        // Override omega.
-        v = new VelocitySE2(v.x(), v.y(), omega);
-
         // Scale for driver skill.
         v = GeometryUtil.scale(v, DriverSkill.level().scale());
 
@@ -188,6 +150,9 @@ public class DriveTargetLock extends Command {
         if (Experiments.instance.enabled(Experiment.UseSetpointGenerator)) {
             v = m_limiter.apply(v);
         }
+
+        // Override omega.
+        v = new VelocitySE2(v.x(), v.y(), omega);
 
         // Actuate the drivetrain.
         m_drive.setVelocity(v);
