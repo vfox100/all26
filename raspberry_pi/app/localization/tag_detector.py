@@ -7,7 +7,7 @@ from typing import cast
 
 import ntcore
 import numpy as np
-from cv2 import imwrite, undistort, undistortImagePoints  # pylint: disable=W0611
+from cv2 import imwrite, undistortImagePoints  # pylint: disable=W0611
 from numpy.typing import NDArray
 from robotpy_apriltag import AprilTagDetection, AprilTagDetector, AprilTagPoseEstimator
 from typing_extensions import override
@@ -17,8 +17,6 @@ from app.camera.interpreter_protocol import Interpreter
 from app.config.identity import Identity
 from app.dashboard.display import Display
 from app.network.network import Blip, Network
-
-Mat = NDArray[np.uint8]
 
 
 class TagDetector(Interpreter):
@@ -36,25 +34,25 @@ class TagDetector(Interpreter):
         into the same filenames over and over, and also writes
         timestamped images for later analysis.
         """
-        self.identity = identity
-        self.cam = cam
-        self.display = display
-        self.network = network
-        self.debug = debug
+        self._identity = identity
+        self._cam = cam
+        self._display = display
+        self._network = network
+        self._debug = debug
 
         print("\n*** Interpreter: TagDetector")
 
-        self.mtx: Mat = cam.get_intrinsic()
-        self.dist: Mat = cam.get_dist()
+        self._mtx: NDArray[np.float32] = cam.get_intrinsic()
+        self._dist: NDArray[np.float32] = cam.get_dist()
 
         size: Size = cam.get_size()
-        self.width: int = size.width
-        self.height: int = size.height
+        self._width: int = size.width
+        self._height: int = size.height
 
-        self.y_len = self.width * self.height
+        self._y_len = self._width * self._height
 
-        self.at_detector = AprilTagDetector()
-        config = self.at_detector.Config()
+        self._at_detector = AprilTagDetector()
+        config = self._at_detector.Config()
         # some of the detection steps can be done in parallel; this
         # should be the same as the number of cores on the machine,
         # which for the Raspberry Pi 5 is four.
@@ -76,18 +74,18 @@ class TagDetector(Interpreter):
 
         # stddev of the blur kernel in pixels: seems to help with small tags
         config.quadSigma = 0.0
-        if self.debug:
+        if self._debug:
             config.debug = True
-        self.at_detector.setConfig(config)
-        qtp = self.at_detector.QuadThresholdParameters()
+        self._at_detector.setConfig(config)
+        qtp = self._at_detector.QuadThresholdParameters()
         # The apriltag default is 5.  WPI overrides this
         # with 300, which prevents far-away detections.
         # So set it back to 5.
         # it seems not to make much difference in FPS
         # qtp.minClusterPixels = 300
         qtp.minClusterPixels = 5
-        self.at_detector.setQuadThresholdParameters(qtp)
-        self.at_detector.addFamily("tag36h11")
+        self._at_detector.setQuadThresholdParameters(qtp)
+        self._at_detector.addFamily("tag36h11")
 
         if identity == Identity.DIST_TEST:
             # the distortion rig uses a 33 mm, 20% scale, tag.
@@ -98,28 +96,26 @@ class TagDetector(Interpreter):
         else:
             # normal tag size is 6.5 inches
             tag_size = 0.1651
-        self.estimator = AprilTagPoseEstimator(
+        self._estimator = AprilTagPoseEstimator(
             AprilTagPoseEstimator.Config(
                 tag_size,
-                self.mtx[0, 0],
-                self.mtx[1, 1],
-                self.mtx[0, 2],
-                self.mtx[1, 2],
+                self._mtx[0, 0],
+                self._mtx[1, 1],
+                self._mtx[0, 2],
+                self._mtx[1, 2],
             )
         )
 
-        path = "vision/" + identity.value
-
         # network output for tag sightings
-        self._blips = network.get_blip_sender(path + "/blips")
+        self._blips = network.get_blip_sender()
 
         # network output for camera FPS
-        self._fps = network.get_double_sender(path + "/fps")
-        self._temp = network.get_double_sender(path + "/temp")
+        self._fps = network.get_double_sender("fps")
+        self._temp = network.get_double_sender("temp")
 
         # to keep track of images to write
         self.img_ts_sec = 0
-        if self.debug:
+        if self._debug:
             # make a place to put example images
             if not os.path.exists(TagDetector.IMAGE_DIR):
                 os.mkdir(TagDetector.IMAGE_DIR)
@@ -128,15 +124,15 @@ class TagDetector(Interpreter):
     def analyze(self, req: Request) -> None:
         with req.yuv() as buffer:
             # truncate, ignore chrominance. this makes a view, very fast (300 ns)
-            img = cast(
-                Mat,
-                np.frombuffer(buffer, dtype=np.uint8, count=self.y_len),  # type:ignore
+            img: NDArray[np.uint8] = cast(
+                NDArray[np.uint8],
+                np.frombuffer(buffer, dtype=np.uint8, count=self._y_len),  # type:ignore
             )
 
             # this  makes a view, very fast (150 ns)
-            img: Mat = img.reshape((self.height, self.width))  # type:ignore
+            img = img.reshape((self._height, self._width))  # type:ignore
 
-            if self.debug:
+            if self._debug:
                 # Write some of the files for later analysis (e.g. calibration)
                 # To retrieve these files, use, e.g.:
                 # scp pi@10.1.0.11:images/* .
@@ -159,14 +155,14 @@ class TagDetector(Interpreter):
             # is detection the slow part?
             # result: list[AprilTagDetection] = []
 
-            result: list[AprilTagDetection] = self.at_detector.detect(img.data)
+            result: list[AprilTagDetection] = self._at_detector.detect(img.data)
 
             # microsecond age of frame
             delay_us = req.delay_us()
 
             # localtime in microseconds
             localtime: int = int(ntcore._now() - delay_us)
-            servertime: int = self.network.server_time(localtime)
+            servertime: int = self._network.server_time(localtime)
 
             blips: list[Blip] = []
             result_item: AprilTagDetection
@@ -187,7 +183,8 @@ class TagDetector(Interpreter):
 
                 # undistortPoints wants [[x0,y0],[x1,y1],...]
                 pairs = np.reshape(corners, [4, 2])
-                pairs = undistortImagePoints(pairs, self.mtx, self.dist)
+                # undistortImagePoints takes [u,v] pixel pairs
+                pairs = undistortImagePoints(pairs, self._mtx, self._dist)
 
                 # the estimator wants [x0, y0, x1, y1, ...]
                 # pairs has an extra dimension, so redo it:
@@ -203,10 +200,10 @@ class TagDetector(Interpreter):
                 )
 
                 homography = result_item.getHomography()
-                pose = self.estimator.estimate(homography, corners)
+                pose = self._estimator.estimate(homography, corners)
 
                 blips.append(Blip(servertime, result_item.getId(), pose))
-                self.display.tag(img, result_item, pose)
+                self._display.tag(img, result_item, pose)
 
             # send sightings to network
             self._blips.send(blips)
@@ -216,7 +213,7 @@ class TagDetector(Interpreter):
             self._fps.send(fps)
 
             # must flush!  otherwise 100ms update rate.
-            self.network.flush()
+            self._network.flush()
 
             # log the CPU temperature in C
             # raspberry pi throttles at 80
@@ -235,6 +232,6 @@ class TagDetector(Interpreter):
             # to minimize latency
             # none of this is particularly fast or important for prod.
 
-            self.display.text(img, f"FPS {fps:2.0f}", (10, 80))
-            self.display.text(img, f"DELAY (ms) {delay_us/1000:2.0f}", (10, 160))
-            self.display.put(img)
+            self._display.text(img, f"FPS {fps:2.0f}", (10, 80))
+            self._display.text(img, f"DELAY (ms) {delay_us/1000:2.0f}", (10, 160))
+            self._display.put(img)

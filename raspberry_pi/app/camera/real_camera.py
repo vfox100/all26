@@ -29,17 +29,15 @@ from app.camera.camera_protocol import Camera, Request, Size
 from app.config.identity import Identity
 from app.util.timer import Timer
 
-Mat = NDArray[np.uint8]
-
 
 class RealRequest(Request):
-    def __init__(self, req: CompletedRequest, fps: float, rolling: bool):
+    def __init__(self, req: CompletedRequest, fps: float, rolling: bool):  # type: ignore
         # Before we get a CompletedRequest, its constructor has used the
         # camera allocator sync property to:
         # * instantiate a DMA allocator sync for each buffer
         # * tell the camera allocator to mark the buffers as 'in use'
         # * __enter__() each buffer's DmaSync, which calls ioctl DMA_BUF_SYNC_START
-        self._req = req
+        self._req: CompletedRequest = req
         self._fps = fps
         self._rolling = rolling
 
@@ -134,7 +132,7 @@ class RealRequest(Request):
         # to release the DMA buffer, and unmark the app-level 'in use' flag.
         # Note that the _MappedBuffer has already done the ioctl work, so this
         # is redundant.
-        self._req.release()
+        self._req.release()  # type: ignore
 
 
 @unique
@@ -149,7 +147,7 @@ class Model(Enum):
         return Identity.UNKNOWN
 
     @staticmethod
-    def get(cam: Picamera2) -> "Model":
+    def get(cam: Picamera2) -> "Model":  # type:ignore
         model_str: str = cam.camera_properties["Model"]  # type:ignore
         print(f"\n*** Camera model string: {model_str}")
         model: Model = Model(model_str)
@@ -159,21 +157,21 @@ class Model(Enum):
 
 class RealCamera(Camera):
     def __init__(self, identity: Identity) -> None:
-        self.cam: Picamera2 = Picamera2()
-        model: Model = Model.get(self.cam)
-        self.rolling = RealCamera.__rolling_from_model(model)
-        self.size: Size = RealCamera.__size_from_model(model)
-        self.camera_config: dict[str, Any] = RealCamera.__get_config(
-            identity, self.cam, self.size
+        self._cam: Picamera2 = Picamera2()  # type: ignore
+        model: Model = Model.get(self._cam)  # type: ignore
+        self._rolling = RealCamera.__rolling_from_model(model)
+        self._size: Size = RealCamera.__size_from_model(model)
+        self._camera_config: dict[str, Any] = RealCamera.__get_config(  # type: ignore
+            identity, self._cam, self._size  # type: ignore
         )
-        self.mtx = RealCamera.__mtx_from_model(identity, model)
-        self.dist = RealCamera.__dist_from_model(identity, model)
+        self._mtx: NDArray[np.float32] = RealCamera.__mtx_from_model(identity, model)
+        self._dist: NDArray[np.float32] = RealCamera.__dist_from_model(identity, model)
         print("\n*** MTX")
-        print(self.mtx)
+        print(self._mtx)
         print("\n*** DIST")
-        print(self.dist)
+        print(self._dist)
         print("\n*** SENSOR MODES AVAILABLE")
-        pprint(self.cam.sensor_modes)  # type:ignore
+        pprint(self._cam.sensor_modes)  # type:ignore
         if (
             identity == Identity.FLIPPED
             or identity == Identity.FUNNEL
@@ -181,61 +179,61 @@ class RealCamera(Camera):
             or identity == Identity.SWERVE_RIGHT
         ):
             # see libcamera/src/libcamera/transform.cpp
-            self.camera_config["transform"] = libcamera.Transform(
+            self._camera_config["transform"] = libcamera.Transform(  # type: ignore
                 rotation=0, hflip=True, vflip=True, transpose=False
             )
 
         print("\n*** REQUESTED CONFIG")
-        print(self.camera_config)
+        print(self._camera_config)
         # optimal alignment makes the ISP a little faster
-        self.cam.align_configuration(self.camera_config, optimal=True)  # type:ignore
+        self._cam.align_configuration(self._camera_config, optimal=True)  # type:ignore
         print("\n*** ALIGNED CONFIG")
-        print(self.camera_config)
-        self.cam.configure(self.camera_config)  # type:ignore
+        print(self._camera_config)
+        self._cam.configure(self._camera_config)  # type:ignore
         if (
-            self.camera_config["sensor"]["output_size"]
-            != self.cam.camera_config["sensor"]["output_size"]  # type:ignore
+            self._camera_config["sensor"]["output_size"]
+            != self._cam.camera_config["sensor"]["output_size"]  # type:ignore
         ):
             raise ValueError(
                 "desired sensor size must match selected sensor size",
-                self.camera_config["sensor"]["output_size"],
-                self.cam.camera_config["sensor"]["output_size"],  # type:ignore
+                self._camera_config["sensor"]["output_size"],
+                self._cam.camera_config["sensor"]["output_size"],  # type:ignore
             )
         print("\n*** CONTROLS")
-        print(self.cam.camera_controls)  # type:ignore
-        self.cam.start()  # type:ignore
-        self.frame_time = Timer.time_ns()
+        print(self._cam.camera_controls)  # type:ignore
+        self._cam.start()  # type:ignore
+        self._frame_time = Timer.time_ns()
 
     @override
     def capture_request(self) -> Request:
         capture_start: int = Timer.time_ns()
-        req: CompletedRequest = self.cam.capture_request()  # type:ignore
-        total_time_ms = (capture_start - self.frame_time) / 1000000
-        self.frame_time = capture_start
+        req: CompletedRequest = self._cam.capture_request()  # type:ignore
+        total_time_ms = (capture_start - self._frame_time) / 1000000
+        self._frame_time = capture_start
         fps = 1000 / total_time_ms
 
-        return RealRequest(req, fps, self.rolling)
+        return RealRequest(req, fps, self._rolling) # type: ignore
 
     @override
     def stop(self) -> None:
-        self.cam.stop()
+        self._cam.stop()  # type: ignore
         print("Camera stop")
 
     @override
     def get_size(self) -> Size:
-        return self.size
+        return self._size
 
     @override
-    def get_intrinsic(self) -> Mat:
-        return self.mtx
+    def get_intrinsic(self) -> NDArray[np.float32]:
+        return self._mtx
 
     @override
-    def get_dist(self) -> Mat:
-        return self.dist
+    def get_dist(self) -> NDArray[np.float32]:
+        return self._dist
 
     @override
     def is_rolling_shutter(self) -> bool:
-        return self.rolling
+        return self._rolling
 
     @staticmethod
     def __size_from_model(model: Model) -> Size:
@@ -259,7 +257,9 @@ class RealCamera(Camera):
                 return Size(sensor_width=100, sensor_height=100, width=100, height=100)
 
     @staticmethod
-    def __get_config(identity: Identity, cam: Picamera2, size: Size) -> dict[str, Any]:
+    def __get_config(
+        identity: Identity, cam: Picamera2, size: Size  # type: ignore
+    ) -> dict[str, Any]:
         """Consult https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf"""
         camera_config: dict[str, Any] = cam.create_still_configuration(  # type:ignore
             # more buffers seem to make the pipeline a little smoother
@@ -298,7 +298,7 @@ class RealCamera(Camera):
                 # "ScalerCrop":(0,0,width/2,height/2),
             },
         )
-        return camera_config
+        return camera_config # type: ignore
 
     @staticmethod
     def __get_exposure_time(identity: Identity) -> int:
@@ -318,96 +318,81 @@ class RealCamera(Camera):
         #         return 500  # the old value, works with v2 cameras
 
     @staticmethod
-    def __mtx_from_model(identity: Identity, model: Model) -> Mat:
+    def __mtx_v2() -> NDArray[np.float32]:
+        return np.array(
+            [
+                [660, 0, 426],
+                [0, 660, 303],
+                [0, 0, 1],
+            ]
+        )
+
+    @staticmethod
+    def __mtx_v3() -> NDArray[np.float32]:
+        return np.array(
+            [
+                [498, 0, 584],
+                [0, 498, 316],
+                [0, 0, 1],
+            ]
+        )
+
+    @staticmethod
+    def __mtx_gs(identity: Identity) -> NDArray[np.float32]:
+        """Intrinsic matrices for 3.2 mm lens.  Do not use the 6 mm lens."""
+        match identity:
+            case Identity.DEV:
+                return np.array(
+                    [
+                        [944.3507484, 0.0, 693.7105365],
+                        [0.0, 943.8611003, 498.1103206],
+                        [0, 0, 1],
+                    ]
+                )
+            case Identity.CORAL_LEFT:
+                return np.array(
+                    [
+                        [935.4403554, 0.0, 676.3779953],
+                        [0.0, 934.6111779, 537.0691437],
+                        [0, 0, 1],
+                    ]
+                )
+            case Identity.CORAL_RIGHT:
+                return np.array(
+                    [
+                        [938.0364397, 0.0, 674.7133631],
+                        [0.0, 937.4685798, 548.7346201],
+                        [0, 0, 1],
+                    ]
+                )
+            case _:
+                # Default GS model intrinsic matrix
+                print("##########################################")
+                print("#                                        #")
+                print("#  CAMERA INTRINSIC IS NOT CALIBRATED!   #")
+                print("#                                        #")
+                print("#  YOU MUST CALIBRATE IT!!!!             #")
+                print("#                                        #")
+                print("##########################################")
+
+                return np.array(
+                    [
+                        [944.3507484, 0.0, 693.7105365],
+                        [0.0, 943.8611003, 498.1103206],
+                        [0, 0, 1],
+                    ]
+                )
+
+    @staticmethod
+    def __mtx_from_model(identity: Identity, model: Model) -> NDArray[np.float32]:
         """Intrinsic matrix."""
         match model:
             case Model.V3_WIDE:
-                return np.array(
-                    [
-                        [498, 0, 584],
-                        [0, 498, 316],
-                        [0, 0, 1],
-                    ]
-                )
+                return RealCamera.__mtx_v3()
             case Model.V2:
-                return np.array(
-                    [
-                        [660, 0, 426],
-                        [0, 660, 303],
-                        [0, 0, 1],
-                    ]
-                )
+                return RealCamera.__mtx_v2()
             case Model.GS:
-                # Example: handle different identities for GS model
-                match identity:
-                    case Identity.DEV:
-                        # this is for the 3.2 mm lens
-                        return np.array(
-                            [
-                                [
-                                    944.3507484,
-                                    0,
-                                    693.7105365,
-                                ],  # 728 = 1456/2, not actually in the center
-                                [
-                                    0,
-                                    943.8611003,
-                                    498.1103206,
-                                ],  # 544 = 1088/2, actually center :-)
-                                [0, 0, 1],
-                            ]
-                        )
-                    case Identity.CORAL_LEFT:
-                        return np.array(
-                            [
-                                [
-                                    935.4403554,
-                                    0,
-                                    676.3779953,
-                                ],  # 728 = 1456/2, not actually in the center
-                                [
-                                    0,
-                                    934.6111779,
-                                    537.0691437,
-                                ],  # 544 = 1088/2, actually center :-)
-                                [0, 0, 1],
-                            ]
-                        )
-                    case Identity.CORAL_RIGHT:
-                        return np.array(
-                            [
-                                [
-                                    938.0364397,
-                                    0,
-                                    674.7133631,
-                                ],  # 728 = 1456/2, not actually in the center
-                                [
-                                    0,
-                                    937.4685798,
-                                    548.7346201,
-                                ],  # 544 = 1088/2, actually center :-)
-                                [0, 0, 1],
-                            ]
-                        )
-                    # Uncomment and adjust as needed for other identities/lenses
-                    # case Identity.DIST_TEST:
-                    #     # this is for the 6 mm lens
-                    #     return np.array(
-                    #         [
-                    #             [1780, 0, 728],  # 728 = 1456/2, not actually in the center
-                    #             [0, 1780, 544],  # 544 = 1088/2, actually center :-)
-                    #             [0, 0, 1],
-                    #         ]
-                    #     )
-                    case _:
-                        # Default GS model intrinsic matrix
-                        return np.array(
-                            [
-                                [1780, 0, 728],
-                                [0, 1780, 544],
-                                [0, 0, 1],
-                            ]
-                        )
+                return RealCamera.__mtx_gs(identity)
             case _:
                 return np.array(
                     [
@@ -418,69 +403,71 @@ class RealCamera(Camera):
                 )
 
     @staticmethod
-    def __dist_from_model(identity: Identity, model: Model) -> Mat:
+    def __dist_v2() -> NDArray[np.float32]:
+        return np.array([[-0.003, 0.04, 0, 0]])  # type: ignore
+
+    @staticmethod
+    def __dist_v3() -> NDArray[np.float32]:
+        return np.array([[0.01, -0.0365, 0, 0]])  # type:ignore
+
+    @staticmethod
+    def __dist_gs(identity: Identity) -> NDArray[np.float32]:
+        """Distortion matrices for the 3.2 mm lens only.  Do not use the 6 mm lens."""
+        match identity:
+            case Identity.CORAL_LEFT:
+                return np.array(
+                    [
+                        [
+                            -0.2883685917,
+                            0.08640059653,
+                            -0.0003167335742,
+                            0.0004112607248,
+                        ]
+                    ]
+                )
+            case Identity.CORAL_RIGHT:
+                return np.array(
+                    [
+                        [
+                            -0.3057497651,
+                            0.1211648432,
+                            0.0003595528879,
+                            -0.0002945429981,
+                        ]
+                    ]
+                )
+            case _:
+                print("###########################################")
+                print("#                                         #")
+                print("#  CAMERA DISTORTION IS NOT CALIBRATED!   #")
+                print("#                                         #")
+                print("#  YOU MUST CALIBRATE IT!!!!              #")
+                print("#                                         #")
+                print("###########################################")
+                return np.array(
+                    [
+                        [
+                            -0.2883685917,
+                            0.08640059653,
+                            -0.0003167335742,
+                            0.0004112607248,
+                        ]
+                    ]
+                )
+
+    @staticmethod
+    def __dist_from_model(identity: Identity, model: Model) -> NDArray[np.float32]:
         """Minimal distortion matrix with four elements, [k1, k2, p1, p2]
         see https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
         see https://docs.google.com/spreadsheets/d/1x2_58wyVb5e9HJW8WgakgYcOXgPaJe0yTIHew206M-M
         """
         match model:
-
             case Model.V3_WIDE:
-                return np.array([[0.01, -0.0365, 0, 0]])
+                return RealCamera.__dist_v3()
             case Model.V2:
-                return np.array([[-0.003, 0.04, 0, 0]])
-
+                return RealCamera.__dist_v2()
             case Model.GS:
-                match identity:
-                    case Identity.CORAL_LEFT:
-                        # this is for the 3.2 mm lens from 9/15/25 testing
-                        return np.array(
-                            [
-                                [
-                                    -0.2883685917,
-                                    0.08640059653,
-                                    -0.0003167335742,
-                                    0.0004112607248,
-                                ]
-                            ]
-                        )
-                    case Identity.CORAL_RIGHT:
-                        return np.array(
-                            [
-                                [
-                                    -0.3057497651,
-                                    0.1211648432,
-                                    0.0003595528879,
-                                    -0.0002945429981,
-                                ]
-                            ]
-                        )
-                    case _:
-                        # this is for the 3.2 mm lens from 9/15/25 testing
-                        return np.array(
-                            [
-                                [
-                                    -0.280215963,
-                                    0.1410181344,
-                                    -0.0004975099487,
-                                    -0.0003688145196,
-                                    -0.008688430095,
-                                    0.03172761625,
-                                    -0.001268540923,
-                                    0.04303604588,
-                                ]
-                            ]
-                        )
-                # if identity == Identity.DIST_TEST:
-                #     # this is for the 3.2 mm lens from 9/15/25 testing
-                #     return np.array([[-0.280215963, 0.1410181344,
-                #  -0.0004975099487, -0.0003688145196, -0.008688430095,
-                #  0.03172761625, -0.001268540923, 0.04303604588]])
-                # # this is for the 6 mm lens from 2/1/25 testing
-                #     return np.array([[-0.510, 0.335, 0, 0]])
-                # else:
-                #     return np.array([[-0.2, -0.4, 0, 0]])
-
+                return RealCamera.__dist_gs(identity)
             case _:
                 return np.array([[0, 0, 0, 0]])
 

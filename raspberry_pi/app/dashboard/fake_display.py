@@ -1,15 +1,10 @@
 """A display for unit tests."""
 
-import numpy as np
 from cv2.typing import MatLike
-from numpy.typing import NDArray
 from robotpy_apriltag import AprilTagDetection
 from typing_extensions import override
 from wpimath.geometry import Transform3d
-
 from app.dashboard.display import Display
-
-Mat = NDArray[np.uint8]
 
 
 class FakeDisplay(Display):

@@ -1,4 +1,4 @@
-""" This is the coprocessor main loop.
+"""This is the coprocessor main loop.
 
 Each task is run by its own Looper, in its own thread.
 
@@ -12,21 +12,27 @@ use the script called "runapp.py" in the raspberry_pi directory
 from threading import Event, Thread
 
 from app.camera.camera_factory import CameraFactory
+from app.camera.camera_protocol import Camera
 from app.camera.interpreter_factory import InterpreterFactory
+from app.camera.interpreter_protocol import Interpreter
 from app.camera.camera_loop import CameraLoop
 from app.config.identity import Identity
+from app.dashboard.display import Display
+from app.dashboard.display_factory import DisplayFactory
 from app.network.network import Network
 
 
 def main() -> None:
     identity: Identity = Identity.get()
-    network = Network(identity)
-
-    done = Event()
+    done: Event = Event() # to shut down all threads
     try:
-        camera = CameraFactory.get(identity)
-        detector = InterpreterFactory.get(identity, camera, network)
-        camera_loop = CameraLoop(camera, [detector], done)
+        camera: Camera = CameraFactory.get(identity)
+        display: Display = DisplayFactory.get(identity, camera)
+        network: Network = Network(identity, done)
+        interpreter: Interpreter = InterpreterFactory.get(
+            identity, camera, display, network
+        )
+        camera_loop: CameraLoop = CameraLoop(camera, interpreter, done)
         Thread(target=camera_loop.run).start()
         done.wait()
 

@@ -11,7 +11,7 @@
     "python.testing.unittestEnabled": true,
     "workbench.colorTheme": "Default Dark+",
     "editor.minimap.enabled": false,
-    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.typeCheckingMode": "strict",
     "mypy-type-checker.reportingScope": "workspace",
     "markdown.validate.enabled": true,
     "tidyMarkdown.disableFormatter": true,
@@ -29,7 +29,6 @@
     "workbench.editor.revealIfOpen": true,
     "python.analysis.diagnosticSeverityOverrides": {
         "reportArgumentType": "none",
-        "reportCallIssue": "none",
         "reportOptionalMemberAccess": "none"
     }
 }

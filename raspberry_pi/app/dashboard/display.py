@@ -2,13 +2,9 @@
 
 from typing import Protocol
 
-import numpy as np
 from cv2.typing import MatLike
-from numpy.typing import NDArray
 from robotpy_apriltag import AprilTagDetection
 from wpimath.geometry import Transform3d
-
-Mat = NDArray[np.uint8]
 
 
 class Display(Protocol):

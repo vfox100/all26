@@ -21,14 +21,6 @@ class DoubleSender:
         self.pub.set(val)
 
 
-class IntSender:
-    def __init__(self, pub: ntcore.IntegerPublisher) -> None:
-        self.pub = pub
-
-    def send(self, val: int) -> None:
-        self.pub.set(val)
-
-
 class BlipSender:
     def __init__(self, pub: ntcore.StructArrayPublisher) -> None:
         self.pub = pub
@@ -46,7 +38,14 @@ class TargetSender:
 
 
 class Network:
-    def __init__(self, identity: Identity) -> None:
+    # TODO: make a protocol and a fake
+    """Wraps Network Tables, and also handles clock sync
+    with a separate thread (to minimize jitter and aliasing
+    in the sync measurement).
+    """
+
+    def __init__(self, identity: Identity, done: Event) -> None:
+        self._identity: Identity = identity
         self._inst: ntcore.NetworkTableInstance = (
             ntcore.NetworkTableInstance.getDefault()
         )
@@ -61,8 +60,7 @@ class Network:
             # this works
             self._inst.setServer("10.1.0.2")
 
-        self._queue: Queue = Queue()
-        done = Event()
+        self._queue: Queue[int] = Queue()
 
         # Fill the queue at 50 hz
         syncloop = SyncLoop(self._inst, self._queue, identity, done)
@@ -72,16 +70,19 @@ class Network:
     def server_time(self, localtime: int) -> int:
         return localtime + self._drift.get()
 
-    def get_double_sender(self, name: str) -> DoubleSender:
+    def get_double_sender(self, leaf: str) -> DoubleSender:
+        """For logging, using a different root so the listener doesn't hear it."""
+        name: str = "pi/" + self._identity.value + "/" + leaf
         return DoubleSender(self._inst.getDoubleTopic(name).publish())
 
-    def get_int_sender(self, name: str) -> IntSender:
-        return IntSender(self._inst.getIntegerTopic(name).publish())
-
-    def get_blip_sender(self, name: str) -> BlipSender:
+    def get_blip_sender(self) -> BlipSender:
+        """Send blips to the Rio."""
+        name: str = "vision/" + self._identity.value + "/blips"
         return BlipSender(self._inst.getStructArrayTopic(name, Blip).publish())
 
-    def get_target_sender(self, name: str) -> TargetSender:
+    def get_target_sender(self) -> TargetSender:
+        """Send targets to the rio."""
+        name: str = "objectVision/" + self._identity.value + "/targets"
         return TargetSender(self._inst.getStructArrayTopic(name, Target).publish())
 
     def flush(self) -> None:
