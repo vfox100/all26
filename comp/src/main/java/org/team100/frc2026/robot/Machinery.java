@@ -32,7 +32,6 @@ import org.team100.lib.subsystems.swerve.kinodynamics.limiter.SwerveLimiter;
 import org.team100.lib.subsystems.swerve.module.SwerveModuleCollection;
 import org.team100.lib.uncertainty.IsotropicNoiseSE2;
 import org.team100.lib.uncertainty.VariableR1;
-import org.team100.lib.util.CanId;
 import org.team100.lib.visualization.RobotPoseVisualization;
 import org.team100.lib.visualization.TrajectoryVisualization;
 
@@ -92,8 +91,8 @@ public class Machinery {
 
         // Subsystem initializers go here.
         m_shooter = new Shooter(logger);
-        m_intake = new Intake(logger, new CanId(15), new CanId(17));
-        m_extender = new IntakeExtend(logger, new CanId(16));
+        m_intake = new Intake(logger);
+        m_extender = new IntakeExtend(logger);
         m_serializer = new Serializer(driveLog);
       
         // m_ClimberExtension = new ClimberExtension(driveLog);

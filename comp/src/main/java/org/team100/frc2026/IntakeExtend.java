@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class IntakeExtend extends SubsystemBase {
     private final AngularPositionServo m_servo;
 
-    public IntakeExtend(LoggerFactory parent, CanId canID) {
+    public IntakeExtend(LoggerFactory parent) {
         LoggerFactory log = parent.type(this);
 
         switch (Identity.instance) {
@@ -42,7 +42,7 @@ public class IntakeExtend extends SubsystemBase {
                 double statorLimit = 80;
                 KrakenX44Motor m_motor = new KrakenX44Motor(
                         log, // LoggerFactor y parent,
-                        canID, // CanId canId,
+                        new CanId(16), // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
                         MotorPhase.REVERSE, // MotorPhase motorPhase,
                         supplyLimit, // og 50 //double supplyLimit,
