@@ -135,7 +135,7 @@ public class Binder {
         whileTrue(driver::leftBumper,
         m_machinery.m_extender.goToRetractedPosition());
         whileTrue(driver::leftTrigger,
-        m_machinery.m_extender.goToExtendedPosition();
+        m_machinery.m_extender.goToExtendedPosition()
         .andThen(m_machinery.m_intake.intake()));
 
         FeedbackR1 thetaFeedback = new PIDFeedback(
