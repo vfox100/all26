@@ -18,7 +18,7 @@ public class Intake extends SubsystemBase {
     private final BareMotor m_motor;
     private final BareMotor m_motor2;
 
-    public Intake(LoggerFactory parent, CanId canID) {
+    public Intake(LoggerFactory parent, CanId canID, CanId canID2) {
         LoggerFactory log = parent.type(this);
 
         switch (Identity.instance) {
@@ -27,12 +27,12 @@ public class Intake extends SubsystemBase {
                 PIDConstants PID = PIDConstants.makeVelocityPID(log, 0.1);
                 // two is too low, even for unloaded case
                 double supplyLimit = 50;
-                double statorLimit = 20;
+                double statorLimit = 50;
                 m_motor = new KrakenX44Motor(
                         log.name("motor1"), // LoggerFactory parent,
                         canID, // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
-                        MotorPhase.REVERSE, // MotorPhase motorPhase,
+                        MotorPhase.FORWARD, // MotorPhase motorPhase,
                         supplyLimit, // supplyLimit,
                         statorLimit, // statorLimit,
                         KrakenX60Motor.highFrictionFF(log), // Feedforward100 ff
@@ -42,9 +42,9 @@ public class Intake extends SubsystemBase {
 
                 m_motor2 = new KrakenX44Motor(
                         log.name("motor2"), // LoggerFactory parent,
-                        canID, // CanId canId,
+                        canID2, // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
-                        MotorPhase.REVERSE, // MotorPhase motorPhase,
+                        MotorPhase.FORWARD, // MotorPhase motorPhase,
                         supplyLimit, // supplyLimit,
                         statorLimit, // statorLimit,
                         KrakenX60Motor.highFrictionFF(log), // Feedforward100 ff

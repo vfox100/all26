@@ -35,7 +35,7 @@ public class IntakeExtend extends SubsystemBase {
 
         switch (Identity.instance) {
 
-            case TEST_BOARD_B0 -> {
+            case COMP_BOT -> {
                 double gearRatio = 15.3;
                 PIDConstants PID = PIDConstants.makePositionPID(log, 1);
                 double supplyLimit = 4;

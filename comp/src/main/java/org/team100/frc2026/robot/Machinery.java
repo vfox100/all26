@@ -89,8 +89,8 @@ public class Machinery {
 
         // Subsystem initializers go here.
         // m_shooter = new Shooter(driveLog);
-        m_intake = new Intake(logger, new CanId(2000000));
-        m_extender = new IntakeExtend(logger, new CanId(20));
+        m_intake = new Intake(logger, new CanId(15), new CanId(17));
+        m_extender = new IntakeExtend(logger, new CanId(16));
         // m_serializer = new Serializer(driveLog);
         // m_ClimberExtension = new ClimberExtension(driveLog);
         // m_shooterHood = new ShooterHood(driveLog, null);

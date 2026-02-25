@@ -91,7 +91,7 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 statorLimitAmps,
                 driveMotorCanId,
                 ratio);
-        AngularPositionServo turningServo = turningServo(
+        AngularPositionServo turningServo = turningKarkenServo(
                 parent.name("Turning"),
                 turningMotorCanId,
                 turningEncoderChannel,
@@ -218,6 +218,58 @@ public class WCPSwerveModule100 extends SwerveModule100 {
         PIDConstants pid = PIDConstants.makePositionPID(parent, 2.0);
 
         Falcon500Motor turningMotor = new Falcon500Motor(
+                parent,
+                turningMotorCanId,
+                neutral,
+                motorPhase,
+                STEERING_SUPPLY_LIMIT,
+                STEERING_STATOR_LIMIT,
+                ff,
+                friction,
+                pid);
+
+        // this reads the steering angle directly.
+        RotaryPositionSensor turningSensor = new AS5048RotaryPositionSensor(
+                parent,
+                turningEncoderChannel,
+                turningOffset,
+                drive);
+
+        Talon6Encoder builtInEncoder = turningMotor.encoder();
+
+        ProxyRotaryPositionSensor proxy = new ProxyRotaryPositionSensor(builtInEncoder, gearRatio);
+        CombinedRotaryPositionSensor combined = new CombinedRotaryPositionSensor(parent, turningSensor, proxy);
+
+        RotaryMechanism mech = new RotaryMechanism(
+                parent, turningMotor, combined, gearRatio, Double.NEGATIVE_INFINITY,
+                Double.POSITIVE_INFINITY);
+
+        AngularPositionServo turningServo = outboardTurningServo(
+                parent, kinodynamics, mech, combined);
+        turningServo.reset();
+        return turningServo;
+    }
+
+        private static AngularPositionServo turningKarkenServo(
+            LoggerFactory parent,
+            CanId turningMotorCanId,
+            RoboRioChannel turningEncoderChannel,
+            double turningOffset,
+            double gearRatio,
+            SwerveKinodynamics kinodynamics,
+            EncoderDrive drive,
+            NeutralMode100 neutral,
+            MotorPhase motorPhase) {
+
+        SimpleDynamics ff = Falcon500Motor.swerveSteerFF(parent);
+        Friction friction = Falcon500Motor.swerveSteerFriction(parent);
+
+        // Talon outboard POSITION PID
+        // 10/2/24 drive torque produces about a 0.5 degree deviation so maybe
+        // this is too low.
+        PIDConstants pid = PIDConstants.makePositionPID(parent, 2.0);
+
+        KrakenX60Motor turningMotor = new KrakenX60Motor(
                 parent,
                 turningMotorCanId,
                 neutral,
