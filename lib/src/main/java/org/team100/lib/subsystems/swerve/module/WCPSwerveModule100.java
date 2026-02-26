@@ -91,7 +91,7 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 statorLimitAmps,
                 driveMotorCanId,
                 ratio);
-        AngularPositionServo turningServo = turningKarkenServo(
+        AngularPositionServo turningServo = turningKrakenServo(
                 parent.name("Turning"),
                 turningMotorCanId,
                 turningEncoderChannel,
@@ -249,7 +249,7 @@ public class WCPSwerveModule100 extends SwerveModule100 {
         return turningServo;
     }
 
-    private static AngularPositionServo turningKarkenServo(
+        private static AngularPositionServo turningKrakenServo(
             LoggerFactory parent,
             CanId turningMotorCanId,
             RoboRioChannel turningEncoderChannel,

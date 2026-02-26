@@ -18,7 +18,7 @@ public class Intake extends SubsystemBase {
     private final BareMotor m_motor;
     private final BareMotor m_motor2;
 
-    public Intake(LoggerFactory parent, CanId canID, CanId canID2) {
+    public Intake(LoggerFactory parent) {
         LoggerFactory log = parent.type(this);
 
         switch (Identity.instance) {
@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase {
                 double statorLimit = 50;
                 m_motor = new KrakenX44Motor(
                         log.name("motor1"), // LoggerFactory parent,
-                        canID, // CanId canId,
+                        new CanId(15), // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
                         MotorPhase.FORWARD, // MotorPhase motorPhase,
                         supplyLimit, // supplyLimit,
@@ -42,7 +42,7 @@ public class Intake extends SubsystemBase {
 
                 m_motor2 = new KrakenX44Motor(
                         log.name("motor2"), // LoggerFactory parent,
-                        canID2, // CanId canId,
+                        new CanId(17), // CanId canId,
                         NeutralMode100.COAST, // NeutralMode neutral,
                         MotorPhase.FORWARD, // MotorPhase motorPhase,
                         supplyLimit, // supplyLimit,

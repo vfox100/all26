@@ -1,16 +1,15 @@
 package org.team100.frc2026.robot;
 
+
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 import org.team100.frc2026.field.FieldConstants2026;
 import org.team100.lib.controller.r1.FeedbackR1;
-import org.team100.lib.controller.r1.FullStateFeedback;
 import org.team100.lib.controller.r1.PIDFeedback;
 import org.team100.lib.controller.se2.ControllerFactorySE2;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -21,9 +20,7 @@ import org.team100.lib.profile.se2.HolonomicProfile;
 import org.team100.lib.profile.se2.HolonomicProfileFactory;
 import org.team100.lib.subsystems.se2.commands.DriveToPoseWithProfile;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveFieldRelative;
-import org.team100.lib.subsystems.swerve.commands.manual.DriveMovingTargetLock;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveTargetLockDirect;
-import org.team100.lib.targeting.CachedSolution;
 import org.team100.lib.targeting.LaserSolver;
 import org.team100.lib.targeting.Solver;
 
@@ -137,8 +134,9 @@ public class Binder {
         whileTrue(driver::leftBumper,
                 m_machinery.m_extender.goToRetractedPosition());
         whileTrue(driver::leftTrigger,
-                m_machinery.m_extender.goToExtendedPosition());
-        // .andThen(m_machinery.m_intake.intake()));
+                m_machinery.m_extender.goToExtendedPosition()
+                    .andThen(m_machinery.m_intake.intake()));
+
 
         FeedbackR1 thetaFeedback = new PIDFeedback(
                 m_log, 3.2, 0, 0, true, 0.05, 1);
