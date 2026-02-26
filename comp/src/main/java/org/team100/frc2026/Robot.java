@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot100 {
     private final Sync sync;
-
     private final RobotLog m_robotLog;
     private final Machinery m_machinery;
     private final Alerts m_alerts;
@@ -65,7 +64,7 @@ public class Robot extends TimedRobot100 {
         m_binder = new Binder(m_machinery);
         m_binder.bind();
 
-        m_allAutons = new AllAutons(m_machinery, m_binder.m_holonomicController);
+        m_allAutons = new AllAutons(m_machinery);
         m_alerts = new Alerts();
         m_autonAlerts = new AutonAlerts(
                 m_allAutons::getAnnotated,

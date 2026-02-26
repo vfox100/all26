@@ -21,7 +21,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class AllAutons {
     private final AutonChooser m_autonChooser;
 
-    public AllAutons(Machinery machinery, ControllerSE2 controller) {
+    public AllAutons(Machinery machinery) {
+        ControllerSE2 controller = machinery.m_holonomicController;
         m_autonChooser = new AutonChooser();
         LoggerFactory log = Logging.instance().rootLogger.name("Auton");
         m_autonChooser.add(new DoNothing());
