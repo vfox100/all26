@@ -5,7 +5,6 @@ import java.util.EnumSet;
 import org.team100.lib.config.Camera;
 import org.team100.lib.logging.LoggerFactory;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -102,7 +101,6 @@ public abstract class CameraReader<T> {
                 System.out.printf("WARNING: decoding failed for name: %s\n", name);
                 continue;
             }
-
 
             Camera camera = Camera.get(cameraId);
 
