@@ -88,7 +88,8 @@ public class SimulatedTagDetector {
         m_rand = new Random();
         for (Camera camera : m_cameras) {
             // see tag_detector.py
-            String name = "vision/" + camera.getSerial() + "/0/blips";
+            // name is "vision/{IDENTITY}/blips"
+            String name = "vision/" + camera.getSerial() + "/blips";
             m_publishers.put(
                     camera,
                     m_inst.getStructArrayTopic(
@@ -104,12 +105,7 @@ public class SimulatedTagDetector {
         } else {
             // In simulation, we want the real simulated tag detector.
             SimulatedTagDetector sim = new SimulatedTagDetector(
-                    List.of(
-                            Camera.SWERVE_LEFT,
-                            Camera.SWERVE_RIGHT,
-                            Camera.FUNNEL,
-                            Camera.CORAL_LEFT,
-                            Camera.CORAL_RIGHT),
+                    List.of(Camera.SIM0, Camera.SIM1, Camera.SIM2, Camera.SIM3),
                     layout,
                     history);
             return sim::periodic;

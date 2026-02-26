@@ -77,10 +77,11 @@ public class Machinery {
     public final Intake m_intake;
     public final IntakeExtend m_extender;
     public final Serializer m_serializer;
+    public final ShooterHood m_shooterHood;
 
     // public final ClimberExtension m_ClimberExtension;
     // public final Climber m_Climber;
-    public final ShooterHood m_shooterHood;
+    
 
     public Machinery() {
         LoggerFactory driveLog = logger.name("Drive");
@@ -94,9 +95,9 @@ public class Machinery {
         m_intake = new Intake(logger);
         m_extender = new IntakeExtend(logger);
         m_serializer = new Serializer(driveLog);
+        m_shooterHood = new ShooterHood(driveLog, null);
       
         // m_ClimberExtension = new ClimberExtension(driveLog);
-        m_shooterHood = new ShooterHood(driveLog, null);
         // m_Climber = new Climber(driveLog, new CanId(32));
 
         ////////////////////////////////////////////////////////////

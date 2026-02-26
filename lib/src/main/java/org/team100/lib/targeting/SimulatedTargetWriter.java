@@ -61,8 +61,8 @@ public class SimulatedTargetWriter {
         m_inst.setServer("localhost");
         m_inst.startClient4("tag_finder24");
         for (Camera camera : m_cameras) {
-            String name = "objectVision/"
-                    + camera.getSerial() + "/0/targets";
+            // name is "objectVision/{IDENTITY/targets"
+            String name = "objectVision/" + camera.getSerial() + "/targets";
             m_publishers.put(
                     camera,
                     m_inst.getStructArrayTopic(
@@ -80,11 +80,7 @@ public class SimulatedTargetWriter {
         // In simulation, we want the real simulated target detector.
         SimulatedTargetWriter tsim = new SimulatedTargetWriter(
                 parent,
-                List.of(Camera.SWERVE_LEFT,
-                        Camera.SWERVE_RIGHT,
-                        Camera.FUNNEL,
-                        Camera.CORAL_LEFT,
-                        Camera.CORAL_RIGHT),
+                List.of(Camera.SIM0, Camera.SIM1, Camera.SIM2, Camera.SIM3),
                 history,
                 new Translation2d[] {
                         FieldConstants2025.CoralMark.LEFT.value,

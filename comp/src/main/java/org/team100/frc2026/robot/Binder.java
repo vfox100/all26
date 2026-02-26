@@ -1,6 +1,13 @@
 package org.team100.frc2026.robot;
 
+
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
+
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
+
 import org.team100.frc2026.field.FieldConstants2026;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.controller.r1.PIDFeedback;
@@ -22,6 +29,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -100,7 +109,7 @@ public class Binder {
         /// SUBSYSTEMS
         ///
 
-        whileTrue(driver::b, m_machinery.m_shooter.shoot());
+        whileTrue(driver::b, m_machinery.m_shooter.shooterFullspeed());
 
         whileTrue(driver::x, m_machinery.m_intake.intake());
 
@@ -123,10 +132,11 @@ public class Binder {
 
         // The real bindings
         whileTrue(driver::leftBumper,
-        m_machinery.m_extender.goToRetractedPosition());
+                m_machinery.m_extender.goToRetractedPosition());
         whileTrue(driver::leftTrigger,
-        m_machinery.m_extender.goToExtendedPosition()
-        .andThen(m_machinery.m_intake.intake()));
+                m_machinery.m_extender.goToExtendedPosition()
+                    .andThen(m_machinery.m_intake.intake()));
+
 
         FeedbackR1 thetaFeedback = new PIDFeedback(
                 m_log, 3.2, 0, 0, true, 0.05, 1);
@@ -195,6 +205,20 @@ public class Binder {
         // aggressiveFeedback,
         // m_machinery.m_drive)
         // .withName("Moving target lock"));
+
+        ///////////////////////////
+        /// SHOOT WHEN AT SPEED
+        Command runshooter = m_machinery.m_shooter.shooterFullspeed();
+        Command runhood = m_machinery.m_shooterHood.position();
+        Command runserial = m_machinery.m_serializer.serialize();
+        // TODO: maybe add a delay between runhood and runshooter?
+        whileTrue(driver::x,
+                parallel(
+                        runshooter,
+                        runhood,
+                        Commands.repeatingSequence(
+                                waitUntil(m_machinery.m_shooter::atSpeed),
+                                runserial.onlyWhile(m_machinery.m_shooter::atSpeed))));
 
         ///////////////////////////////////////////////////////////
         //
