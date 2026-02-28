@@ -72,7 +72,7 @@
         "workbench.colorTheme": "Default Dark+",
         "workbench.editor.revealIfOpen": true,
         "workbench.tree.enableStickyScroll": false,
-        "editor.cursorWidth":5,
+        "editor.cursorWidth":2,
         "editor.multiCursorLimit": 1,
         "java.import.maven.disableTestClasspathFlag": false,
         "java.import.projectSelection": "manual",
