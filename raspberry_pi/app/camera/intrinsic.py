@@ -71,7 +71,7 @@ class Intrinsic:
                         [0, 0, 1],
                     ]
                 )
-            case Identity.CORAL_LEFT:
+            case Identity.CAMERA_FRONT:
                 return np.array(
                     [
                         [938.1915949, 0.0, 688.2664656],
@@ -87,7 +87,7 @@ class Intrinsic:
                         [0, 0, 1],
                     ]
                 )
-            case Identity.GLOBAL_GAME_PIECE:
+            case Identity.CAMERA_BACK:
                 return np.array(
                     [
                         [943.2920845, 0.0, 681.6154074],
