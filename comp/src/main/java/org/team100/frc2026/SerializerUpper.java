@@ -11,10 +11,10 @@ import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode100;
 import org.team100.lib.motor.ctre.KrakenX44Motor;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
-import org.team100.lib.profile.r1.ProfileR1;
-import org.team100.lib.profile.r1.TrapezoidProfileR1;
-import org.team100.lib.reference.r1.ProfileReferenceR1;
-import org.team100.lib.reference.r1.ReferenceR1;
+import org.team100.lib.profile.r1.AccelLimitedVelocityProfileR1;
+import org.team100.lib.profile.r1.VelocityProfileR1;
+import org.team100.lib.reference.r1.VelocityProfileReferenceR1;
+import org.team100.lib.reference.r1.VelocityReferenceR1;
 import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.util.CanId;
 
@@ -23,28 +23,31 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SerializerUpper extends SubsystemBase {
     public static final CanId canID = new CanId(0);
+    private static final double WHEEL_DIAMETER_M = 0.1;
+    private static final double TOLERANCE_M_S = 1.0;
+    private static final double GEAR_RATIO = 1.0;
 
     private final OutboardLinearVelocityServo m_servo1;
     private final OutboardLinearVelocityServo m_servo2;
 
+    private final Shooter m_Shooter;
+
     private final double m_speed = 30;
 
-    public SerializerUpper(LoggerFactory parent) {
+    public SerializerUpper(LoggerFactory parent, Shooter shooter) {
         LoggerFactory log = parent.type(this);
         LoggerFactory log1 = log.name("SerializerUpper1");
         LoggerFactory log2 = log.name("SerializerUpper2");
 
-        // first parameter is actually accel
-        // second parameter is actually jerk
-        ProfileR1 profile = new TrapezoidProfileR1(
-                log, 10, 100, 1);
-        ReferenceR1 ref = new ProfileReferenceR1(
-                log, () -> profile, 1, Double.MAX_VALUE);
+        m_Shooter = shooter;
+        VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(10);
+        VelocityReferenceR1 ref = new VelocityProfileReferenceR1(
+                log, () -> profile, 1);
 
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
                 //
-                PIDConstants PID = PIDConstants.makeVelocityPID(log, 0.1);
+                PIDConstants PID = PIDConstants.makeVelocityPID(log, WHEEL_DIAMETER_M);
                 // two is too low, even for unloaded case
                 double supplyLimit = 50;
                 double statorLimit = 20;
@@ -62,29 +65,34 @@ public class SerializerUpper extends SubsystemBase {
 
                 // verify these numbers
                 LinearMechanism mechanism1 = new LinearMechanism(
-                        log1, m_motor1, m_motor1.encoder(), 1, 0.1,
+                        log1, m_motor1, m_motor1.encoder(), GEAR_RATIO, WHEEL_DIAMETER_M,
                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
                 LinearMechanism mechanism2 = new LinearMechanism(
-                        log2, m_motor2, m_motor2.encoder(), 1, 0.1,
+                        log2, m_motor2, m_motor2.encoder(), GEAR_RATIO, WHEEL_DIAMETER_M,
                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-                double tolerance = 1;
                 m_servo1 = new OutboardLinearVelocityServo(
-                        log1, mechanism1, ref, tolerance);
+                        log1, mechanism1, ref, TOLERANCE_M_S);
+
                 m_servo2 = new OutboardLinearVelocityServo(
-                        log2, mechanism2, ref, tolerance);
+                        log2, mechanism2, ref, TOLERANCE_M_S);
             }
             default -> {
-                SimulatedBareMotor m_motor = new SimulatedBareMotor(log.name("ShootmotorFeed"), 600);
-                LinearMechanism mechanism = new LinearMechanism(
-                        log, m_motor, m_motor.encoder(), 1, 0.1,
+                SimulatedBareMotor m_motor1 = new SimulatedBareMotor(log1, 600);
+                SimulatedBareMotor m_motor2 = new SimulatedBareMotor(log2, 600);
+
+                LinearMechanism mechanism1 = new LinearMechanism(
+                        log1, m_motor1, m_motor1.encoder(), GEAR_RATIO, WHEEL_DIAMETER_M,
+                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                LinearMechanism mechanism2 = new LinearMechanism(
+                        log2, m_motor2, m_motor2.encoder(), GEAR_RATIO, WHEEL_DIAMETER_M,
                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
                 m_servo1 = new OutboardLinearVelocityServo(
-                        log1, mechanism, ref, 1);
+                        log1, mechanism1, ref, TOLERANCE_M_S);
                 m_servo2 = new OutboardLinearVelocityServo(
-                        log1, mechanism, ref, 1);
+                        log2, mechanism2, ref, TOLERANCE_M_S);
             }
         }
     }
@@ -95,7 +103,7 @@ public class SerializerUpper extends SubsystemBase {
         m_servo2.periodic();
     }
 
-    public Command shooterFullspeed() {
+    public Command serializerUpperFullspeed() {
         return run(this::fullSpeed).withName(" to Shooter full speed");
     }
 
@@ -109,9 +117,15 @@ public class SerializerUpper extends SubsystemBase {
     }
 
     private void fullSpeed() {
-        double Velocity = 0.5;
-        m_servo1.setVelocityProfiled(Velocity);
-        m_servo2.setVelocityProfiled(Velocity);
+        double Velocity = 5.0;
+        double Zero = 0;
+        if (m_Shooter.atSpeed()) {
+            m_servo1.setVelocityProfiled(Velocity);
+            m_servo2.setVelocityProfiled(Velocity);
+        } else {
+            m_servo1.setVelocityProfiled(Zero);
+            m_servo2.setVelocityProfiled(Zero);
+        }
     }
 
     public void setSpeed(double Velocity) {
