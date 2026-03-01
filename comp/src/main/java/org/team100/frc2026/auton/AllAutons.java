@@ -58,17 +58,12 @@ public class AllAutons {
                 machinery.m_swerveKinodynamics,
                 controller,
                 machinery));
-        m_autonChooser.add(new Auton1(
+        m_autonChooser.add(new Auton1R(
                 log,
                 machinery.m_swerveKinodynamics,
                 controller,
                 machinery));
         m_autonChooser.add(new Auton2(
-                log,
-                machinery.m_swerveKinodynamics,
-                controller,
-                machinery));
-        m_autonChooser.add(new Auton1R(
                 log,
                 machinery.m_swerveKinodynamics,
                 controller,
