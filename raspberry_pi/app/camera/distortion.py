@@ -25,17 +25,29 @@ class Distortion:
         self._dist: NDArray[np.float32]
         self._valid: bool = True
         match identity:
-            case Identity.CORAL_RIGHT:
-                self._dist = np.array(
-                    [-0.3057497651, 0.1211648432, 0.0003595528879, -0.0002945429981]
-                )
-            case Identity.CAMERA_BACK: # Camerabot
+            #
+            # Camerabot cameras 2026
+            #
+            case Identity.CAMERA_BACK:
+                # Calibrated 2/28/26.
                 self._dist = np.array(
                     [-0.291773408, 0.09223526926, 0.0001767030772, -8.758271042e-05]
                 )
-            case Identity.CAMERA_FRONT: # Camerabot
+            case Identity.CAMERA_FRONT:
+                # Calibrated 2/28/26.
                 self._dist = np.array(
                     [-0.2961790762, 0.09865662084, -0.0001707410996, 0.0002482554604]
+                )
+            #
+            # TODO: clean up the entries below
+            #
+
+            #
+            #
+            #
+            case Identity.CORAL_RIGHT:
+                self._dist = np.array(
+                    [-0.3057497651, 0.1211648432, 0.0003595528879, -0.0002945429981]
                 )
             case _:
                 self._dist = np.array(

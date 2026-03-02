@@ -32,6 +32,34 @@ class Intrinsic:
         self._mtx: NDArray[np.float32]
         self._valid: bool = True
         match identity:
+            #
+            # Camerabot cameras 2026
+            #
+            case Identity.CAMERA_BACK:
+                # Calibrated 2/28/26.
+                self._mtx = np.array(
+                    [
+                        [943.2920845, 0.0, 681.6154074],
+                        [0.0, 943.3584029, 529.4306382],
+                        [0, 0, 1],
+                    ]
+                )
+            case Identity.CAMERA_FRONT:
+                # Calibrated 2/28/26.
+                self._mtx = np.array(
+                    [
+                        [938.1915949, 0.0, 688.2664656],
+                        [0.0, 936.4271902, 532.2874067],
+                        [0, 0, 1],
+                    ]
+                )
+            #
+            # TODO: clean up the entries below
+            #
+
+            #
+            #
+            #
             case Identity.DEV:
                 self._mtx = np.array(
                     [
@@ -40,27 +68,11 @@ class Intrinsic:
                         [0, 0, 1],
                     ]
                 )
-            case Identity.CAMERA_FRONT:  # Camerabot
-                self._mtx = np.array(
-                    [
-                        [938.1915949, 0.0, 688.2664656],
-                        [0.0, 936.4271902, 532.2874067],
-                        [0, 0, 1],
-                    ]
-                )
             case Identity.CORAL_RIGHT:
                 self._mtx = np.array(
                     [
                         [938.0364397, 0.0, 674.7133631],
                         [0.0, 937.4685798, 548.7346201],
-                        [0, 0, 1],
-                    ]
-                )
-            case Identity.CAMERA_BACK:  # Camerabot
-                self._mtx = np.array(
-                    [
-                        [943.2920845, 0.0, 681.6154074],
-                        [0.0, 943.3584029, 529.4306382],
                         [0, 0, 1],
                     ]
                 )
