@@ -47,8 +47,4 @@ public class InterpolatingMap100<K, V> {
                         floorKey, ceilingKey, key));
 
     }
-
-    public void clear() {
-        m_map.clear();
-    }
 }
