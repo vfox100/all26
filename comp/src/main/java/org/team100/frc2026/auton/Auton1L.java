@@ -133,7 +133,7 @@ public class Auton1L implements AnnotatedCommand {
                 parallel(
                         IntakeSetUp.until(IntakeSetUp::isDone),
                         // Assumed that the intake shouldn't deploy over the bump
-                        waitSeconds(1).andThen(machinery.m_extender.goToExtendedPosition())),
+                        waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())),
                 Commands.print("foo2"),
                 waitSeconds(1),
                 Commands.print("foo3"),
