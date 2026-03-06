@@ -151,7 +151,7 @@ public class Binder {
 
         Supplier<Optional<Translation2d>> target = () -> {
             return FieldConstants2026.TARGET(
-                    m_machinery.m_drive.getPose().getTranslation());
+                    m_machinery.m_drive.getState().translation());
         };
 
         // aim at the hub or our zone, button 6

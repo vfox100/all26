@@ -26,7 +26,6 @@ public class ProxySolver implements Solver {
         double omegaRad_S = 1;
 
         addTOFRecursion(muzzleVelocityM_S, omegaRad_S);
-        addShootingMethod(muzzleVelocityM_S, omegaRad_S);
         addLaser();
         SmartDashboard.putData(m_chooser);
     }
@@ -58,11 +57,35 @@ public class ProxySolver implements Solver {
     }
 
     /**
+     * Two-dimensional solution.
+     * 
+     * For testing, using the flashlight.
+     */
+    private void addLaser() {
+        m_chooser.setDefaultOption("Laser",
+                new LaserSolver());
+    }
+
+    @Override
+    public Optional<Solution> solve(ModelSE2 state, Translation2d targetPosition, GlobalVelocityR2 targetVelocity) {
+        return m_chooser.getSelected().solve(state, targetPosition, targetVelocity);
+    }
+
+    ////////////////////////////////////////////////
+    ///
+    /// PARKING LOT
+    ///
+
+    /**
      * Real 3d trajectory.
      * 
      * Iterates on azimuth and elevation using direct map.
+     * 
+     * TODO: Seems not to work. Make it work someday.
      */
-    private void addShootingMethod(double muzzleVelocityM_S,
+    @SuppressWarnings("unused")
+    private void addShootingMethod(
+            double muzzleVelocityM_S,
             double omegaRad_S) {
         Drag dragModel = FieldConstants2026.FUEL_DRAG;
         RangeSolver rangeSolver = new RangeSolver(
@@ -77,20 +100,5 @@ public class ProxySolver implements Solver {
         m_chooser.addOption("Shooting",
                 new ShootingMethod(
                         rangeCache, 0.1, 1.4, tolerance, initialElevation));
-    }
-
-    /**
-     * Two-dimensional solution.
-     * 
-     * For testing, using the flashlight.
-     */
-    private void addLaser() {
-        m_chooser.setDefaultOption("Laser",
-                new LaserSolver());
-    }
-
-    @Override
-    public Optional<Solution> solve(ModelSE2 state, Translation2d targetPosition, GlobalVelocityR2 targetVelocity) {
-        return m_chooser.getSelected().solve(state, targetPosition, targetVelocity);
     }
 }

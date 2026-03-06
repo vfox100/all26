@@ -1,6 +1,7 @@
 package org.team100.frc2026.field;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 import org.team100.lib.targeting.Drag;
 
@@ -147,14 +148,45 @@ public class FieldConstants2026 {
      * In the neutral zone: lob to our zone.
      * Otherwise: empty.
      */
-    public static Optional<Translation2d> TARGET(Translation2d t) {
-        if (FieldConstants2026.ALLIANCE_ZONE.contains(t)) {
+    public static Optional<Translation2d> TARGET(Translation2d robotPosition) {
+        if (isInAllianceZone(robotPosition)) {
             return Optional.of(FieldConstants2026.HUB.toTranslation2d());
         }
-        if (FieldConstants2026.NEUTRAL_ZONE.contains(t)) {
-            return Optional.of(new Translation2d(0, t.getY()));
+        if (isInNeutralZone(robotPosition)) {
+            return Optional.of(new Translation2d(0, robotPosition.getY()));
         }
         return Optional.empty();
+    }
+
+    public static boolean isInAllianceZone(Translation2d robotPosition) {
+        return FieldConstants2026.ALLIANCE_ZONE.contains(robotPosition);
+    }
+
+    public static boolean isInNeutralZone(Translation2d robotPosition) {
+        return FieldConstants2026.NEUTRAL_ZONE.contains(robotPosition);
+    }
+
+    /**
+     * Range to target, meters.
+     * 
+     * Target depends on location (see above).
+     */
+    public static OptionalDouble RANGE(Translation2d robotPosition) {
+        Optional<Translation2d> o = TARGET(robotPosition);
+        if (o.isEmpty())
+            return OptionalDouble.empty();
+        Translation2d targetPosition = o.get();
+        return OptionalDouble.of(robotPosition.getDistance(targetPosition));
+    }
+
+    /** 2d distance to the hub center, for scoring. */
+    public static double rangeToHub(Translation2d robotPosition) {
+        return robotPosition.getDistance(FieldConstants2026.HUB.toTranslation2d());
+    }
+
+    /** Distance to the middle of our zone, for lobbing. */
+    public static double rangeToLob(Translation2d robotPosition) {
+        return robotPosition.getX() - 2;
     }
 
 }
