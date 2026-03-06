@@ -224,8 +224,10 @@ public class Machinery {
         m_robotViz.run();
     }
 
+    /**
+     * Keeps the tests from conflicting via the use of simulated HAL ports.
+     */
     public void close() {
-        // this keeps the tests from conflicting via the use of simulated HAL ports.
         m_modules.close();
     }
 

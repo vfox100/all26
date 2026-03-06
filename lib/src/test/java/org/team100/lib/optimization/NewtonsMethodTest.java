@@ -402,7 +402,8 @@ public class NewtonsMethodTest {
         NewtonsMethod<N1, N1> s = new NewtonsMethod<>(Nat.N1(), Nat.N1(), f, minQ, maxQ, 1e-3, 10, 1);
         Vector<N1> x = s.solve2(q0, 1, true);
         // f(1.414) = 2 - 2 = 0
-        assertEquals(1.414, x.get(0), 1e-3);
+        // note +/-
+        assertEquals(1.414, Math.abs(x.get(0)), 1e-3);
     }
 
     @Test
@@ -587,7 +588,7 @@ public class NewtonsMethodTest {
     }
 
     /** 4 us per solve */
-        // disable to speed up tests
+    // disable to speed up tests
     // @Test
     void test7() {
         Vector<N2> Xd = VecBuilder.fill(0, 1);

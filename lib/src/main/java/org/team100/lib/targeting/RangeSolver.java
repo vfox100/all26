@@ -1,6 +1,5 @@
 package org.team100.lib.targeting;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
@@ -16,7 +15,6 @@ import edu.wpi.first.math.system.NumericalIntegration;
  * Returns a firing solution (range and time of flight).
  */
 public class RangeSolver {
-
     private static final boolean DEBUG = false;
 
     /**
@@ -52,7 +50,6 @@ public class RangeSolver {
      * 
      * Both range and time-of-flight are always slight underestimates.
      * 
-     * @param d         drag model
      * @param v         muzzle speed in m/s
      * @param omega     spin in rad/s, positive is backspin
      * @param elevation in rad
@@ -95,10 +92,7 @@ public class RangeSolver {
                 // This used to interpolate to find the exact tof at the target
                 // height but it was confusing so I took it out.
 
-                double lerp = -1.0 * prevHeight / dy;
                 double drange = range - prevRange; // a positive number
-                double rangeLerp = MathUtil.interpolate(prevRange, range, lerp);
-                double tofLerp = t + dt * lerp;
                 // to compute the target elevation, look at the last two points.
                 if (DEBUG)
                     System.out.printf("prevRange %f range %f prevHeight %f height %f\n",
