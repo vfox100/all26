@@ -11,7 +11,7 @@ import org.team100.frc2026.Serializer;
 import org.team100.frc2026.SerializerUpper;
 import org.team100.frc2026.Shooter;
 import org.team100.frc2026.ShooterHood;
-import org.team100.frc2026.field.FieldConstants2026;
+import org.team100.frc2026.Targeter;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.controller.se2.ControllerFactorySE2;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -165,14 +165,16 @@ public class Machinery {
         //
         // SUBSYSTEMS
         //
+
+        Targeter targeter = new Targeter(() -> m_drive.getState().translation());
+
         m_intake = new Intake(logger);
         m_intakeExtend = new IntakeExtend(logger);
 
         m_serializer = new Serializer(logger);
-        m_shooter = new Shooter(logger);
+        m_shooter = new Shooter(logger, targeter::speed);
         m_serializerUpper = new SerializerUpper(logger, m_shooter);
-        m_shooterHood = new ShooterHood(
-                logger, m_drive::getState, FieldConstants2026.HUB::toTranslation2d);
+        m_shooterHood = new ShooterHood(logger, targeter::angle);
 
         m_ClimberExtension = new ClimberExtension(logger);
         m_Climber = new Climber(logger);
@@ -224,8 +226,10 @@ public class Machinery {
         m_robotViz.run();
     }
 
+    /**
+     * Keeps the tests from conflicting via the use of simulated HAL ports.
+     */
     public void close() {
-        // this keeps the tests from conflicting via the use of simulated HAL ports.
         m_modules.close();
     }
 

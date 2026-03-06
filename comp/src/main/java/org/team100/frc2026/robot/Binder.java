@@ -2,12 +2,15 @@ package org.team100.frc2026.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 import static org.team100.frc2026.util.TriggerUtil.onTrue;
 import static org.team100.frc2026.util.TriggerUtil.whileTrue;
 
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import org.team100.frc2026.field.FieldConstants2026;
 import org.team100.lib.controller.r1.FeedbackR1;
+import org.team100.lib.controller.r1.FullStateFeedback;
 import org.team100.lib.controller.r1.PIDFeedback;
 import org.team100.lib.hid.DriverXboxControl;
 import org.team100.lib.logging.LoggerFactory;
@@ -16,14 +19,16 @@ import org.team100.lib.profile.se2.HolonomicProfile;
 import org.team100.lib.profile.se2.HolonomicProfileFactory;
 import org.team100.lib.subsystems.se2.commands.DriveToPoseWithProfile;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveFieldRelative;
+import org.team100.lib.subsystems.swerve.commands.manual.DriveMovingTargetLock;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveTargetLockDirect;
+import org.team100.lib.targeting.CachedSolution;
+import org.team100.lib.targeting.ProxySolver;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * Binds buttons to commands. Also creates default commands.
@@ -34,13 +39,11 @@ public class Binder {
 
     private final Machinery m_machinery;
     private final LoggerFactory m_log;
+    private final ProxySolver solver;
 
     public Binder(Machinery machinery) {
         m_machinery = machinery;
         m_log = rootLogger.name("Commands");
-    }
-
-    public void bind() {
 
         ////////////////////////////////////////////////////
         ///
@@ -145,37 +148,44 @@ public class Binder {
 
         FeedbackR1 thetaFeedback = new PIDFeedback(
                 m_log, 3.2, 0, 0, true, 0.05, 1);
-        // aim at the hub, button 6 and also in the alliance zone
-        whileTrue(() -> driver.rightBumper()
-                && FieldConstants2026.ALLIANCE_ZONE.contains(m_machinery.m_drive.getPose().getTranslation()),
+
+        Supplier<Optional<Translation2d>> target = () -> {
+            return FieldConstants2026.TARGET(
+                    m_machinery.m_drive.getState().translation());
+        };
+
+        // aim at the hub or our zone, button 6
+        whileTrue(() -> driver.rightBumper(),
                 new DriveTargetLockDirect(
                         fieldLogger,
                         m_log,
                         m_machinery.m_swerveKinodynamics,
-                        () -> FieldConstants2026.HUB.toTranslation2d(),
+                        target,
                         thetaFeedback,
                         driver::velocity,
                         m_machinery.m_localizer::setHeedRadiusM,
                         m_machinery.m_drive,
                         m_machinery.m_limiter)
-                        .withName("Aim to shoot"));
-        // aim at our zone, button 6 and in the neutral zone
-        whileTrue(() -> driver.rightBumper()
-                && FieldConstants2026.NEUTRAL_ZONE.contains(m_machinery.m_drive.getPose().getTranslation()),
-                new DriveTargetLockDirect(
-                        fieldLogger,
+                        .withName("Direct target lock"));
+
+        solver = new ProxySolver();
+        CachedSolution tofSolution = new CachedSolution(
+                fieldLogger, m_machinery.m_drive::getState, target, solver);
+        // here we rely only on PID so make it stronger
+        FeedbackR1 aggressiveFeedback = new FullStateFeedback(
+                m_log, 1, 0.1, true, 0.025, 0.25);
+        // button 5
+        whileTrue(() -> driver.leftBumper(),
+                new DriveMovingTargetLock(
                         m_log,
                         m_machinery.m_swerveKinodynamics,
-                        () -> {
-                            Translation2d t = m_machinery.m_drive.getPose().getTranslation();
-                            return new Translation2d(0, t.getY());
-                        },
-                        thetaFeedback,
                         driver::velocity,
                         m_machinery.m_localizer::setHeedRadiusM,
-                        m_machinery.m_drive,
-                        m_machinery.m_limiter)
-                        .withName("Aim to lob"));
+                        m_machinery.m_limiter,
+                        tofSolution,
+                        aggressiveFeedback,
+                        m_machinery.m_drive)
+                        .withName("Moving target lock"));
 
         ////////////////////////////////////////////////////
         ///
@@ -212,5 +222,10 @@ public class Binder {
         whileTrue(() -> (RobotState.isTest() && driver.a() && driver.b()),
                 tester.prematch());
 
+    }
+
+    /** Keeps tests from conflicting. */
+    public void close() {
+        solver.close();
     }
 }
