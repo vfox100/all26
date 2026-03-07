@@ -104,16 +104,19 @@ public class Binder {
         /// CLIMBER
         ///
 
-        whileTrue(driver::x,
-                m_machinery.m_ClimberExtension.setPosition()
-                        .andThen(m_machinery.m_Climber.setClimb1()));
-        whileTrue(driver::a,
-                sequence(
-                        m_machinery.m_ClimberExtension.setPosition().withTimeout(1),
-                        m_machinery.m_Climber.setClimb3().withTimeout(1)));
 
-        whileTrue(driver::y,
-                m_machinery.m_shooter.testMotor3Command());
+        // whileTrue(driver::x,
+        // m_machinery.m_ClimberExtension.setPosition()
+        // .andThen(m_machinery.m_Climber.setClimb1()));
+        // whileTrue(driver::a,
+        // sequence(
+        // m_machinery.m_ClimberExtension.setPosition().withTimeout(1),
+        // m_machinery.m_Climber.setClimb3().withTimeout(1)));
+
+        // whileTrue(driver::y,
+        // m_machinery.m_Climber.setClimb0()
+        // .andThen(m_machinery.m_ClimberExtension.setHomePosition()));
+
 
         // These are from ClimberExtendTEST
         // whileTrue(driver::x, m_machinery.m_ClimberExtension.setPosition());
@@ -194,8 +197,10 @@ public class Binder {
         Command runShooter = m_machinery.m_shooter.testShooterFullspeed();
         Command runHood = m_machinery.m_shooterHood.position();
         Command runSerial = m_machinery.m_serializer.testSerialize();
+        Command runSerialBack = m_machinery.m_serializer.testSerializeBack();
         Command runSerialUpper = m_machinery.m_serializerUpper.testSerializerUpper();
         Command runShooter3 = m_machinery.m_shooter.testMotor3Command();
+        Command runSerialUpperBack = m_machinery.m_serializerUpper.testSerializerUpperBack();
         // whileTrue(driver::rightTrigger,
         // parallel(
         // runHood,
@@ -207,12 +212,16 @@ public class Binder {
 
         // For testing
         // whileTrue(driver::x, m_machinery.m_shooter.shooterFullspeed());
-        // whileTrue(driver::y, m_machinery.m_shooter.testMotor1Command());
-        // whileTrue(driver::a, m_machinery.m_shooter.testMotor2Command());
-        // whileTrue(driver::x, m_machinery.m_shooter.testMotor3Command());
+        // whileTrue(driver::x, m_machinery.m_shooter.testMotor1Command());
+        // whileTrue(driver::y, m_machinery.m_shooter.testMotor2Command());
+        // whileTrue(driver::a, m_machinery.m_shooter.testMotor3Command());
         // whileTrue(driver::b, parallel(runShooter, runSerial, runSerialUpper));
+        whileTrue(driver::a, parallel(runSerial, runSerialUpper));
+        whileTrue(driver::b, parallel(runSerialBack, runSerialUpperBack));
+        whileTrue(driver::x, runShooter);
 
-        whileTrue(driver::rightTrigger, parallel(runSerial, runSerialUpper, runShooter3));
+        // whileTrue(driver::rightTrigger, parallel(runSerial, runSerialUpper,
+        // runShooter));
         ////////////////////////////////////////////////////
         ///
         /// TEST
