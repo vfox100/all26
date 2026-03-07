@@ -34,4 +34,17 @@ public class ShooterTableTest {
         assertEquals(7, t.tof(4).getAsDouble(), DELTA);
         assertTrue(t.tof(6).isEmpty());
     }
+
+    @Test
+    void test2() {
+        ShooterTable t = new ShooterTable(
+                List.of(
+                        new FiringParameters(2, 3, 4, 5),
+                        new FiringParameters(4, 5, 6, 7)));
+        assertTrue(t.forRange(1).isEmpty());
+        assertEquals(5, t.forRange(2).get().tof(), DELTA);
+        assertEquals(7, t.forRange(4).get().tof(), DELTA);
+        assertTrue(t.forRange(6).isEmpty());
+
+    }
 }
