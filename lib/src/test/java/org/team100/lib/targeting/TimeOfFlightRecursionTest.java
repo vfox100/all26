@@ -185,7 +185,7 @@ public class TimeOfFlightRecursionTest {
         InverseRange ir = new InverseRange(d, 0.6, 2, 0, 0.7, 10, 0);
         TimeOfFlightRecursion tofr = new TimeOfFlightRecursion(ir, 0.0001);
         // driving away from the target
-        GlobalVelocityR2 robotVelocity = new GlobalVelocityR2(-2, 0);
+        GlobalVelocityR2 robotVelocity = new GlobalVelocityR2(-1, 0);
         // target is 2m away along +x
         Translation2d targetPosition = new Translation2d(2, 0);
         GlobalVelocityR2 targetVelocity = GlobalVelocityR2.ZERO;
@@ -195,9 +195,9 @@ public class TimeOfFlightRecursionTest {
                         new Pose2d(),
                         new VelocitySE2(robotVelocity.x(), robotVelocity.y(), 0)),
                 targetPosition, targetVelocity);
-        Solution x = o.orElseThrow();
-        assertEquals(0, x.azimuth().getRadians(), DELTA);
-        assertEquals(0.65, x.elevation().getRadians(), 0.006);
+        Solution solution = o.orElseThrow();
+        assertEquals(0, solution.azimuth().getRadians(), DELTA);
+        assertEquals(0.95, solution.elevation().getRadians(), 0.006);
     }
 
     /**

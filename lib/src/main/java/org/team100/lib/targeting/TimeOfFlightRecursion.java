@@ -72,8 +72,11 @@ public class TimeOfFlightRecursion implements Solver {
             // What gun elevation gets to that range, and what is the
             // ball TOF to get there?
             Optional<FiringParameters> oParams = m_rangeToParams.apply(rangeAtTOF);
-            if (oParams.isEmpty())
+            if (oParams.isEmpty()) {
+                if (DEBUG)
+                    System.out.printf("No soltion for range %f\n", rangeAtTOF);
                 return Optional.empty();
+            }
             FiringParameters params = oParams.get();
             LoopSolution var2 = new LoopSolution(
                     params, targetPositionAtTOF);
@@ -103,8 +106,11 @@ public class TimeOfFlightRecursion implements Solver {
 
         // Initial guess is the initial location.
         Optional<FiringParameters> initial = m_rangeToParams.apply(rangeM);
-        if (initial.isEmpty())
+        if (initial.isEmpty()) {
+            if (DEBUG)
+                System.out.printf("No initial solution for %f\n", rangeM);
             return Optional.empty();
+        }
         double targetTOF = initial.get().tof();
 
         for (int i = 0; i < 100; ++i) {
@@ -114,6 +120,8 @@ public class TimeOfFlightRecursion implements Solver {
                 // this method fails, even if the end point might
                 // be valid.
                 // TODO: use better initial guesses to avoid that.
+                if (DEBUG)
+                    System.out.printf("No solution for target TOF %f\n", targetTOF);
                 return Optional.empty();
             }
             LoopSolution soln = oSoln.get();
