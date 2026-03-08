@@ -1,4 +1,4 @@
-package org.team100.frc2026;
+package org.team100.frc2026.targeting;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

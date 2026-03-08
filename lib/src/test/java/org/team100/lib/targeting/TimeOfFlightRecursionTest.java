@@ -26,9 +26,9 @@ public class TimeOfFlightRecursionTest {
         Translation2d T0 = new Translation2d(2, 0);
         GlobalVelocityR2 vT = GlobalVelocityR2.ZERO;
         Looper looper = new Looper(ir, T0, vT);
-        double targetTOF = ir.apply(T0.getNorm()).tof();
+        double targetTOF = ir.apply(T0.getNorm()).get().tof();
         assertEquals(0.291, targetTOF, DELTA);
-        LoopSolution soln = looper.step(targetTOF);
+        LoopSolution soln = looper.step(targetTOF).get();
         assertEquals(0.206, soln.params().elevation(), DELTA);
         assertEquals(0.291, soln.params().tof(), DELTA);
     }
@@ -66,84 +66,84 @@ public class TimeOfFlightRecursionTest {
 
         Looper looper = new Looper(ir, T0, vT);
 
-        double targetTOF = ir.apply(T0.getNorm()).tof();
+        double targetTOF = ir.apply(T0.getNorm()).get().tof();
         assertEquals(0.279, targetTOF, DELTA);
-        LoopSolution soln = looper.step(targetTOF);
+        LoopSolution soln = looper.step(targetTOF).get();
         assertEquals(0.238, soln.params().elevation(), DELTA);
         assertEquals(0.401, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.284, soln.params().elevation(), DELTA);
         assertEquals(0.465, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.313, soln.params().elevation(), DELTA);
         assertEquals(0.504, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.332, soln.params().elevation(), DELTA);
         assertEquals(0.529, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.346, soln.params().elevation(), DELTA);
         assertEquals(0.546, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.355, soln.params().elevation(), DELTA);
         assertEquals(0.558, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.362, soln.params().elevation(), DELTA);
         assertEquals(0.567, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.368, soln.params().elevation(), DELTA);
         assertEquals(0.574, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.371, soln.params().elevation(), DELTA);
         assertEquals(0.579, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.375, soln.params().elevation(), DELTA);
         assertEquals(0.583, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.377, soln.params().elevation(), DELTA);
         assertEquals(0.586, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.379, soln.params().elevation(), DELTA);
         assertEquals(0.588, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.381, soln.params().elevation(), DELTA);
         assertEquals(0.590, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.382, soln.params().elevation(), DELTA);
         assertEquals(0.591, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.383, soln.params().elevation(), DELTA);
         assertEquals(0.592, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.383, soln.params().elevation(), DELTA);
         assertEquals(0.593, soln.params().tof(), DELTA);
     }
@@ -185,7 +185,7 @@ public class TimeOfFlightRecursionTest {
         InverseRange ir = new InverseRange(d, 0.6, 2, 0, 0.7, 10, 0);
         TimeOfFlightRecursion tofr = new TimeOfFlightRecursion(ir, 0.0001);
         // driving away from the target
-        GlobalVelocityR2 robotVelocity = new GlobalVelocityR2(-2, 0);
+        GlobalVelocityR2 robotVelocity = new GlobalVelocityR2(-1, 0);
         // target is 2m away along +x
         Translation2d targetPosition = new Translation2d(2, 0);
         GlobalVelocityR2 targetVelocity = GlobalVelocityR2.ZERO;
@@ -195,9 +195,9 @@ public class TimeOfFlightRecursionTest {
                         new Pose2d(),
                         new VelocitySE2(robotVelocity.x(), robotVelocity.y(), 0)),
                 targetPosition, targetVelocity);
-        Solution x = o.orElseThrow();
-        assertEquals(0, x.azimuth().getRadians(), DELTA);
-        assertEquals(0.65, x.elevation().getRadians(), 0.006);
+        Solution solution = o.orElseThrow();
+        assertEquals(0, solution.azimuth().getRadians(), DELTA);
+        assertEquals(0.95, solution.elevation().getRadians(), 0.006);
     }
 
     /**
@@ -214,34 +214,34 @@ public class TimeOfFlightRecursionTest {
 
         Looper looper = new Looper(ir, T0, vT);
 
-        double targetTOF = ir.apply(T0.getNorm()).tof();
+        double targetTOF = ir.apply(T0.getNorm()).get().tof();
         assertEquals(0.422, targetTOF, DELTA);
-        LoopSolution soln = looper.step(targetTOF);
+        LoopSolution soln = looper.step(targetTOF).get();
         assertEquals(0.407, soln.params().elevation(), DELTA);
         assertEquals(0.486, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.431, soln.params().elevation(), DELTA);
         assertEquals(0.508, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.441, soln.params().elevation(), DELTA);
         assertEquals(0.518, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.445, soln.params().elevation(), DELTA);
         assertEquals(0.522, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.446, soln.params().elevation(), DELTA);
         assertEquals(0.523, soln.params().tof(), DELTA);
 
         targetTOF = soln.params().tof();
-        soln = looper.step(targetTOF);
+        soln = looper.step(targetTOF).get();
         assertEquals(0.446, soln.params().elevation(), DELTA);
         assertEquals(0.523, soln.params().tof(), DELTA);
     }

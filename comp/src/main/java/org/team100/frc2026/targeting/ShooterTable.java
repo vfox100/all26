@@ -1,4 +1,4 @@
-package org.team100.frc2026;
+package org.team100.frc2026.targeting;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +7,7 @@ import java.util.function.DoubleFunction;
 
 import org.team100.lib.targeting.FiringParameters;
 import org.team100.lib.util.InterpolatingMap100;
+import org.team100.lib.util.OptUtil;
 import org.team100.lib.util.Relation;
 
 /**
@@ -36,33 +37,39 @@ public class ShooterTable {
                 FiringParameters::interpolate);
     }
 
+    /**
+     * Hood angle for the specified range.
+     * Empty if there is no valid solution for that range (e.g. it's too far or too
+     * close)
+     */
     public OptionalDouble angle(double rangeM) {
-        return emptyIfNull(m_rangeToElevation.apply(rangeM));
+        return OptUtil.emptyIfNull(m_rangeToElevation.apply(rangeM));
     }
 
+    /**
+     * Drum speed for the specified range.
+     * Empty if there is no valid solution for that range (e.g. it's too far or too
+     * close)
+     */
     public OptionalDouble speed(double rangeM) {
-        return emptyIfNull(m_rangeToSpeed.apply(rangeM));
+        return OptUtil.emptyIfNull(m_rangeToSpeed.apply(rangeM));
     }
 
+    /**
+     * Time of flight for the specified range.
+     * Empty if there is no valid solution for that range (e.g. it's too far or too
+     * close)
+     */
     public OptionalDouble tof(double rangeM) {
-        return emptyIfNull(m_rangeToTof.apply(rangeM));
+        return OptUtil.emptyIfNull(m_rangeToTof.apply(rangeM));
     }
 
+    /**
+     * Firing parameters for the specified range.
+     * Empty if there is no valid solution for that range (e.g. it's too far or too
+     * close)
+     */
     public Optional<FiringParameters> forRange(double rangeM) {
-        return emptyIfNull(m_rangeMap.get(rangeM));
-    }
-
-    /////////////////////////////////////////////////
-
-    private OptionalDouble emptyIfNull(Double x) {
-        if (x == null)
-            return OptionalDouble.empty();
-        return OptionalDouble.of(x);
-    }
-
-    private <V> Optional<V> emptyIfNull(V v) {
-        if (v == null)
-            return Optional.empty();
-        return Optional.of(v);
+        return OptUtil.emptyIfNull(m_rangeMap.get(rangeM));
     }
 }

@@ -27,7 +27,7 @@ public class InverseRangeTest {
                 minTargetElevation,
                 muzzleSpeed,
                 omega);
-        FiringParameters p = ir.apply(range);
+        FiringParameters p = ir.apply(range).get();
 
         assertEquals(1, p.elevation(), DELTA);
         assertEquals(1.18, p.tof(), DELTA);

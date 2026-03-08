@@ -1,14 +1,17 @@
 package org.team100.lib.targeting;
 
+import java.util.Optional;
 import java.util.function.DoubleFunction;
 
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import org.team100.lib.util.InterpolatingMap100;
+import org.team100.lib.util.OptUtil;
+
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 
 /**
  * Lookup shooting parameters for a given target range
  */
-public class InverseRange implements DoubleFunction<FiringParameters> {
+public class InverseRange implements DoubleFunction<Optional<FiringParameters>> {
     private static final boolean DEBUG = false;
 
     /** Precomputation lower bound. */
@@ -22,7 +25,7 @@ public class InverseRange implements DoubleFunction<FiringParameters> {
      * key = distance in meters
      * value = solution
      */
-    private final InterpolatingTreeMap<Double, FiringParameters> m_map;
+    private final InterpolatingMap100<Double, FiringParameters> m_map;
 
     public InverseRange(
             Drag d,
@@ -35,7 +38,7 @@ public class InverseRange implements DoubleFunction<FiringParameters> {
         m_minElevation = minElevation;
         m_maxElevation = maxElevation;
         RangeSolver rangeSolver = new RangeSolver(d, targetHeight, minTargetElevation, 0.001);
-        m_map = new InterpolatingTreeMap<>(
+        m_map = new InterpolatingMap100<>(
                 InverseInterpolator.forDouble(), FiringParameters::interpolate);
         if (DEBUG)
             System.out.println("range, elevation, tof");
@@ -54,12 +57,12 @@ public class InverseRange implements DoubleFunction<FiringParameters> {
             m_map.put(solution.range(), params);
         }
         // Don't allow an empty map, it will fail later.
-        if (m_map.get(0.0) == null)
+        if (m_map.size() == 0)
             throw new IllegalArgumentException("no solutions");
     }
 
-    public FiringParameters apply(double range) {
+    public Optional<FiringParameters> apply(double range) {
         // sampling off the end of the range should be an error.
-        return m_map.get(range);
+        return OptUtil.emptyIfNull(m_map.get(range));
     }
 }

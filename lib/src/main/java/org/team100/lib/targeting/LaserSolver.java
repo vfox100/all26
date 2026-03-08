@@ -1,6 +1,7 @@
 package org.team100.lib.targeting;
 
 import java.util.Optional;
+import java.util.function.DoubleFunction;
 
 import org.team100.lib.geometry.GlobalVelocityR2;
 import org.team100.lib.state.ModelSE2;
@@ -13,24 +14,42 @@ import edu.wpi.first.math.geometry.Translation2d;
  * 
  * Azimuth is always the bearing.
  * Azimuth velocity is the apparent target motion.
- * Elevation is always zero.
+ * Elevation is specified by the parameters.
  */
 public class LaserSolver implements Solver {
+
+    private final DoubleFunction<Optional<FiringParameters>> m_rangeToParams;
+
+    public LaserSolver(DoubleFunction<Optional<FiringParameters>> rangeToParams) {
+        m_rangeToParams = rangeToParams;
+    }
 
     @Override
     public Optional<Solution> solve(
             ModelSE2 state,
             Translation2d targetPosition,
             GlobalVelocityR2 targetVelocity) {
+        final Translation2d robotPosition = state.translation();
+
+        // Target relative to robot
+        final Translation2d T0 = targetPosition.minus(robotPosition);
+        double rangeM = T0.getNorm();
+
+        Optional<FiringParameters> oParams = m_rangeToParams.apply(rangeM);
+        if (oParams.isEmpty())
+            return Optional.empty();
+        FiringParameters params = oParams.get();
+
         // Does not include target velocity in solution velocity.
         Rotation2d absoluteBearing = TargetUtil.absoluteBearing(
-                state.pose().getTranslation(), targetPosition);
+                robotPosition, targetPosition);
         double azimuthVelocity = TargetUtil.targetMotion(
                 state, targetPosition);
         return Optional.of(new Solution(
                 absoluteBearing,
                 azimuthVelocity,
-                Rotation2d.kZero));
+                params.speed(),
+                new Rotation2d(params.elevation())));
     }
 
 }

@@ -48,4 +48,8 @@ public class InterpolatingMap100<K, V> {
                         floorKey, ceilingKey, key));
 
     }
+
+    public double size() {
+        return m_map.size();
+    }
 }

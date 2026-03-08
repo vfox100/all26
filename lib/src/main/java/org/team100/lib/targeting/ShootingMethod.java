@@ -119,12 +119,12 @@ public class ShootingMethod implements Solver {
                 DX_LIMIT);
         try {
             Vector<N2> x = solver.solve2(initialX, 3, true);
-            // Vector<N2> x = solver.solve2(initialX, 3, true);
-            // use zero azimuth velocity for now.
-            // TODO: solve for that
+            // TODO: add azimuth velocity
+            // TODO: add drum velocity
             return Optional.of(
                     new Solution(
                             new Rotation2d(x.get(0)),
+                            0,
                             0,
                             new Rotation2d(x.get(1))));
         } catch (IllegalArgumentException ex) {

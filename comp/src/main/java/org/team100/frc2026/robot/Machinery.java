@@ -11,7 +11,7 @@ import org.team100.frc2026.Intake;
 import org.team100.frc2026.IntakeExtend;
 import org.team100.frc2026.Shooter;
 import org.team100.frc2026.ShooterHood;
-import org.team100.frc2026.Targeter;
+import org.team100.frc2026.targeting.Targeter;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.controller.se2.ControllerFactorySE2;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -77,6 +77,7 @@ public class Machinery {
     public final SwerveLimiter m_limiter;
     public final SwerveDriveSubsystem m_drive;
     public final Beeper m_beeper;
+    public final Targeter m_targeter;
     public final Shooter m_shooter;
     public final Intake m_intake;
     public final IntakeExtend m_intakeExtend;
@@ -169,15 +170,15 @@ public class Machinery {
         // SUBSYSTEMS
         //
 
-        Targeter targeter = new Targeter(() -> m_drive.getState().translation());
+        m_targeter = new Targeter(() -> m_drive.getState().translation());
 
         m_intake = new Intake(logger);
         m_intakeExtend = new IntakeExtend(logger);
 
         m_conveyor = new Conveyor(logger);
-        m_shooter = new Shooter(logger, targeter::speed);
+        m_shooter = new Shooter(logger, m_targeter::speed);
         m_feeder = new Feeder(logger, m_shooter);
-        m_shooterHood = new ShooterHood(logger, targeter::angle);
+        m_shooterHood = new ShooterHood(logger, m_targeter::angle);
 
         m_ClimberExtension = new ClimberExtension(logger);
         m_Climber = new Climber(logger);
