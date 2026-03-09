@@ -10,6 +10,7 @@ import org.team100.lib.logging.LoggerFactory.ModelR1Logger;
 import org.team100.lib.state.ModelR1;
 import org.team100.lib.state.ModelSE2;
 import org.team100.lib.targeting.TargetUtil;
+import org.team100.lib.util.Math100;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -22,8 +23,6 @@ import edu.wpi.first.math.geometry.Translation2d;
  * Does not account for relative target motion.
  */
 public class SimpleAim {
-    private static final boolean DEBUG = false;
-
     private final DoubleSupplier m_maxOmega;
     private final FeedbackR1 m_thetaController;
 
@@ -66,27 +65,13 @@ public class SimpleAim {
         m_log_apparent_motion.log(() -> azimuthVelocity);
 
         double unwrappedBearing = TargetUtil.unwrappedAbsoluteBearing(state.pose(), target);
-        if (DEBUG)
-            System.out.printf("unwrappedBearing %f\n", unwrappedBearing);
-        // eliminate target motion to reduce noise
-        // TODO: put back target motion
-        // ModelR1 goal = new ModelR1(unwrappedBearing, 0);
-        final ModelR1 goal = new ModelR1(unwrappedBearing, azimuthVelocity);
-        m_log_goal.log(() -> goal);
-        if (DEBUG)
-            System.out.printf("goal %s\n", goal);
 
-        // Feedforward is the goal velocity.
-        double thetaFF = goal.v();
-        m_log_thetaFF.log(() -> thetaFF);
-        if (DEBUG)
-            System.out.printf("thetaFF %f\n", thetaFF);
+        ModelR1 thetaGoal = new ModelR1(unwrappedBearing, azimuthVelocity);
 
-        // Feedback uses the goal, there's no profile.
-        double thetaFB = m_thetaController.calculate(state.theta(), goal);
-        m_log_thetaFB.log(() -> thetaFB);
-        if (DEBUG)
-            System.out.printf("thetaFB %f\n", thetaFB);
+
+        ModelR1 theta = state.theta();
+        double thetaFB = getThetaFB(theta, thetaGoal);
+        double thetaFF = getThetaFF(thetaGoal);
 
         Double omega = MathUtil.clamp(
                 thetaFF + thetaFB,
@@ -95,5 +80,30 @@ public class SimpleAim {
         m_log_omega.log(() -> omega);
         return omega;
     }
+
+    private double getThetaFB(ModelR1 theta, ModelR1 thetaGoal) {
+        // wrap correctly
+        double robotYaw = theta.x();
+        double goalYaw = Math100.getMinDistance(robotYaw, thetaGoal.x());
+        ModelR1 goal = new ModelR1(goalYaw, thetaGoal.v());
+        m_log_goal.log(() -> goal);
+        // compute feedback
+        double thetaFB = m_thetaController.calculate(theta, goal);
+        m_log_thetaFB.log(() -> thetaFB);
+        return thetaFB;
+    }
+
+    private double getThetaFF(ModelR1 thetaGoal) {
+        double thetaFF = thetaGoal.v();
+        m_log_thetaFF.log(() -> thetaFF);
+        return thetaFF;
+    }
+
+    /**
+     * @param state  robot state
+     * @param target azimuth
+     */
+    // public double getOmega(ModelSE2 state, ModelR1 target) {
+    // }
 
 }

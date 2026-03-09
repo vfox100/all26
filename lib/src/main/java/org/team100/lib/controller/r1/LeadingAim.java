@@ -23,15 +23,11 @@ public class LeadingAim {
     private final DoubleSupplier m_maxOmega;
     private final FeedbackR1 m_thetaController;
 
-    private final DoubleLogger m_log_apparent_motion;
+    private final ModelR1Logger m_log_thetaGoal;
     private final ModelR1Logger m_log_goal;
     private final DoubleLogger m_log_thetaFB;
     private final DoubleLogger m_log_thetaFF;
     private final DoubleLogger m_log_omega;
-
-    // feedback operates on the previous goal;
-    // feedforward should suffice for the next goal.
-    private ModelR1 m_goal;
 
     public LeadingAim(
             LoggerFactory parent,
@@ -42,54 +38,44 @@ public class LeadingAim {
         m_log_thetaFB = log.doubleLogger(Level.TRACE, "thetaFB");
         m_log_thetaFF = log.doubleLogger(Level.TRACE, "thetaFF");
         m_log_omega = log.doubleLogger(Level.TRACE, "omega");
-        m_log_apparent_motion = log.doubleLogger(Level.TRACE, "apparent motion");
+        m_log_thetaGoal = log.ModelR1Logger(Level.TRACE, "target");
         m_maxOmega = maxOmega;
         m_thetaController = thetaController;
     }
 
-    /** Sets goal to measurement, resets controller. */
-    public void reset(ModelSE2 state) {
-        m_goal = state.theta();
+    public void reset() {
         m_thetaController.reset();
     }
 
-    public Double getOmega(ModelSE2 state, ModelR1 target) {
-
-        double thetaFB = getThetaFB(state);
-        double thetaFF = getThetaFF(state, target);
-
+    public Double getOmega(ModelSE2 state, ModelR1 thetaGoal) {
+        m_log_thetaGoal.log(() -> thetaGoal);
+        ModelR1 theta = state.theta();
+        double thetaFB = getThetaFB(theta, thetaGoal);
+        double thetaFF = getThetaFF(thetaGoal);
         double omega = MathUtil.clamp(
                 thetaFF + thetaFB,
                 -m_maxOmega.getAsDouble(),
                 m_maxOmega.getAsDouble());
         m_log_omega.log(() -> omega);
-
         return omega;
-
     }
 
     /** Feedback uses the previous goal. */
-    private double getThetaFB(ModelSE2 state) {
-        double thetaFB = m_thetaController.calculate(state.theta(), m_goal);
+    private double getThetaFB(ModelR1 theta, ModelR1 thetaGoal) {
+        // wrap correctly
+        double robotYaw = theta.x();
+        double goalYaw = Math100.getMinDistance(robotYaw, thetaGoal.x());
+        ModelR1 goal = new ModelR1(goalYaw, thetaGoal.v());
+        m_log_goal.log(() -> goal);
+        // compute feedback
+        double thetaFB = m_thetaController.calculate(theta, goal);
         m_log_thetaFB.log(() -> thetaFB);
         return thetaFB;
     }
 
-    private double getThetaFF(ModelSE2 state, ModelR1 target) {
-
-        double robotYaw = state.pose().getRotation().getRadians();
-        double goalYaw = Math100.getMinDistance(robotYaw, target.x());
-        // m_goal = new ModelR1(goalYaw, 0);
-        double azimuthVelocity = target.v();
-        m_log_apparent_motion.log(() -> azimuthVelocity);
-
-        // Assign the new goal
-        m_goal = new ModelR1(goalYaw, azimuthVelocity);
-        m_log_goal.log(() -> m_goal);
-
-        double thetaFF = m_goal.v();
+    private double getThetaFF(ModelR1 thetaGoal) {
+        double thetaFF = thetaGoal.v();
         m_log_thetaFF.log(() -> thetaFF);
-
         return thetaFF;
     }
 
