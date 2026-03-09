@@ -84,16 +84,16 @@ public class DriveTargetLockDirect extends Command {
 
     @Override
     public void execute() {
-        Optional<Translation2d> oTarget = m_target.get();
-         if (oTarget.isEmpty()) {
-            // No target.
-            actuate(null);
-            return;
-        }
+        actuate(getOmega());
+    }
 
-        Double omega = m_aim.getOmega(m_drive.getState(), oTarget.get());
-        m_log_aiming.log(() -> omega != null);
-        actuate(omega);
+    private Double getOmega() {
+        Optional<Translation2d> oTarget = m_target.get();
+        if (oTarget.isEmpty()) {
+            // No target, so use the driver input.
+            return null;
+        }
+        return m_aim.getOmega(m_drive.getState(), oTarget.get());
     }
 
     private void actuate(Double omega) {
@@ -112,6 +112,7 @@ public class DriveTargetLockDirect extends Command {
         }
 
         // Override omega.
+        m_log_aiming.log(() -> omega != null);
         if (omega != null) {
             v = new VelocitySE2(v.x(), v.y(), omega);
         }

@@ -21,6 +21,7 @@ public class SimpleAimTest {
         Mutable.unpublishAll();
         FeedbackR1 feedback = new FullStateFeedback(log, 1, 0.01, false, 1, 1);
         SimpleAim aim = new SimpleAim(field, log, () -> 5.0, feedback);
+        aim.reset();
         // on target
         assertEquals(0, aim.getOmega(new ModelSE2(), new Translation2d(1, 0)), DELTA);
         // steer left

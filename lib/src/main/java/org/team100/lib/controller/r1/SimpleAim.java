@@ -54,7 +54,7 @@ public class SimpleAim {
         m_thetaController.reset();
     }
 
-    public Double getOmega(ModelSE2 state, Translation2d target) {
+    public double getOmega(ModelSE2 state, Translation2d target) {
         // Show the target.
         m_log_target.log(() -> new double[] {
                 target.getX(),
