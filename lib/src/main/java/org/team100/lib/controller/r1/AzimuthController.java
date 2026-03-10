@@ -7,7 +7,6 @@ import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.logging.LoggerFactory.ModelR1Logger;
 import org.team100.lib.state.ModelR1;
-import org.team100.lib.state.ModelSE2;
 import org.team100.lib.util.Math100;
 
 import edu.wpi.first.math.MathUtil;
@@ -19,7 +18,7 @@ import edu.wpi.first.math.MathUtil;
  * 
  * Leads relative target motion.
  */
-public class LeadingAim {
+public class AzimuthController {
     private final DoubleSupplier m_maxOmega;
     private final FeedbackR1 m_thetaController;
 
@@ -29,7 +28,7 @@ public class LeadingAim {
     private final DoubleLogger m_log_thetaFF;
     private final DoubleLogger m_log_omega;
 
-    public LeadingAim(
+    public AzimuthController(
             LoggerFactory parent,
             DoubleSupplier maxOmega,
             FeedbackR1 thetaController) {
@@ -47,10 +46,9 @@ public class LeadingAim {
         m_thetaController.reset();
     }
 
-    public Double getOmega(ModelSE2 state, ModelR1 thetaGoal) {
+    public Double getOmega(ModelR1 thetaMeasurement, ModelR1 thetaGoal) {
         m_log_thetaGoal.log(() -> thetaGoal);
-        ModelR1 theta = state.theta();
-        double thetaFB = getThetaFB(theta, thetaGoal);
+        double thetaFB = getThetaFB(thetaMeasurement, thetaGoal);
         double thetaFF = getThetaFF(thetaGoal);
         double omega = MathUtil.clamp(
                 thetaFF + thetaFB,
@@ -61,14 +59,14 @@ public class LeadingAim {
     }
 
     /** Feedback uses the previous goal. */
-    private double getThetaFB(ModelR1 theta, ModelR1 thetaGoal) {
+    private double getThetaFB(ModelR1 thetaMeasurement, ModelR1 thetaGoal) {
         // wrap correctly
-        double robotYaw = theta.x();
+        double robotYaw = thetaMeasurement.x();
         double goalYaw = Math100.getMinDistance(robotYaw, thetaGoal.x());
         ModelR1 goal = new ModelR1(goalYaw, thetaGoal.v());
         m_log_goal.log(() -> goal);
         // compute feedback
-        double thetaFB = m_thetaController.calculate(theta, goal);
+        double thetaFB = m_thetaController.calculate(thetaMeasurement, goal);
         m_log_thetaFB.log(() -> thetaFB);
         return thetaFB;
     }
