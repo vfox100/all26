@@ -57,11 +57,11 @@ public class ShooterHood extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
                 double supplyLimit = 50;
-                double statorLimit = 20;
+                double statorLimit = 50;
                 // SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
                 SimpleDynamics ff = new SimpleDynamics(log, 0.00, 0.00);
 
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
+                Friction friction = new Friction(log, 0.350, 0.350, 0.0, 0.5);
                 // TODO: TUNE
                 // PIDConstants pid = PIDConstants.makePositionPID(log, 1);
                 PIDConstants pid = PIDConstants.makePositionPID(log, 0);
@@ -140,6 +140,16 @@ public class ShooterHood extends SubsystemBase {
 
     public boolean onTarget() {
         return m_servo.atGoal();
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo.setVelocity(x);
+                })
+                .withName("set velocity");
     }
 
     /////////////////////////////////////////

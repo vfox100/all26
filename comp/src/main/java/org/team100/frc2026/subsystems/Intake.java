@@ -52,10 +52,12 @@ public class Intake extends SubsystemBase {
                 double supplyLimit = 50;
                 // TODO: TUNE
                 double statorLimit = 50;
-                SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
+                SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
+                // friction test 3/12/262
+                Friction friction = new Friction(log, 0.5, 0.5, 0.0, 0.5);
                 // TODO: TUNE
-                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
+                // PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
+                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0);
                 m1 = new KrakenX44Motor(
                         log1, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
                         supplyLimit, statorLimit, ff, friction, pid);
@@ -101,6 +103,17 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         m_servo1.periodic();
         m_servo2.periodic();
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo1.setVelocityDirect(x);
+                    m_servo2.setVelocityDirect(x);
+                })
+                .withName("set velocity");
     }
 
     ////////////////////////////////

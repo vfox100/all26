@@ -42,6 +42,7 @@ public class KrakenX60Motor extends Talon6Motor {
 
     @Override
     public double kFreeSpeedRPM() {
+        // return Double.MAX_VALUE;
         return 5800;
     }
 }

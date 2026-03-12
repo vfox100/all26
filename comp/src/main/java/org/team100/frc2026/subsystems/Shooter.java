@@ -72,9 +72,8 @@ public class Shooter extends SubsystemBase {
                 double statorLimit = 80;
                 // SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
                 SimpleDynamics ff = new SimpleDynamics(log, 0.000, 0.000);
-
-                // TODO: TUNE
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
+                // friction test 3/12/262
+                Friction friction = new Friction(log, 0.3, 0.25, 0.0, 0.5);
                 // TODO: TUNE
                 // PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.0);
@@ -173,6 +172,18 @@ public class Shooter extends SubsystemBase {
 
     public Boolean atSpeed() {
         return (m_servo1.atGoal() && m_servo2.atGoal() && m_servo3.atGoal());
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo1.setVelocityDirect(x);
+                    m_servo2.setVelocityDirect(x);
+                    m_servo3.setVelocityDirect(x);
+                })
+                .withName("set velocity");
     }
 
     /////////////////////////////////////////////

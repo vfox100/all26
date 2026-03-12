@@ -182,6 +182,12 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
         actuateWithProfile(unwrappedGoalX, torqueNm);
     }
 
+    /** For setting friction only */
+    @Override
+    public void setVelocity(double v) {
+        m_mechanism.setVelocity(v, 0, 0);
+    }
+
     @Override
     public void play(double freq) {
         m_mechanism.play(freq);

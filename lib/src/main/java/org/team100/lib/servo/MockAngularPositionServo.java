@@ -80,4 +80,8 @@ public class MockAngularPositionServo implements AngularPositionServo {
     public void actuateDirect(double unwrappedSetpoint, double torqueNm) {
     }
 
+    @Override
+    public void setVelocity(double v) {
+    }
+
 }

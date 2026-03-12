@@ -41,9 +41,11 @@ public class IntakeExtend extends SubsystemBase {
                 double supplyLimit = 4;
                 double statorLimit = 80;
                 SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
+                // friction test 3/12/262
+                Friction friction = new Friction(log, 0.32, 0.32, 0.0, 0.5);
                 // TODO: TUNE
-                PIDConstants pid = PIDConstants.makePositionPID(log, 2);
+                // PIDConstants pid = PIDConstants.makePositionPID(log, 2);
+                PIDConstants pid = PIDConstants.makePositionPID(log, 0);
                 motor = new KrakenX44Motor(
                         log, CAN_ID,
                         NeutralMode100.COAST, MotorPhase.REVERSE,
@@ -129,6 +131,14 @@ public class IntakeExtend extends SubsystemBase {
                 () -> actuateWithProfile(1.75))
                 .until(m_servo::atGoal)
                 .withName("Intake Extend GoToWobbleRetractedPosition");
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> m_servo.setVelocity(x))
+                .withName("set velocity");
     }
 
     /////////////////////////////////////////

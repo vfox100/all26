@@ -48,14 +48,14 @@ public class Feeder extends SubsystemBase {
             case TEST_BOARD_B0, COMP_BOT -> {
                 double supplyLimit = 120;
                 // TODO: TUNE
-                double statorLimit = 120;
-                //SimpleDynamics dynamics = new SimpleDynamics(log, 0.004, 0.002);
-                                SimpleDynamics dynamics = new SimpleDynamics(log, 0.00, 0.00);
-
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
+                double statorLimit = 60;
+                // SimpleDynamics dynamics = new SimpleDynamics(log, 0.004, 0.002);
+                SimpleDynamics dynamics = new SimpleDynamics(log, 0.00, 0.00);
+                // friction test 3/12/262
+                Friction friction = new Friction(log, 0.9, 0.9, 0.0, 0.5);
                 // TODO: TUNE
-                //PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
-                                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.0);
+                // PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
+                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.0);
 
                 m1 = new KrakenX44Motor(
                         log1, canID1, NeutralMode100.COAST, MotorPhase.FORWARD,
@@ -117,6 +117,17 @@ public class Feeder extends SubsystemBase {
     public Command stopOnce() {
         return runOnce(this::stopMotor)
                 .withName("Stop Feeder Once");
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo1.setVelocityDirect(x);
+                    m_servo2.setVelocityDirect(x);
+                })
+                .withName("set velocity");
     }
 
     ///////////////////////////////////////////////////////
