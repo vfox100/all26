@@ -43,7 +43,7 @@ public class IntakeExtend extends SubsystemBase {
                 SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
                 Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
                 // TODO: TUNE
-                PIDConstants pid = PIDConstants.makePositionPID(log, 1);
+                PIDConstants pid = PIDConstants.makePositionPID(log, 2);
                 motor = new KrakenX44Motor(
                         log, CAN_ID,
                         NeutralMode100.COAST, MotorPhase.REVERSE,
