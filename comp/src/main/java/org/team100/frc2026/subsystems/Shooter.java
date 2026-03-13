@@ -112,7 +112,7 @@ public class Shooter extends SubsystemBase {
     public Command tune() {
         return startRun(
                 this::reset,
-                () -> setVelocityDirect(m_tuningSetting.getAsDouble()))
+                () -> setVelocityProfiled(m_tuningSetting.getAsDouble()))
                 .withName("Tune Shooter");
     }
 

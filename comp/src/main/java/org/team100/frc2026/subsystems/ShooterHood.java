@@ -120,7 +120,7 @@ public class ShooterHood extends SubsystemBase {
     public Command tune() {
         return startRun(
                 this::reset,
-                () -> actuateDirect(
+                () -> actuateWithProfile(
                         m_tuningSetting.getAsDouble()))
                 .withName("Tune Hood");
     }
