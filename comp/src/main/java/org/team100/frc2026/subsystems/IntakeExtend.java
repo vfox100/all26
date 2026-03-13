@@ -33,16 +33,17 @@ public class IntakeExtend extends SubsystemBase {
 
     public IntakeExtend(LoggerFactory parent) {
         LoggerFactory log = parent.type(this);
-        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 16, 32, 0.05);
-        ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
+        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 16, 32, 0.1);
+        ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.1, 0.05);
         final BareMotor motor;
         switch (Identity.instance) {
             case COMP_BOT -> {
-                double supplyLimit = 4;
+                double supplyLimit = 80;
                 double statorLimit = 80;
                 SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
-                // TODO: TUNE
+                // friction test 3/12/26
+                Friction friction = new Friction(log, 0.32, 0.32, 0.0, 0.5);
+                // tuned 3/12/26
                 PIDConstants pid = PIDConstants.makePositionPID(log, 2);
                 motor = new KrakenX44Motor(
                         log, CAN_ID,
@@ -129,6 +130,23 @@ public class IntakeExtend extends SubsystemBase {
                 () -> actuateWithProfile(1.75))
                 .until(m_servo::atGoal)
                 .withName("Intake Extend GoToWobbleRetractedPosition");
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double rad_S) {
+        return startRun(
+                this::reset,
+                () -> m_servo.setVelocity(rad_S))
+                .withName("set velocity");
+    }
+
+    public Command setPosition(double rad) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo.actuateWithProfile(rad, 0);
+                })
+                .withName("set position");
     }
 
     /////////////////////////////////////////

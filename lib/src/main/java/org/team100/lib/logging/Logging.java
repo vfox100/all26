@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * If you use this logger you'll want to set the log level.
  */
 public class Logging {
-    private static final Level DEFAULT_LEVEL = Level.TRACE;
+    private static final Level DEFAULT_LEVEL = Level.DEBUG;
 
     private PrimitiveLogger ntLogger;
 

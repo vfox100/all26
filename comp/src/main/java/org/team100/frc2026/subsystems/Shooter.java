@@ -29,9 +29,10 @@ public class Shooter extends SubsystemBase {
     private static final CanId CAN_ID_2 = new CanId(5);
     private static final CanId CAN_ID_3 = new CanId(14);
     private static final double TOLERANCE_M_S = 1;
-    // TODO: TUNE
-    // gear ratios are not all the same
+
     private static final double GEAR_RATIO = 1;
+    // barrel 1 has a different gear ratio
+    private static final double GEAR_RATIO_1 = 32.0/34.0;
     private static final double WHEEL_DIAMETER_M = 0.075;
 
     /** Speed used in selftest. */
@@ -58,8 +59,9 @@ public class Shooter extends SubsystemBase {
         m_tuningSetting = new Mutable(log, "for tuning", 0);
         TEST_SPEED = new Mutable(log, "Shooter test speed", 15);
 
+        // tuned 3/12/26
         VelocityProfileR1 profile = new CurrentLimitedExponentialVelocityProfileR1(
-                10, 10, 20, 30);
+                20, 20, 40, 60);
         VelocityReferenceR1 ref = new VelocityProfileReferenceR1(
                 log, () -> profile, 1);
         final BareMotor m1;
@@ -68,16 +70,12 @@ public class Shooter extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
                 double supplyLimit = 120;
-                // TODO: TUNE
                 double statorLimit = 80;
-                // SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
                 SimpleDynamics ff = new SimpleDynamics(log, 0.000, 0.000);
-
-                // TODO: TUNE
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
-                // TODO: TUNE
-                // PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
-                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.0);
+                // friction test 3/12/262
+                Friction friction = new Friction(log, 0.3, 0.25, 0.0, 0.5);
+                // tuned 3/12/26
+                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.075);
 
                 m1 = new KrakenX60Motor(
                         log1, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
@@ -95,8 +93,9 @@ public class Shooter extends SubsystemBase {
                 m3 = new SimulatedBareMotor(log3, 600);
             }
         }
+        // note different gear ratio
         m_servo1 = OutboardLinearVelocityServo.make(
-                log1, m1, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log1, m1, ref, GEAR_RATIO_1, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo2 = OutboardLinearVelocityServo.make(
                 log2, m2, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo3 = OutboardLinearVelocityServo.make(
@@ -113,7 +112,7 @@ public class Shooter extends SubsystemBase {
     public Command tune() {
         return startRun(
                 this::reset,
-                () -> setVelocityDirect(m_tuningSetting.getAsDouble()))
+                () -> setVelocityProfiled(m_tuningSetting.getAsDouble()))
                 .withName("Tune Shooter");
     }
 
@@ -173,6 +172,18 @@ public class Shooter extends SubsystemBase {
 
     public Boolean atSpeed() {
         return (m_servo1.atGoal() && m_servo2.atGoal() && m_servo3.atGoal());
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo1.setVelocityProfiled(x);
+                    m_servo2.setVelocityProfiled(x);
+                    m_servo3.setVelocityProfiled(x);
+                })
+                .withName("set velocity");
     }
 
     /////////////////////////////////////////////

@@ -171,6 +171,8 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
     @Override
     public boolean atSetpoint() {
         // Note x field for velocity.
+        if (m_nextSetpoint == null)
+            return false;
         double vErr = m_nextSetpoint.v() - m_mechanism.getVelocityM_S();
         return Math.abs(vErr) < m_toleranceM_S;
     }

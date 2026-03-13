@@ -30,11 +30,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 public class ShooterHood extends SubsystemBase {
     private static final CanId CAN_ID = new CanId(13);
-    // TODO: TUNE
-    private static final double GEAR_RATIO = 10;
+    // from Yotaro 3/12/26
+    private static final double GEAR_RATIO = 270;
     private static final double MIN_POSITION_RAD = 0;
-    // TODO: TUNE
-    private static final double MAX_POSITION_RAD = 1;
+    // max extension is 0.5 3/12/26
+    private static final double MAX_POSITION_RAD = 0.45;
 
     private final Supplier<OptionalDouble> m_angle;
     private final AngularPositionServo m_servo;
@@ -50,21 +50,18 @@ public class ShooterHood extends SubsystemBase {
         m_tuningSetting = new Mutable(log, "for tuning", 0);
 
         // TODO: TUNE
-        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 1, 2, 0.05);
+        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 8, 16, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
 
         final BareMotor motor;
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
                 double supplyLimit = 50;
-                double statorLimit = 20;
-                // SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
+                double statorLimit = 50;
                 SimpleDynamics ff = new SimpleDynamics(log, 0.00, 0.00);
-
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
-                // TODO: TUNE
-                // PIDConstants pid = PIDConstants.makePositionPID(log, 1);
-                PIDConstants pid = PIDConstants.makePositionPID(log, 0);
+                Friction friction = new Friction(log, 0.350, 0.350, 0.0, 0.5);
+                // tuned 3/12/26
+                PIDConstants pid = PIDConstants.makePositionPID(log, 1.0);
 
                 motor = new KrakenX44Motor(
                         log, CAN_ID, NeutralMode100.COAST, MotorPhase.REVERSE,
@@ -123,7 +120,7 @@ public class ShooterHood extends SubsystemBase {
     public Command tune() {
         return startRun(
                 this::reset,
-                () -> actuateDirect(
+                () -> actuateWithProfile(
                         m_tuningSetting.getAsDouble()))
                 .withName("Tune Hood");
     }
@@ -140,6 +137,25 @@ public class ShooterHood extends SubsystemBase {
 
     public boolean onTarget() {
         return m_servo.atGoal();
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo.setVelocity(x);
+                })
+                .withName("set velocity");
+    }
+
+    public Command setPosition(double rad) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo.actuateWithProfile(rad, 0);
+                })
+                .withName("set position");
     }
 
     /////////////////////////////////////////

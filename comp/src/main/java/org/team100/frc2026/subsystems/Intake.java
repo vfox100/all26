@@ -37,10 +37,7 @@ public class Intake extends SubsystemBase {
         LoggerFactory log = parent.type(this);
         LoggerFactory log1 = log.name("motor1");
         LoggerFactory log2 = log.name("motor2");
-        // TODO: TUNE
-        // this was "7" but was really "8.5"???
         NORMAL_SPEED = new Mutable(log, "Intake Speed", 7);
-        // TODO: TUNE
         VelocityProfileR1 profile = new CurrentLimitedExponentialVelocityProfileR1(
                 10, 10, 20, 30);
         VelocityReferenceR1 ref = new VelocityProfileReferenceR1(
@@ -50,12 +47,12 @@ public class Intake extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
                 double supplyLimit = 50;
-                // TODO: TUNE
-                double statorLimit = 50;
-                SimpleDynamics ff = new SimpleDynamics(log, 0.004, 0.002);
-                Friction friction = new Friction(log, 0.26, 0.26, 0.006, 0.5);
-                // TODO: TUNE
-                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
+                double statorLimit = 80;
+                SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
+                // friction test 3/12/26
+                Friction friction = new Friction(log, 0.5, 0.5, 0.0, 0.5);
+                // tuned 3/12/26
+                PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.08);
                 m1 = new KrakenX44Motor(
                         log1, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
                         supplyLimit, statorLimit, ff, friction, pid);
@@ -101,6 +98,17 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         m_servo1.periodic();
         m_servo2.periodic();
+    }
+
+    /** For testing friction only */
+    public Command setVelocity(double x) {
+        return startRun(
+                this::reset,
+                () -> {
+                    m_servo1.setVelocityProfiled(x);
+                    m_servo2.setVelocityProfiled(x);
+                })
+                .withName("set velocity");
     }
 
     ////////////////////////////////

@@ -129,6 +129,8 @@ public class LoggerFactory {
         BooleanLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.booleanLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log(false);
         }
 
         public void log(BooleanSupplier vals) {
@@ -150,6 +152,8 @@ public class LoggerFactory {
         DoubleLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.doubleLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log(0);
         }
 
         public void log(DoubleSupplier vals) {
@@ -179,6 +183,8 @@ public class LoggerFactory {
         IntLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.intLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log(0);
         }
 
         public void log(IntSupplier vals) {
@@ -221,6 +227,8 @@ public class LoggerFactory {
         LongLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.longLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log(0);
         }
 
         public void log(LongSupplier vals) {
@@ -247,6 +255,8 @@ public class LoggerFactory {
         StringLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.stringLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log("");
         }
 
         public void log(Supplier<String> vals) {
@@ -268,6 +278,8 @@ public class LoggerFactory {
         OptionalDoubleLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.doubleLogger(root(leaf));
+            // publish a value so we can see it in glass
+            m_primitiveLogger.log(0);
         }
 
         public void log(Supplier<OptionalDouble> vals) {
