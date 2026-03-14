@@ -16,6 +16,8 @@ import org.team100.lib.logging.Logging;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveFieldRelative;
 import org.team100.lib.subsystems.swerve.commands.manual.DriveMovingTargetLock;
 
+import edu.wpi.first.wpilibj.RobotState;
+
 /**
  * Binds buttons to commands. Also creates default commands.
  * 
@@ -221,10 +223,10 @@ public class Binder {
         ///
         /// In test mode, "a" and "b" together runs prematch test.
 
-        // Tester tester = new Tester(m_machinery);
-        // onTrue(() -> RobotState.isTest(), tester.prompt());
-        // whileTrue(() -> (RobotState.isTest() && driver.a() && driver.b()),
-        // tester.prematch());
+        Tester tester = new Tester(m_machinery);
+        onTrue(() -> RobotState.isTest(), tester.prompt());
+        whileTrue(() -> (RobotState.isTest() && driver.a() && driver.b()),
+        tester.prematch());
     }
 
     /** Keeps tests from conflicting. */
