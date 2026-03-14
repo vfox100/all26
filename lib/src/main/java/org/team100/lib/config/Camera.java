@@ -93,7 +93,7 @@ public enum Camera {
      */
     CLIMB_LEFT("82c4c3fe4f941e96",
             new Transform3d()),
-            
+
     /**
      * ALPHA Climber Camera Right
      */
@@ -104,7 +104,9 @@ public enum Camera {
      * ALPHA Shooter Camera
      */
     SHOOTER("e47055a1bcbcead0",
-            new Transform3d()),
+            fromCalibration(
+                    new Transform3d(0.820, 0.112, 0.432, new Rotation3d(0, 0, 0)),
+                    new Transform3d(0.551, -0.123, -0.142, new Rotation3d(0.004, 0.714, 0.016)))),
 
     /**
      * For prototyping
