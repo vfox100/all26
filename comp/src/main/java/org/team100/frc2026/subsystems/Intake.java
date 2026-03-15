@@ -90,7 +90,7 @@ public class Intake extends SubsystemBase {
     public Command back() {
         return startRun(
                 this::reset,
-                () -> setVelocity(-5))
+                () -> setVelocityProfiled(-5))
                 .withName("Intake back");
     }
 

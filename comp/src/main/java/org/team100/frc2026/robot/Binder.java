@@ -57,7 +57,7 @@ public class Binder {
         m_machinery.m_intake.setDefaultCommand(
                 m_machinery.m_intake.stop());
         m_machinery.m_intakeExtend.setDefaultCommand(
-                m_machinery.m_intakeExtend.stop());
+                m_machinery.m_intakeExtend.goToRetractedPosition());
         m_machinery.m_conveyor.setDefaultCommand(
                 m_machinery.m_conveyor.stop());
         m_machinery.m_shooter.setDefaultCommand(
