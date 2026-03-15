@@ -82,7 +82,7 @@ public class CenterFullSweepAuton implements AnnotatedCommand {
                         new DirectionSE2(1, 1, 0), 1));
         return planner.restToRest(waypoints);
     }
-    
+
     TrajectorySE2 t2(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
@@ -120,28 +120,27 @@ public class CenterFullSweepAuton implements AnnotatedCommand {
         // Intake, score, climb.
         return sequence(
                 parallel(
-                        IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(3.5),
+                        IntakeSetUp.until(IntakeSetUp::isDone), // .withTimeout(3.5),
                         // Assumed that the intake shouldn't deploy while going over the bump
                         waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())),
-                waitSeconds(1),
 
                 parallel(
                         IntakeBalls,
                         machinery.m_intake.intake()).until(IntakeBalls::isDone),
-                machinery.m_intake.stop().withTimeout(1),
-                waitSeconds(1),
+                machinery.m_intake.stopOnce(),
 
                 ScoreSetUp.until(ScoreSetUp::isDone),
                 parallel(
                         machinery.m_conveyor.convey(),
                         machinery.m_feeder.proportional(),
                         machinery.m_shooterHood.autoPosition(),
-                        machinery.m_shooter.auto()),
-                // .withTimeout(1),
-                // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
-                // machinery.m_shooter.auto().withTimeout(1),
-                waitSeconds(5),
-                machinery.m_shooter.stop().withTimeout(1));
+                        machinery.m_shooter.auto())// ,
+        // .withTimeout(1),
+        // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
+        // machinery.m_shooter.auto().withTimeout(1),
+        // waitSeconds(5),
+        // machinery.m_shooter.stop().withTimeout(1)
+        );
     }
 
     @Override
