@@ -25,7 +25,8 @@ public class AllAutons {
         ControllerSE2 controller = machinery.m_holonomicController;
         m_autonChooser = new AutonChooser();
         LoggerFactory log = Logging.instance().rootLogger.name("Auton");
-      //  m_autonChooser.add(new DoNothing());
+       m_autonChooser.add(new JustShoot(machinery));
+       m_autonChooser.add(new DoNothing());
       //  m_autonChooser.add(new RightTrenchLeave(
       //          log,
       //          machinery.m_swerveKinodynamics,
