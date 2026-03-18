@@ -4,6 +4,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -90,6 +91,11 @@ public class LeftSequenceExample implements AnnotatedCommand {
     @Override
     public Pose2d start() {
         return StartingPositions.LEFT_TRENCH;
+    }
+
+        @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2);
     }
 
 }

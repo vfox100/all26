@@ -1,6 +1,7 @@
 package org.team100.frc2026.auton;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -55,7 +56,7 @@ public class RightTrenchLeave implements AnnotatedCommand {
         return "Right Trench Leave";
     }
 
-    TrajectorySE2 trajectory(Pose2d startingPose) {
+    TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(
                         startingPose,
@@ -75,12 +76,17 @@ public class RightTrenchLeave implements AnnotatedCommand {
                 machinery.m_drive,
                 controller,
                 machinery.m_trajectoryViz,
-                this::trajectory);
+                this::t1);
         return navigator.until(navigator::isDone);
     }
 
     @Override
     public Pose2d start() {
         return StartingPositions.RIGHT_TRENCH;
+    }
+
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1);
     }
 }

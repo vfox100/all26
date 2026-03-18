@@ -206,6 +206,8 @@ public class LoggerFactory {
         DoubleArrayLogger(Level level, String leaf) {
             m_level = level;
             m_primitiveLogger = m_pLogger.doubleArrayLogger(root(leaf));
+            // publish an empty value so we can see it in glass
+            m_primitiveLogger.log(new double[0]);
         }
 
         public void log(Supplier<double[]> vals) {

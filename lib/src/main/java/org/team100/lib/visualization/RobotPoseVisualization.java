@@ -30,9 +30,6 @@ public class RobotPoseVisualization implements Runnable {
 
     private double[] poseArray() {
         Pose2d pose = m_pose.get();
-        return new double[] {
-                pose.getX(),
-                pose.getY(),
-                pose.getRotation().getDegrees() };
+        return VizUtil.poseToArray(pose);
     }
 }
