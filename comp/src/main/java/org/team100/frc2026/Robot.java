@@ -12,6 +12,8 @@ import org.team100.lib.experiments.Experiments;
 import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.indicator.Alerts;
 import org.team100.lib.indicator.AutonAlerts;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.Logging;
 import org.team100.lib.logging.RobotLog;
 import org.team100.lib.network.Sync;
 import org.team100.lib.util.Banner;
@@ -65,7 +67,10 @@ public class Robot extends TimedRobot100 {
 
         m_allAutons = new AllAutons(m_machinery);
         m_alerts = new Alerts();
+
+        LoggerFactory fieldLogger = Logging.instance().fieldLogger;
         m_autonAlerts = new AutonAlerts(
+                fieldLogger,
                 m_allAutons::getAnnotated,
                 m_alerts,
                 m_machinery.m_drive::getPose,
@@ -132,6 +137,16 @@ public class Robot extends TimedRobot100 {
         m_binder.close();
     }
 
+    //////////////////////////////////////////////////////////////////////
+    //
+    // EXIT: CLEAN UP
+    //
+
+    @Override
+    public void disabledExit() {
+        m_autonAlerts.clear();
+    }
+
     ///////////////////////////////////////////////////////////////////////
     //
     // LEAVE ALL THESE EMPTY
@@ -163,6 +178,18 @@ public class Robot extends TimedRobot100 {
 
     @Override
     public void testPeriodic() {
+    }
+
+    @Override
+    public void autonomousExit() {
+    }
+
+    @Override
+    public void teleopExit() {
+    }
+
+    @Override
+    public void testExit() {
     }
 
 }

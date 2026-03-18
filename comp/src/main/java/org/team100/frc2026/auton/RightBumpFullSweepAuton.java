@@ -6,6 +6,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -46,15 +47,19 @@ public class RightBumpFullSweepAuton implements AnnotatedCommand {
         this.controller = controller;
         this.machinery = machinery;
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
-       // In meters/second
+        // In meters/second
         double maxBumpVelocity = 2;
         List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
-         
+
         // create a new VelocityRegionContstraint `slow_bump_zone`
-        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
         new_constraints.add(slow_bump_zone);
         new_constraints.add(slow_bump_zone2);
         new_constraints.add(slow_bump_zone3);
@@ -111,18 +116,17 @@ public class RightBumpFullSweepAuton implements AnnotatedCommand {
                 log, machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t3);
 
-        // Intake, score       
+        // Intake, score
         return sequence(
                 parallel(
-                IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(4),
-                // Assumed that the intake shouldn't deploy over the bump
-                waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())), 
+                        IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(4),
+                        // Assumed that the intake shouldn't deploy over the bump
+                        waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())),
                 waitSeconds(1),
 
                 parallel(
-                    IntakeBalls,
-                    machinery.m_intake.intake()
-                ).until(IntakeBalls::isDone),
+                        IntakeBalls,
+                        machinery.m_intake.intake()).until(IntakeBalls::isDone),
                 // Without telling it to, the intake would only stop spinning
                 // at the end of the auton. Without the timeout, the robot
                 // would not continue the rest of the auton
@@ -140,11 +144,15 @@ public class RightBumpFullSweepAuton implements AnnotatedCommand {
                 // machinery.m_shooter.auto().withTimeout(1),
                 waitSeconds(5),
                 machinery.m_shooter.stop().withTimeout(1));
-            }
+    }
 
     @Override
     public Pose2d start() {
         return StartingPositions.RIGHT_BUMP;
     }
 
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2, this::t3);
+    }
 }

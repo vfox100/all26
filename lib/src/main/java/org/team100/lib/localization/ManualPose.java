@@ -11,6 +11,7 @@ import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleArrayLogger;
 import org.team100.lib.state.ModelSE2;
+import org.team100.lib.visualization.VizUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -57,10 +58,7 @@ public class ManualPose {
 
     private double[] poseArray() {
         Pose2d pose = getPose();
-        return new double[] {
-                pose.getX(),
-                pose.getY(),
-                pose.getRotation().getDegrees() };
+        return VizUtil.poseToArray(pose);
     }
 
     private ModelSE2 update() {

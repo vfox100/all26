@@ -7,6 +7,8 @@ import org.team100.lib.config.AnnotatedCommand;
 import org.team100.lib.experiments.Experiment;
 import org.team100.lib.experiments.Experiments;
 import org.team100.lib.geometry.DeltaSE2;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.visualization.AutonVisualization;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Alert;
@@ -15,7 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 
-public class AutonAlerts implements Runnable {
+public class AutonAlerts {
     private static final String START_MISSING = "Starting position MISSING!!";
     private final Supplier<AnnotatedCommand> m_autons;
     private final Supplier<Pose2d> m_robotPose;
@@ -23,8 +25,10 @@ public class AutonAlerts implements Runnable {
     private final Alert m_noStartingPosition;
     private final Alert m_startingPositionOk;
     private final Alert m_mismatchedAlliance;
+    private final AutonVisualization m_viz;
 
     public AutonAlerts(
+            LoggerFactory fieldLogger,
             Supplier<AnnotatedCommand> autons,
             Alerts alerts,
             Supplier<Pose2d> robotPose,
@@ -35,12 +39,24 @@ public class AutonAlerts implements Runnable {
         m_noStartingPosition = alerts.add(START_MISSING, AlertType.kWarning);
         m_startingPositionOk = alerts.add("Starting position OK", AlertType.kInfo);
         m_mismatchedAlliance = alerts.add("Wrong Alliance!", AlertType.kWarning);
+        m_viz = new AutonVisualization(fieldLogger);
     }
 
-    @Override
     public void run() {
         checkStart();
         checkAlliance();
+        viz();
+    }
+
+    public void clear() {
+        m_viz.clear();
+    }
+
+    private void viz() {
+        AnnotatedCommand cmd = m_autons.get();
+        if (cmd == null)
+            return;
+        m_viz.show(cmd);
     }
 
     private void checkStart() {

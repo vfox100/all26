@@ -25,6 +25,7 @@ import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModulePositions;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleStates;
 import org.team100.lib.uncertainty.IsotropicNoiseSE2;
+import org.team100.lib.visualization.VizUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -161,11 +162,7 @@ public class SwerveDriveSubsystem extends SubsystemBase implements VelocitySubsy
     }
 
     private double[] poseArray() {
-        return new double[] {
-                getPose().getX(),
-                getPose().getY(),
-                getPose().getRotation().getDegrees()
-        };
+        return VizUtil.poseToArray(getPose());
     }
 
     public void close() {

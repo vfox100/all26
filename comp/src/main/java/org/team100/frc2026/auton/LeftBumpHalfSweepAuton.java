@@ -6,6 +6,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -123,9 +124,9 @@ public class LeftBumpHalfSweepAuton implements AnnotatedCommand {
         DriveWithTrajectoryFunction ScoreSetUp = new DriveWithTrajectoryFunction(
                 log.name("scoreSetup"), machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t3);
-      //  DriveWithTrajectoryFunction ClimbSetUp = new DriveWithTrajectoryFunction(
-               // log.name("ClimbSetup"), machinery.m_drive, controller,
-               // machinery.m_trajectoryViz, this::t4);
+        // DriveWithTrajectoryFunction ClimbSetUp = new DriveWithTrajectoryFunction(
+        // log.name("ClimbSetup"), machinery.m_drive, controller,
+        // machinery.m_trajectoryViz, this::t4);
 
         // Intake, score, climb.
         return sequence(
@@ -157,16 +158,21 @@ public class LeftBumpHalfSweepAuton implements AnnotatedCommand {
                 // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
                 // machinery.m_shooter.auto().withTimeout(1),
                 waitSeconds(5),
-                  
+
                 machinery.m_shooter.stop().withTimeout(1)
 
-               // ClimbSetUp.until(ClimbSetUp::isDone)
-               );
+        // ClimbSetUp.until(ClimbSetUp::isDone)
+        );
     }
 
     @Override
     public Pose2d start() {
         return StartingPositions.LEFT_BUMP;
+    }
+
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2, this::t3, this::t4);
     }
 
 }

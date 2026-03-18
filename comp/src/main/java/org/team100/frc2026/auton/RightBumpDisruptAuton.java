@@ -1,11 +1,11 @@
 package org.team100.frc2026.auton;
 
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -46,15 +46,19 @@ public class RightBumpDisruptAuton implements AnnotatedCommand {
         this.controller = controller;
         this.machinery = machinery;
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
-       // In meters/second
+        // In meters/second
         double maxBumpVelocity = 2;
         List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
-         
+
         // create a new VelocityRegionContstraint `slow_bump_zone`
-        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
         new_constraints.add(slow_bump_zone);
         new_constraints.add(slow_bump_zone2);
         new_constraints.add(slow_bump_zone3);
@@ -88,15 +92,15 @@ public class RightBumpDisruptAuton implements AnnotatedCommand {
         return planner.restToRest(waypoints);
     }
 
- //   TrajectorySE2 t3(Pose2d startingPose) {
- //       List<WaypointSE2> waypoints = List.of(
- //               new WaypointSE2(startingPose,
- //                       new DirectionSE2(0, -1, 0), 1),
- //               new WaypointSE2(StartingPositions.RIGHT_BUMP,
- //                       new DirectionSE2(-1, 0, 0), 1),
- //               new WaypointSE2(AutonPositions.SHOOT_RIGHT,
- //                       new DirectionSE2(-1, 0, 0), 1));
- //      return planner.restToRest(waypoints);
+    // TrajectorySE2 t3(Pose2d startingPose) {
+    // List<WaypointSE2> waypoints = List.of(
+    // new WaypointSE2(startingPose,
+    // new DirectionSE2(0, -1, 0), 1),
+    // new WaypointSE2(StartingPositions.RIGHT_BUMP,
+    // new DirectionSE2(-1, 0, 0), 1),
+    // new WaypointSE2(AutonPositions.SHOOT_RIGHT,
+    // new DirectionSE2(-1, 0, 0), 1));
+    // return planner.restToRest(waypoints);
 
     @Override
     public Command command() {
@@ -106,33 +110,38 @@ public class RightBumpDisruptAuton implements AnnotatedCommand {
         DriveWithTrajectoryFunction IntakeBalls = new DriveWithTrajectoryFunction(
                 log, machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t2);
-      //  DriveWithTrajectoryFunction ScoreSetUp = new DriveWithTrajectoryFunction(
-      //          log, machinery.m_drive, controller,
-      //          machinery.m_trajectoryViz, this::t3);
+        // DriveWithTrajectoryFunction ScoreSetUp = new DriveWithTrajectoryFunction(
+        // log, machinery.m_drive, controller,
+        // machinery.m_trajectoryViz, this::t3);
 
-        // Intake, score       
+        // Intake, score
         return sequence(
                 IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(4),
                 IntakeBalls.until(IntakeBalls::isDone),
 
                 waitSeconds(1));
 
-    //            ScoreSetUp.until(ScoreSetUp::isDone),
-    //            parallel(
-    //                    machinery.m_conveyor.convey(),
-    //                    machinery.m_feeder.proportional(),
-    //                    machinery.m_shooterHood.autoPosition(),
-    //                    machinery.m_shooter.auto()),
-                // .withTimeout(1),
-                // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
-                // machinery.m_shooter.auto().withTimeout(1),
-    //            waitSeconds(5),
-    //            machinery.m_shooter.stop().withTimeout(1));
-        }
+        // ScoreSetUp.until(ScoreSetUp::isDone),
+        // parallel(
+        // machinery.m_conveyor.convey(),
+        // machinery.m_feeder.proportional(),
+        // machinery.m_shooterHood.autoPosition(),
+        // machinery.m_shooter.auto()),
+        // .withTimeout(1),
+        // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
+        // machinery.m_shooter.auto().withTimeout(1),
+        // waitSeconds(5),
+        // machinery.m_shooter.stop().withTimeout(1));
+    }
 
     @Override
     public Pose2d start() {
         return StartingPositions.RIGHT_BUMP;
+    }
+
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2);
     }
 
 }

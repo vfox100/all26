@@ -6,6 +6,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -116,26 +117,26 @@ public class LeftBumpFullSweepAuton implements AnnotatedCommand {
 
         // Intake, score
         return sequence(
-                //Commands.print("foo"),
+                // Commands.print("foo"),
                 parallel(
                         IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(4),
                         // Assumed that the intake shouldn't deploy over the bump
                         waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())),
-                //Commands.print("foo2"),
+                // Commands.print("foo2"),
                 waitSeconds(1),
-                //Commands.print("foo3"),
+                // Commands.print("foo3"),
                 parallel(
                         IntakeBalls,
                         machinery.m_intake.intake()).until(IntakeBalls::isDone),
-                //Commands.print("foo4"),
+                // Commands.print("foo4"),
                 // Without telling it to, the intake would only stop spinning
                 // at the end of the auton. Without the timeout, the robot
                 // would not continue the rest of the auton
                 machinery.m_intake.stop().withTimeout(1),
-                //Commands.print("foo5"),
+                // Commands.print("foo5"),
                 waitSeconds(1),
                 ScoreSetUp.until(ScoreSetUp::isDone),
-                
+
                 parallel(
                         machinery.m_conveyor.convey(),
                         machinery.m_feeder.proportional(),
@@ -145,13 +146,17 @@ public class LeftBumpFullSweepAuton implements AnnotatedCommand {
                 // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
                 // machinery.m_shooter.auto().withTimeout(1),
                 waitSeconds(5),
-                machinery.m_shooter.stop().withTimeout(1)
-               );
+                machinery.m_shooter.stop().withTimeout(1));
     }
 
     @Override
     public Pose2d start() {
         return StartingPositions.LEFT_BUMP;
+    }
+
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2, this::t3);
     }
 
 }

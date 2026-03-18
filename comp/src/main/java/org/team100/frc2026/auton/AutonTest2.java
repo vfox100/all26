@@ -5,6 +5,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
@@ -47,10 +48,14 @@ public class AutonTest2 implements AnnotatedCommand {
         constraints = new TimingConstraintFactory(kinodynamics).auto(log.type(this));
         double maxBumpVelocity = 1.6;
         List<TimingConstraint> new_constraints = new ArrayList<>(constraints);
-        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
-        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone2 = new VelocityLimitRegionConstraint(
+                log, BumpZones.BLUE_BUMP_RIGHT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone3 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_LEFT, maxBumpVelocity);
+        VelocityLimitRegionConstraint slow_bump_zone4 = new VelocityLimitRegionConstraint(
+                log, BumpZones.RED_BUMP_RIGHT, maxBumpVelocity);
         new_constraints.add(slow_bump_zone);
         new_constraints.add(slow_bump_zone2);
         new_constraints.add(slow_bump_zone3);
@@ -80,10 +85,10 @@ public class AutonTest2 implements AnnotatedCommand {
                         new DirectionSE2(-0.2, 1, 0), 1),
                 new WaypointSE2(new Pose2d(3, 5.5, new Rotation2d(270 * (Math.PI / 180))),
                         new DirectionSE2(-1, 1, 0), 1));
-                 new WaypointSE2(AutonPositions.LEFT_BUMP_PAST,
-                        new DirectionSE2(1, 0, 1), 1);
-                new WaypointSE2(new Pose2d(3, 2.1, new Rotation2d(270 * (Math.PI / 180))),
-                    new DirectionSE2(1, 0, 1), 1);
+        new WaypointSE2(AutonPositions.LEFT_BUMP_PAST,
+                new DirectionSE2(1, 0, 1), 1);
+        new WaypointSE2(new Pose2d(3, 2.1, new Rotation2d(270 * (Math.PI / 180))),
+                new DirectionSE2(1, 0, 1), 1);
         return planner.restToRest(waypoints);
     }
 
@@ -106,6 +111,11 @@ public class AutonTest2 implements AnnotatedCommand {
         return new Pose2d(3, 5.5, new Rotation2d(90 * (Math.PI / 180)));
         // Slightly in front of StartingPositions.LEFT_BUMP
         // to make sure the robot starts and ends off of the bump
+    }
+
+    @Override
+    public List<Function<Pose2d, TrajectorySE2>> trajectoryFns() {
+        return List.of(this::t1, this::t2);
     }
 
 }

@@ -86,6 +86,16 @@ public class StrUtil {
         return b.toString();
     }
 
+    public static String arrayStr(double[] x) {
+        StringBuilder b = new StringBuilder();
+        b.append("[");
+        for (int i = 0; i < x.length; ++i) {
+            b.append(String.format(" %10.6f", x[i]));
+        }
+        b.append("]");
+        return b.toString();
+    }
+
     private StrUtil() {
         //
     }
