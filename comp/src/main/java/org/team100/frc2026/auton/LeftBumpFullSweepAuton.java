@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.team100.frc2026.field.FieldConstants2026;
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -26,6 +27,7 @@ import org.team100.lib.trajectory.path.PathSE2Factory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /** An example of a simple sequence */
 public class LeftBumpFullSweepAuton implements AnnotatedCommand {
@@ -115,38 +117,29 @@ public class LeftBumpFullSweepAuton implements AnnotatedCommand {
                 log.name("scoreSetup"), machinery.m_drive, controller,
                 machinery.m_trajectoryViz, this::t3);
 
-        // Intake, score
         return sequence(
-                // Commands.print("foo"),
                 parallel(
-                        IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(4),
-                        // Assumed that the intake shouldn't deploy over the bump
-                        waitSeconds(1).andThen(machinery.m_intakeExtend.goToExtendedPosition())),
-                // Commands.print("foo2"),
-                waitSeconds(1),
-                // Commands.print("foo3"),
+                        IntakeSetUp.until(IntakeSetUp::isDone),
+                        sequence(
+                                Commands.waitUntil(() -> FieldConstants2026
+                                        .isInNeutralZone(machinery.m_drive.getState().translation())),
+                                machinery.m_intakeExtend.goToExtendedPositionEndlessly()
+                                        .until(machinery.m_intakeExtend::atGoal))),
                 parallel(
                         IntakeBalls,
                         machinery.m_intake.intake()).until(IntakeBalls::isDone),
-                // Commands.print("foo4"),
-                // Without telling it to, the intake would only stop spinning
-                // at the end of the auton. Without the timeout, the robot
-                // would not continue the rest of the auton
-                machinery.m_intake.stop().withTimeout(1),
-                // Commands.print("foo5"),
-                waitSeconds(1),
-                ScoreSetUp.until(ScoreSetUp::isDone),
-
                 parallel(
-                        machinery.m_conveyor.convey(),
-                        machinery.m_feeder.proportional(),
-                        machinery.m_shooterHood.autoPosition(),
-                        machinery.m_shooter.auto()),
-                // .withTimeout(1),
-                // machinery.m_shooterHood.autoPosition().withTimeout(0.5),
-                // machinery.m_shooter.auto().withTimeout(1),
-                waitSeconds(5),
-                machinery.m_shooter.stop().withTimeout(1));
+                        machinery.m_intake.stopOnce(),
+                        machinery.m_intakeExtend.goToRetractedPosition(),
+                        sequence(
+                                ScoreSetUp.until(ScoreSetUp::isDone),
+                                parallel(
+                                        machinery.m_conveyor.convey(),
+                                        machinery.m_feeder.proportional(),
+                                        machinery.m_shooterHood.autoPosition(),
+                                        machinery.m_shooter.auto())
+                                        .withTimeout(5),
+                                machinery.m_shooter.stopOnce())));
     }
 
     @Override
