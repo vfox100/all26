@@ -97,6 +97,7 @@ public class AllAutons {
                 log,
                 machinery.m_swerveKinodynamics,
                 controller,
+                machinery.m_solver,
                 machinery));
     }
 

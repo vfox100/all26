@@ -19,7 +19,8 @@ public class DoubleCircleAutonTest {
 
     @Test
     void test0() {
-        DoubleCircleAuton a = new DoubleCircleAuton(log, dynamics, controller, machinery);
+        DoubleCircleAuton a = new DoubleCircleAuton(
+                log, dynamics, controller, machinery.m_solver, machinery);
         TrajectorySE2 t = a.t1(a.start());
         t.getLastPoint();
     }

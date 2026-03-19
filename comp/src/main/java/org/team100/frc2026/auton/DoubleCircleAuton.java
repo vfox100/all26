@@ -2,6 +2,7 @@ package org.team100.frc2026.auton;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.repeatingSequence;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +16,9 @@ import org.team100.lib.controller.se2.ControllerSE2;
 import org.team100.lib.geometry.DirectionSE2;
 import org.team100.lib.geometry.WaypointSE2;
 import org.team100.lib.logging.LoggerFactory;
-import org.team100.lib.subsystems.se2.commands.DriveWithTrajectoryFunction;
+import org.team100.lib.subsystems.se2.commands.DriveWithTrajectoryFunctionWithOverride;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
+import org.team100.lib.targeting.Solver;
 import org.team100.lib.trajectory.TrajectorySE2;
 import org.team100.lib.trajectory.TrajectorySE2Factory;
 import org.team100.lib.trajectory.TrajectorySE2Planner;
@@ -38,14 +40,17 @@ public class DoubleCircleAuton implements AnnotatedCommand {
     private final ControllerSE2 controller;
     private final Machinery machinery;
     private final TrajectorySE2Planner planner;
+    private final Solver m_solver;
 
     public DoubleCircleAuton(
             LoggerFactory parent,
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
+            Solver solver,
             Machinery machinery) {
         log = parent.name(name());
         this.controller = controller;
+        m_solver = solver;
         this.machinery = machinery;
 
         double bumpV = 2; // cartesian velocity over the bump
@@ -76,35 +81,49 @@ public class DoubleCircleAuton implements AnnotatedCommand {
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 // bump
-                new WaypointSE2(startingPose, new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(startingPose, new DirectionSE2(1, -0.5, 0), 1),
+                // sweep lead-in
+                new WaypointSE2(new Pose2d(7.75, 7.5, new Rotation2d(1.57)), new DirectionSE2(1, 0, 0), 1),
                 // sweep over the center
                 new WaypointSE2(new Pose2d(8.25, 6.5, new Rotation2d(1.57)), new DirectionSE2(0, -1, 0), 1),
                 new WaypointSE2(new Pose2d(8.25, 1.5, new Rotation2d(1.57)), new DirectionSE2(0, -1, 0), 1),
+                // sweep lead-out
+                new WaypointSE2(new Pose2d(7.75, 0.5, new Rotation2d(1.57)), new DirectionSE2(-1, 0, 0), 1),
                 // bump
-                new WaypointSE2(new Pose2d(4.5, 2.5, new Rotation2d(1.57)), new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(4.5, 2.25, new Rotation2d(1.57)), new DirectionSE2(-1, -0.5, 0), 1),
                 // shoot with lag
-                new WaypointSE2(new Pose2d(3, 1.5, new Rotation2d(1.1)), new DirectionSE2(-1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(1.5, 4, new Rotation2d(-0.2)), new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(new Pose2d(3, 6.5, new Rotation2d(-1.4)), new DirectionSE2(1, 0, 0), 1),
+                // note the closest approach is pretty close, because we're going
+                // pretty fast
+                new WaypointSE2(new Pose2d(3, 2.25, new Rotation2d(1.1)), new DirectionSE2(-1, 1, 0), 1),
+                new WaypointSE2(new Pose2d(2.25, 4, new Rotation2d(-0.2)), new DirectionSE2(0, 1, 0), 1),
+                new WaypointSE2(new Pose2d(3, 5.75, new Rotation2d(-1.4)), new DirectionSE2(1, 1, 0), 1),
                 // bump
-                new WaypointSE2(new Pose2d(4.5, 5.5, new Rotation2d(0)), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(4.5, 5.75, new Rotation2d(0)), new DirectionSE2(1, -0.5, 0), 1),
+                // sweep lead-in
+                new WaypointSE2(new Pose2d(7, 7.5, new Rotation2d(1.57)), new DirectionSE2(1, 0, 0), 1),
                 // sweep closer to our side
                 new WaypointSE2(new Pose2d(7.5, 6.5, new Rotation2d(1.57)), new DirectionSE2(0, -1, 0), 1),
                 new WaypointSE2(new Pose2d(7.5, 1.5, new Rotation2d(1.57)), new DirectionSE2(0, -1, 0), 1),
+                // sweep lead-out
+                new WaypointSE2(new Pose2d(7, 0.5, new Rotation2d(1.57)), new DirectionSE2(-1, 0, 0), 1),
                 // bump
-                new WaypointSE2(new Pose2d(4.5, 2.5, new Rotation2d(1.57)), new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(4.5, 2.25, new Rotation2d(1.57)), new DirectionSE2(-1, -0.5, 0), 1),
                 // shoot
-                new WaypointSE2(new Pose2d(3, 1.5, new Rotation2d(1.1)), new DirectionSE2(-1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(1.5, 4, new Rotation2d(-0.2)), new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(new Pose2d(3, 6.5, new Rotation2d(-1.4)), new DirectionSE2(1, 0, 0), 1));
+                new WaypointSE2(new Pose2d(3, 2.25, new Rotation2d(1.1)), new DirectionSE2(-1, 1, 0), 1),
+                new WaypointSE2(new Pose2d(2.25, 4, new Rotation2d(-0.2)), new DirectionSE2(0, 1, 0), 1),
+                new WaypointSE2(new Pose2d(3, 5.75, new Rotation2d(-1.4)), new DirectionSE2(1, 1, 0), 1));
         return planner.restToRest(waypoints);
     }
 
     @Override
     public Command command() {
-        DriveWithTrajectoryFunction bigLoop = new DriveWithTrajectoryFunction(
-                log, machinery.m_drive, controller,
-                machinery.m_trajectoryViz, this::t1);
+        DriveWithTrajectoryFunctionWithOverride bigLoop = new DriveWithTrajectoryFunctionWithOverride(
+                log,
+                machinery.m_drive,
+                controller,
+                machinery.m_trajectoryViz,
+                this::t1, m_solver,
+                this::inAllianceZone);
 
         return parallel(
                 // navigate
