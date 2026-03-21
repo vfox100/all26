@@ -4,9 +4,9 @@ import java.util.function.Supplier;
 
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.DoubleCache;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.PIDConstants;
+import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -236,6 +236,12 @@ public abstract class CANSparkMotor implements BareMotor {
     @Override
     public double getCurrent() {
         return m_statorCurrent.getAsDouble();
+    }
+
+    @Override
+    public double getSupplyCurrent() {
+        // TODO: does REV provide supply current??
+        return 0;
     }
 
     @Override

@@ -113,6 +113,11 @@ public class TalonSRXMotor implements BareMotor {
         return m_motor.getStatorCurrent();
     }
 
+    @Override
+    public double getSupplyCurrent() {
+        return m_motor.getSupplyCurrent();
+    }
+
     // unsupported methods
 
     @Override
