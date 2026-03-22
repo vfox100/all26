@@ -103,7 +103,6 @@ public class LeftBumpFullSweepAuton implements AnnotatedCommand {
         return sequence(
                 parallel(
                         IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(8),
-                        // Assumed that the intake shouldn't deploy over the bump
                         sequence(
                         Commands.waitUntil(() -> FieldConstants2026
                                         .isInNeutralZone(machinery.m_drive.getState().translation())),

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.team100.frc2026.field.FieldConstants2026;
 import org.team100.frc2026.robot.Machinery;
 import org.team100.lib.config.AnnotatedCommand;
 import org.team100.lib.controller.se2.ControllerSE2;
@@ -26,6 +27,7 @@ import org.team100.lib.trajectory.path.PathSE2Factory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /** An example of a simple sequence */
 public class RightBumpFullSweepAuton implements AnnotatedCommand {
@@ -78,9 +80,15 @@ public class RightBumpFullSweepAuton implements AnnotatedCommand {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
                         new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7.75, 2, Rotation2d.k180deg),
+                new WaypointSE2(new Pose2d(7.75, 2, Rotation2d.kCW_90deg),
                         new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(new Pose2d(7.75, 7, Rotation2d.k180deg),
+                new WaypointSE2(new Pose2d(7.75, 6.5, Rotation2d.kCW_90deg),
+                        new DirectionSE2(-0.2, 1, 0), 1),
+                new WaypointSE2(new Pose2d(7, 2, new Rotation2d(-270 * (Math.PI / 180))),
+                        new DirectionSE2(0, -1, 0), 1),
+                new WaypointSE2(new Pose2d(4.66, 2.5, new Rotation2d(0 * (Math.PI / 180))),
+                        new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(AutonPositions.SHOOT_RIGHT,
                         new DirectionSE2(0, 1, 0), 1));
         return planner.restToRest(waypoints);
     }
@@ -93,10 +101,26 @@ public class RightBumpFullSweepAuton implements AnnotatedCommand {
 
         // Intake, score
         return sequence(
-                parallel(IntakeSetUp,
-                        machinery.m_intakeExtend.goToExtendedPosition()
-                                .andThen(machinery.m_intake.intake()))
-                        .until(IntakeSetUp::isDone));
+            parallel(
+                IntakeSetUp.until(IntakeSetUp::isDone).withTimeout(8),
+                    sequence(
+                        Commands.waitUntil(() -> FieldConstants2026
+                                        .isInNeutralZone(machinery.m_drive.getState().translation())),
+                        (machinery.m_intakeExtend.goToExtendedPosition()
+                        .andThen(machinery.m_intake.intake())).withTimeout(4),
+        
+                        Commands.waitUntil(() -> FieldConstants2026
+                                        .isInAllianceZone(machinery.m_drive.getState().translation())),
+                        parallel(
+                            machinery.m_intake.stop(),
+                            machinery.m_intakeExtend.goToRetractedPosition(),
+
+                            machinery.m_conveyor.convey(),
+                            machinery.m_feeder.proportional(),
+                            machinery.m_shooterHood.autoPosition(),
+                            machinery.m_shooter.auto())
+                                ))
+                    );
     }
 
     @Override

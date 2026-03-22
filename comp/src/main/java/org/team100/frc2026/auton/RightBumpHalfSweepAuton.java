@@ -79,14 +79,16 @@ public class RightBumpHalfSweepAuton implements AnnotatedCommand {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose,
                         new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7.75, 2, Rotation2d.k180deg),
+                new WaypointSE2(new Pose2d(7.75, 2, Rotation2d.kCW_90deg),
                         new DirectionSE2(0, 1, 0), 1),
-                new WaypointSE2(new Pose2d(7.75, 4, Rotation2d.k180deg),
-                        new DirectionSE2(-1, 0, 0), 1), 
+                new WaypointSE2(new Pose2d(7.75, 4, Rotation2d.kCW_90deg),
+                        new DirectionSE2(-1, -1, 0), 1), 
+                new WaypointSE2(new Pose2d(5.2, 2.5, new Rotation2d(0 * (Math.PI / 180))),
+                        new DirectionSE2(-1, 0, 0), 1),
                 new WaypointSE2(StartingPositions.RIGHT_BUMP,
                         new DirectionSE2(-1, 0, 0), 1),
                 new WaypointSE2(AutonPositions.SHOOT_RIGHT,
-                        new DirectionSE2(0, 1, 0), 1));
+                        new DirectionSE2(-1, 1, 0), 1));
         return planner.restToRest(waypoints);
     }
 
