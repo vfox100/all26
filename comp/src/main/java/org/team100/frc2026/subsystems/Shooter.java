@@ -35,7 +35,7 @@ public class Shooter extends SubsystemBase {
     private static final CanId CAN_ID_3 = new CanId(14);
 
     // TODO: find the actuall CanId for the fourth motor
-    private static final CanId CAN_ID_4 = new CanId(45);
+    private static final CanId CAN_ID_4 = new CanId(2);
     private static final double TOLERANCE_M_S = 1;
 
     private static final double GEAR_RATIO = 1;
