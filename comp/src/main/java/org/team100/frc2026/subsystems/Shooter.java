@@ -13,7 +13,8 @@ import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode100;
-import org.team100.lib.motor.ctre.KrakenX60Motor;
+//import org.team100.lib.motor.ctre.KrakenX60Motor;
+import org.team100.lib.motor.rev.NeoVortexCANSparkMotor;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.profile.r1.CurrentLimitedExponentialVelocityProfileR1;
 import org.team100.lib.profile.r1.VelocityProfileR1;
@@ -22,15 +23,14 @@ import org.team100.lib.reference.r1.VelocityReferenceR1;
 import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.tuning.Mutable;
 import org.team100.lib.util.CanId;
-
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+//import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
     private static final boolean DEBUG = false;
-    private static final CanId CAN_ID_1 = new CanId(4);
+    private static final CanId CAN_ID_1 = new CanId(8);
     private static final CanId CAN_ID_2 = new CanId(5);
     private static final CanId CAN_ID_3 = new CanId(14);
 
@@ -87,16 +87,16 @@ public class Shooter extends SubsystemBase {
                 // tuned 3/12/26
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.075);
 
-                m1 = new KrakenX60Motor(
+                m1 = new NeoVortexCANSparkMotor(
                         log1, currentLog, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.SHOOTER, ff, friction, pid);
-                m2 = new KrakenX60Motor(
+                m2 = new NeoVortexCANSparkMotor(
                         log2, currentLog, CAN_ID_2, NeutralMode100.COAST, MotorPhase.REVERSE,
                         CurrentLimits.SHOOTER, ff, friction, pid);
-                m3 = new KrakenX60Motor(
+                m3 = new NeoVortexCANSparkMotor(
                         log3, currentLog, CAN_ID_3, NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.SHOOTER, ff, friction, pid);
-                m4 = new KrakenX60Motor(
+                m4 = new NeoVortexCANSparkMotor(
                         log4, currentLog, CAN_ID_4, NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.SHOOTER, ff, friction, pid);
 
