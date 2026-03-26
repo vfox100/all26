@@ -18,6 +18,8 @@ import org.team100.lib.reference.r1.ReferenceR1;
 import org.team100.lib.servo.AngularPositionServo;
 import org.team100.lib.servo.OutboardAngularPositionServo;
 import org.team100.lib.util.CanId;
+import org.team100.lib.servo.Gravity;
+
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,10 +33,14 @@ public class IntakeExtend extends SubsystemBase {
     // seems fine, 3/12/26
     private static final double EXTENDED_POSITION = 2.568002;
 
+    private final Gravity m_gravity;
     private final AngularPositionServo m_servo;
 
     public IntakeExtend(LoggerFactory parent, TotalCurrentLog currentLog) {
         LoggerFactory log = parent.type(this);
+        m_gravity = new Gravity(log, 
+            5, //Max gravity torque, Nm
+            0); // Gravity torque position offset, rad
         TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 8, 16, 0.1);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.1, 0.05);
         final BareMotor motor;
@@ -79,7 +85,7 @@ public class IntakeExtend extends SubsystemBase {
     public Command goToExtendedPosition() {
         return startRun(
                 this::reset,
-                () -> actuateWithProfile(EXTENDED_POSITION))
+                () -> actuateWithGravity(EXTENDED_POSITION))
                 .until(m_servo::atGoal)
                 .withName("Intake Extend GoToExtendedPosition");
     }
@@ -187,7 +193,15 @@ public class IntakeExtend extends SubsystemBase {
         m_servo.actuateWithProfile(value, 0);
     }
 
+    private void actuateWithGravity(double value) {
+        m_servo.actuateWithProfile(value, gravityTorque());
+    }
+
     public boolean atExtendedPosition() {
         return MathUtil.isNear(m_servo.getUnwrappedPositionRad(), EXTENDED_POSITION, 0.1);
+    }
+
+    private double gravityTorque() {
+        return m_gravity.applyAsDouble(m_servo.getWrappedPositionRad());
     }
 }

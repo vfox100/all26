@@ -68,6 +68,11 @@ public class AllAutons {
                 machinery.m_swerveKinodynamics,
                 controller,
                 machinery));
+        m_autonChooser.add(new LeftLobAuton(
+                log,
+                machinery.m_swerveKinodynamics,
+                controller,
+                machinery));
         m_autonChooser.add(new CenterPreloadedAuton(
                 log,
                 machinery.m_swerveKinodynamics,
