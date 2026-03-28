@@ -121,18 +121,21 @@ public class TrenchScallopLobAutonRight implements AnnotatedCommand {
 
                 new WaypointSE2(new Pose2d(7, 1.5, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 1.5, 0), 1),
 
-                new WaypointSE2(new Pose2d(8, 2, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7, 2.3, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(9, 1.7, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
+                new WaypointSE2(new Pose2d(7, 1.8, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
                 
-                new WaypointSE2(new Pose2d(7, 2.7, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 1, 0), 1),
+                new WaypointSE2(new Pose2d(9, 2.2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
 
-                new WaypointSE2(new Pose2d(8, 3, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7, 3.3, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 2.3, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
+                new WaypointSE2(new Pose2d(9, 2.7, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
             
-                new WaypointSE2(new Pose2d(7, 3.5, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 1, 0), 1),
+                new WaypointSE2(new Pose2d(7, 2.8, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
 
-                new WaypointSE2(new Pose2d(8, 3.7, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7, 3.9, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1)
+                new WaypointSE2(new Pose2d(9, 3.2, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 3.3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
+
+                new WaypointSE2(new Pose2d(9, 3.7, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1)
+
         //
         );
         return planner.restToRest(waypoints);
