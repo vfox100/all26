@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team100.frc2026.robot.CurrentLimits;
 
 public class Intake extends SubsystemBase {
-    private static final CanId CAN_ID_1 = new CanId(19);
+    private static final CanId CAN_ID_1 = new CanId(20);
     private static final CanId CAN_ID_2 = new CanId(16);
     private static final double TOLERANCE_M_S = 1;
     private static final double GEAR_RATIO = 2;
