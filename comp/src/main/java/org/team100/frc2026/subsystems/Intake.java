@@ -39,7 +39,7 @@ public class Intake extends SubsystemBase {
         LoggerFactory log1 = log.name("motor1");
         LoggerFactory log2 = log.name("motor2");
         // tuned 3/12/26
-        NORMAL_SPEED = new Mutable(log, "Intake Speed", 20);
+        NORMAL_SPEED = new Mutable(log, "Intake Speed", 10);
         // VelocityProfileR1 profile = new CurrentLimitedExponentialVelocityProfileR1(
         // 10, 10, 20, 30);
         VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(

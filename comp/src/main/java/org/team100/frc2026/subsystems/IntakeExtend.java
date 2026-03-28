@@ -44,7 +44,7 @@ public class IntakeExtend extends SubsystemBase {
         m_gravity = new Gravity(log,
                 0, // Max gravity torque, Nm
                 0); // Gravity torque position offset, rad
-        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 1, 1, 0.1);
+        TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 4, 8, 0.1);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.1, 0.05);
         final BareMotor motor;
         final BareMotor motor2;
@@ -55,7 +55,8 @@ public class IntakeExtend extends SubsystemBase {
                 // friction test 3/12/26
                 Friction friction = new Friction(log, 0.32, 0.32, 0.0, 0.5);
                 // tuned 3/12/26
-                PIDConstants pid = PIDConstants.makePositionPID(log, 2);
+                // TODO: get correct pid value
+                PIDConstants pid = PIDConstants.makePositionPID(log, 1);
                 motor = new KrakenX44Motor(
                         log1, currentLog, CAN_ID,
                         NeutralMode100.COAST, MotorPhase.REVERSE,
