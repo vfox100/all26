@@ -31,7 +31,7 @@ public class IntakeExtend extends SubsystemBase {
     private static final double gearRatio = 74.667;
     private static final double RETRACTED_POSITION = 0;
     // seems fine, 3/12/26
-    private static final double EXTENDED_POSITION = 2.568002;
+    private static final double EXTENDED_POSITION = 2.140017;
 
     private final Gravity m_gravity;
     private final AngularPositionServo m_servo;
@@ -39,6 +39,8 @@ public class IntakeExtend extends SubsystemBase {
 
     public IntakeExtend(LoggerFactory parent, TotalCurrentLog currentLog) {
         LoggerFactory log = parent.type(this);
+         LoggerFactory log1 = log.name("Extend1");
+        LoggerFactory log2 = log.name("Extend2");
         m_gravity = new Gravity(log,
                 0, // Max gravity torque, Nm
                 0); // Gravity torque position offset, rad
@@ -55,26 +57,26 @@ public class IntakeExtend extends SubsystemBase {
                 // tuned 3/12/26
                 PIDConstants pid = PIDConstants.makePositionPID(log, 2);
                 motor = new KrakenX44Motor(
-                        log, currentLog, CAN_ID,
+                        log1, currentLog, CAN_ID,
                         NeutralMode100.COAST, MotorPhase.REVERSE,
                         CurrentLimits.INTAKE_EXTEND,
                         ff, friction, pid);
                 motor2 = new KrakenX44Motor(
-                        log, currentLog, CAN_ID2,
+                        log2, currentLog, CAN_ID2,
                         NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.INTAKE_EXTEND,
                         ff, friction, pid);
             }
             default -> {
-                motor = new SimulatedBareMotor(log, 600);
-                motor2 = new SimulatedBareMotor(log, 600);
+                motor = new SimulatedBareMotor(log1, 600);
+                motor2 = new SimulatedBareMotor(log2, 600);
             }
         }
         m_servo = OutboardAngularPositionServo.make(
-                log, motor, ref, gearRatio,
+                log1, motor, ref, gearRatio,
                 RETRACTED_POSITION, RETRACTED_POSITION, EXTENDED_POSITION);
         m_Servo2 = OutboardAngularPositionServo.make(
-                log, motor2, ref, gearRatio,
+                log2, motor2, ref, gearRatio,
                 RETRACTED_POSITION, RETRACTED_POSITION, EXTENDED_POSITION);
     }
 
