@@ -39,7 +39,7 @@ public class IntakeExtend extends SubsystemBase {
 
     public IntakeExtend(LoggerFactory parent, TotalCurrentLog currentLog) {
         LoggerFactory log = parent.type(this);
-         LoggerFactory log1 = log.name("Extend1");
+        LoggerFactory log1 = log.name("Extend1");
         LoggerFactory log2 = log.name("Extend2");
         m_gravity = new Gravity(log,
                 0, // Max gravity torque, Nm

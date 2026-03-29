@@ -38,8 +38,7 @@ public class Shooter extends SubsystemBase {
     private static final double GEAR_RATIO = 1;
     private static final double WHEEL_DIAMETER_M = .115;
 
-    /** Speed used in selftest. */
-    private static final double FULL_SPEED = 20;
+    private static final double FULL_SPEED = 30;
 
     private final Supplier<OptionalDouble> m_speed;
 
@@ -83,10 +82,10 @@ public class Shooter extends SubsystemBase {
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.075);
 
                 m1 = new NeoVortexCANSparkMotor(
-                        log1, currentLog, CAN_ID_1, NeutralMode100.COAST, MotorPhase.REVERSE,
+                        log1, currentLog, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.SHOOTER, ff, friction, pid);
                 m2 = new NeoVortexCANSparkMotor(
-                        log2, currentLog, CAN_ID_2, NeutralMode100.COAST, MotorPhase.FORWARD,
+                        log2, currentLog, CAN_ID_2, NeutralMode100.COAST, MotorPhase.REVERSE,
                         CurrentLimits.SHOOTER, ff, friction, pid);
                 m3 = new NeoVortexCANSparkMotor(
                         log3, currentLog, CAN_ID_3, NeutralMode100.COAST, MotorPhase.FORWARD,
@@ -132,7 +131,8 @@ public class Shooter extends SubsystemBase {
     public Command shooterFullspeed() {
         return startRun(
                 this::reset,
-                () -> setVelocityProfiled(FULL_SPEED))
+                // () -> setVelocityProfiled(FULL_SPEED))
+                () -> dutyCycleAll())
                 .withName("Shoot full speed");
     }
 

@@ -50,14 +50,14 @@ public class MajorDisruptRBump implements AnnotatedCommand {
         double bumpV = 2; // cartesian velocity over the bump
         List<TimingConstraint> new_constraints = new ArrayList<>(List.of(
                 // high velocity, moderate accel
-                new ConstantConstraint(log, 20, 40),
+                new ConstantConstraint(log, 5, 5),
                 // absolute maxima
                 // new SwerveDriveDynamicsConstraint(log, kinodynamics, 1, 1),
                 // high yaw limits
                 // new YawRateConstraint(log, 8, 20),
                 // moderate capsize limits. Note we're not actually concerned about capsize
                 // here, we just want to limit tire tread shear
-                new CapsizeAccelerationConstraint(log, 20, 40),
+                new CapsizeAccelerationConstraint(log, 8, 20),
                 new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, bumpV),
                 new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, bumpV),
                 new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, bumpV),
@@ -87,17 +87,18 @@ public class MajorDisruptRBump implements AnnotatedCommand {
                 this::t1);
 
         return parallel(
-                fn,
-                // extend when in neutral zone
-                toggle(
-                        this::inNeutralZone,
-                        machinery.m_intakeExtend.goToExtendedPositionEndlessly(),
-                        machinery.m_intakeExtend.goToRetractedPosition()),
-                // roll when extended
-                toggle(
-                        this::intakeExtended,
-                       parallel( machinery.m_intake.intake(), machinery.m_shooter.shooterFullspeed()),
-                        machinery.m_intake.stop()));
+                fn
+                // // extend when in neutral zone
+                // toggle(
+                //         this::inNeutralZone,
+                //         machinery.m_intakeExtend.goToExtendedPositionEndlessly(),
+                //         machinery.m_intakeExtend.goToRetractedPosition()),
+                // // roll when extended
+                // toggle(
+                //         this::intakeExtended,
+                //        parallel( machinery.m_intake.intake(), machinery.m_shooter.shooterFullspeed()),
+                //         machinery.m_intake.stop())
+                    );
     }
 
     @Override

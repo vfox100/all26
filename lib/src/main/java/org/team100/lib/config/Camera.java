@@ -92,8 +92,8 @@ public enum Camera {
      * ALPHA Climber Camera Left
      */
     CLIMB_LEFT("82c4c3fe4f941e96",
-            fromCalibration(new Transform3d(-0.73, -0.137, 0.432, new Rotation3d(0, 0, Math.PI)),
-                    new Transform3d(0.513, 0.077, -0.017, new Rotation3d(-0.21, 0.499, -0.41)))),
+            fromCalibration(new Transform3d(0.34, 1, 0.398, new Rotation3d(0, 0, Math.PI/2)),
+                    new Transform3d(0.84, -0.28, -0.19, new Rotation3d(0.005, 0.475, -0.042)))),
 
     /**
      * ALPHA Climber Camera Right
@@ -108,8 +108,8 @@ public enum Camera {
      */
     SHOOTER("e47055a1bcbcead0",
             fromCalibration(
-                    new Transform3d(0.820, -0.112, 0.432, new Rotation3d(0, 0, 0)),
-                    new Transform3d(0.551, -0.123, -0.142, new Rotation3d(0.004, 0.714, 0.016)))),
+                    new Transform3d(0.34, -1, 0.405, new Rotation3d(0, 0, -(Math.PI/2))),
+                    new Transform3d(0.812, 0.192, -0.354, new Rotation3d(-0.016, 0.630, -0.040)))),
 
     /**
      * For prototyping

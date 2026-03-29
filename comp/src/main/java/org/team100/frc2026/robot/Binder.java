@@ -82,7 +82,7 @@ public class Binder {
                                 waitUntil(m_machinery.m_intakeExtend::atGoal),
                                 parallel(
                                         m_machinery.m_intake.intake(),
-                                        m_machinery.m_shooter.auto()))));
+                                        m_machinery.m_shooter.shooterFullspeed()))));
 
         whileTrue(driver::x,
                 m_machinery.m_intake.intake());
@@ -90,7 +90,7 @@ public class Binder {
                 m_machinery.m_intakeExtend.goToExtendedPositionEndlessly());
         whileTrue(driver::b,
                 m_machinery.m_intakeExtend.goToRetractedPosition());
-        whileTrue(driver::y, m_machinery.m_shooter.shooterFullspeed());
+        whileTrue(driver::y, m_machinery.m_shooter.testShooterFullspeed());
 
         ////////////////////////////////////////////////////
         ///
