@@ -32,13 +32,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ScallopLobAuton implements AnnotatedCommand {
+public class TrenchScallopLobAutonLeftFull implements AnnotatedCommand {
     private final LoggerFactory log;
     private final ControllerSE2 controller;
     private final Machinery machinery;
     private final TrajectorySE2Planner planner;
 
-    public ScallopLobAuton(
+    public TrenchScallopLobAutonLeftFull(
             LoggerFactory parent,
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
@@ -69,12 +69,12 @@ public class ScallopLobAuton implements AnnotatedCommand {
 
     @Override
     public Pose2d start() {
-        return StartingPositions.LEFT_BUMP;
+        return StartingPositions.LEFT_TRENCH;
     }
 
     @Override
     public String name() {
-        return "ScallopLob";
+        return "TrenchScallopLobLeftFull";
     }
 
     @Override
@@ -107,29 +107,32 @@ public class ScallopLobAuton implements AnnotatedCommand {
 
     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
-                new WaypointSE2(startingPose, new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7, 6, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 6, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(startingPose, new DirectionSE2(1, -0.3, 0), 1),
+                
+                new WaypointSE2(new Pose2d(6, 7.5, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 6.5, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(9, 6, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 5.9, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(9, 5.4, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 5.5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 5.3, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(9, 5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 4, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 4, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 4.7, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 4.5, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(9, 4.6, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(7, 4.5, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                
+                new WaypointSE2(new Pose2d(9, 3.3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
+                
+                new WaypointSE2(new Pose2d(7, 2.1, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
+                new WaypointSE2(new Pose2d(9, 2.6, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                
+                new WaypointSE2(new Pose2d(7, 1.2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1),
 
-                new WaypointSE2(new Pose2d(7, 3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 3.5, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1)
+                new WaypointSE2(new Pose2d(9, 1.8, new Rotation2d(195 * (Math.PI / 180))), new DirectionSE2(1, 0.5, 0), 1)
+             
 
         //
         );

@@ -1,5 +1,6 @@
 package org.team100.frc2026.auton;
 
+
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.repeatingSequence;
 
@@ -32,13 +33,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ScallopLobAuton implements AnnotatedCommand {
+public class MiddleDefenseLTrench implements AnnotatedCommand {
     private final LoggerFactory log;
     private final ControllerSE2 controller;
     private final Machinery machinery;
     private final TrajectorySE2Planner planner;
 
-    public ScallopLobAuton(
+    public MiddleDefenseLTrench(
             LoggerFactory parent,
             SwerveKinodynamics kinodynamics,
             ControllerSE2 controller,
@@ -54,10 +55,10 @@ public class ScallopLobAuton implements AnnotatedCommand {
                 // absolute maxima
                 // new SwerveDriveDynamicsConstraint(log, kinodynamics, 1, 1),
                 // high yaw limits
-                // new YawRateConstraint(log, 10, 20),
+                // new YawRateConstraint(log, 8, 20),
                 // moderate capsize limits. Note we're not actually concerned about capsize
                 // here, we just want to limit tire tread shear
-                new CapsizeAccelerationConstraint(log, 8, 20),
+                new CapsizeAccelerationConstraint(log, 20, 40),
                 new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_LEFT, bumpV),
                 new VelocityLimitRegionConstraint(log, BumpZones.BLUE_BUMP_RIGHT, bumpV),
                 new VelocityLimitRegionConstraint(log, BumpZones.RED_BUMP_LEFT, bumpV),
@@ -69,12 +70,12 @@ public class ScallopLobAuton implements AnnotatedCommand {
 
     @Override
     public Pose2d start() {
-        return StartingPositions.LEFT_BUMP;
+        return StartingPositions.LEFT_TRENCH;
     }
 
     @Override
     public String name() {
-        return "ScallopLob";
+        return "MiddleDefenseLTrench";
     }
 
     @Override
@@ -105,31 +106,11 @@ public class ScallopLobAuton implements AnnotatedCommand {
         return List.of(this::t1);
     }
 
-    TrajectorySE2 t1(Pose2d startingPose) {
+     TrajectorySE2 t1(Pose2d startingPose) {
         List<WaypointSE2> waypoints = List.of(
                 new WaypointSE2(startingPose, new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(7, 6, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 6, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
+                new WaypointSE2(new Pose2d(8.5, 6.7, new Rotation2d(180 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1)
 
-                new WaypointSE2(new Pose2d(7, 6.5, new Rotation2d(165 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 5.5, new Rotation2d(155 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 4, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 4, new Rotation2d(150 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 4.5, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 3, new Rotation2d(210 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 3.5, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(-1, 0, 0), 1),
-
-                new WaypointSE2(new Pose2d(7, 2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1),
-                new WaypointSE2(new Pose2d(8.3, 2, new Rotation2d(205 * (Math.PI / 180))), new DirectionSE2(1, 0, 0), 1)
 
         //
         );

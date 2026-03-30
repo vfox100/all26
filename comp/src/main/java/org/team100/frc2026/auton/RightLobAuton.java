@@ -109,8 +109,8 @@ public class RightLobAuton implements AnnotatedCommand {
                         machinery.m_intakeExtend.goToExtendedPosition(),
                         Commands.waitUntil(() -> FieldConstants2026
                                         .isInNeutralZone(machinery.m_drive.getState().translation()))
-                        .andThen(parallel(
-                        machinery.m_shooter.auto()))));
+                        .andThen(
+                        machinery.m_shooter.auto())));
     }
 
     @Override
