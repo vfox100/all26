@@ -22,15 +22,15 @@ import org.team100.lib.util.CanId;
 
 /** Configuration of motors on the demobot shooter. */
 public class DrumShooterFactory {
-    private static final double GEAR_RATIO = 5.2307692308;
-    private static final double WHEEL_DIA_M = .33;
 
     public static DualDrumShooter make(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
             CurrentLimit limit,
             CanId canL,
-            CanId canR) {
+            CanId canR,
+            double gearRatio,
+            double wheelDiaM) {
         LoggerFactory log = parent.name("shooter");
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
@@ -39,14 +39,18 @@ public class DrumShooterFactory {
         Friction friction = new Friction(log, 0.07, 0.07, 0.01, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.02);
 
-        BareMotor motorL = getMotor(limit, logL, currentLog, canL, ff, friction, pid);
-        BareMotor motorR = getMotor(limit, logR, currentLog, canR, ff, friction, pid);
+        // for simulation
+        double maxSpeedM_S = 10;
+        double freeSpeedRad_S = maxSpeedM_S * gearRatio / (0.5 * wheelDiaM);
+
+        BareMotor motorL = getMotor(limit, logL, currentLog, freeSpeedRad_S, canL, ff, friction, pid);
+        BareMotor motorR = getMotor(limit, logR, currentLog, freeSpeedRad_S, canR, ff, friction, pid);
 
         LinearMechanism mechL = new LinearMechanism(
-                logL, motorL, motorL.encoder(), GEAR_RATIO, WHEEL_DIA_M,
+                logL, motorL, motorL.encoder(), gearRatio, wheelDiaM,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         LinearMechanism mechR = new LinearMechanism(
-                logR, motorR, motorR.encoder(), GEAR_RATIO, WHEEL_DIA_M,
+                logR, motorR, motorR.encoder(), gearRatio, wheelDiaM,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(10);
@@ -58,13 +62,18 @@ public class DrumShooterFactory {
                 new OutboardLinearVelocityServo(logR, mechR, ref, 1));
     }
 
-    private static BareMotor getMotor(CurrentLimit limit,
-            LoggerFactory log, TotalCurrentLog currentLog,
-            CanId canId, SimpleDynamics ff,
-            Friction friction, PIDConstants pid) {
+    private static BareMotor getMotor(
+            CurrentLimit limit,
+            LoggerFactory log,
+            TotalCurrentLog currentLog,
+            double freeSpeedRad_S,
+            CanId canId,
+            SimpleDynamics ff,
+            Friction friction,
+            PIDConstants pid) {
         return switch (Identity.instance) {
             case BLANK ->
-                new SimulatedBareMotor(log, 600);
+                new SimulatedBareMotor(log, freeSpeedRad_S);
             default -> new Neo550CANSparkMotor(
                     log, currentLog, canId, NeutralMode100.BRAKE, MotorPhase.REVERSE,
                     limit, ff, friction, pid);

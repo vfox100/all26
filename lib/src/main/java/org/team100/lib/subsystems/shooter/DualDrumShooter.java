@@ -33,6 +33,11 @@ public class DualDrumShooter extends SubsystemBase {
         m_log_atGoal = log.booleanLogger(Level.TRACE, "At goal");
     }
 
+    /**
+     * Must be called periodically to progress through the profile.
+     * 
+     * Will not work in Command.initialize().
+     */
     public void set(double velocityM_S) {
         m_left.setVelocityProfiled(velocityM_S);
         m_right.setVelocityProfiled(velocityM_S);
@@ -46,16 +51,12 @@ public class DualDrumShooter extends SubsystemBase {
         set(0);
     }
 
-    public void spinUp(double velocityM_S) {
-        set(velocityM_S);
-    }
-
     public boolean atGoal() {
         return m_right.atGoal() && m_left.atGoal();
     }
 
     public Command spin(double velocityM_S) {
-        return run(() -> spinUp(velocityM_S));
+        return run(() -> {set(velocityM_S);});
     }
 
     @Override

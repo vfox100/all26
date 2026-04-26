@@ -36,10 +36,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Robot extends TimedRobot100 {
     private static final double FIVE_TO_ONE = 5.2307692308;
-    private static final double GEAR_RATIO = FIVE_TO_ONE * FIVE_TO_ONE;
-    private static final double WHEEL_DIAM = 0.098425;
+    private static final double DRIVE_GEAR_RATIO = FIVE_TO_ONE * FIVE_TO_ONE;
+    private static final double DRIVE_WHEEL_DIAM = 0.098425;
     private static final double MAX_SPEED_M_S = 3.0;
     private static final double MAX_OMEGA_RAD_S = 3.0;
+
+    private static final double SHOOTER_GEAR_RATIO = 1.00;
+    private static final double SHOOTER_WHEEL_DIA_M = 0.33;
 
     private final RobotLog m_robotLog;
     private final TankDrive m_drive;
@@ -72,8 +75,8 @@ public class Robot extends TimedRobot100 {
                 new CanId(2),
                 0.4,
                 MAX_SPEED_M_S,
-                GEAR_RATIO,
-                WHEEL_DIAM);
+                DRIVE_GEAR_RATIO,
+                DRIVE_WHEEL_DIAM);
         m_drive.setDefaultCommand(new TankManual(
                 logger, driverControl::rightY, driverControl::rightX,
                 MAX_SPEED_M_S, MAX_OMEGA_RAD_S, m_drive));
@@ -83,7 +86,9 @@ public class Robot extends TimedRobot100 {
                 m_currentLog,
                 new CurrentLimit(20, 20),
                 new CanId(39),
-                new CanId(19));
+                new CanId(19),
+                SHOOTER_GEAR_RATIO,
+                SHOOTER_WHEEL_DIA_M);
         m_shooter.setDefaultCommand(m_shooter.run(m_shooter::stop));
 
         m_indexer = new IndexerServo(logger, 0);

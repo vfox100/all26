@@ -24,7 +24,7 @@ import org.team100.lib.tuning.Mutable;
  * WARNING! REV velocity control does not work well for light mechanisms (e.g.
  * flywheels), no matter what you do with PID, so don't do it.
  */
- public class PIDConstants {
+public class PIDConstants {
     private final List<Runnable> m_listeners = new ArrayList<>();
 
     // private final double m_positionP;
@@ -107,9 +107,10 @@ import org.team100.lib.tuning.Mutable;
 
     //////////////////////////////////////////////////////
 
-    public PIDConstants(LoggerFactory log,
+    public PIDConstants(LoggerFactory parent,
             double positionP, double positionI, double positionD,
             double velocityP, double velocityI, double velocityD) {
+        LoggerFactory log = parent.type(this);
         // m_positionP = positionP;
         m_positionP = new Mutable(log, "position P", positionP, this::onChange);
         m_positionI = positionI;

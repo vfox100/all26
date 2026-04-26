@@ -17,12 +17,8 @@ public class Shoot extends Command {
     }
 
     @Override
-    public void initialize() {
-        m_shooter.spinUp(10);
-    }
-
-    @Override
     public void execute() {
+        m_shooter.set(10);
         if (m_shooter.atGoal()) {
             m_indexer.set(1);
         }

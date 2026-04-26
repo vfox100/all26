@@ -82,7 +82,13 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
         m_ref.init(measurement.v());
     }
 
-    /** Resets the profile if necessary */
+    /**
+     * Resets the profile if necessary.
+     * 
+     * Must be called periodically to progress through the profile.
+     * 
+     * Will not work in Command.initialize().
+     */
     @Override
     public void setVelocityProfiled(double goalM_S) {
         m_log_goal.log(() -> goalM_S);
@@ -153,7 +159,7 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
     public double error() {
         if (m_goal == null) {
             // TODO: no setpoint should yield null
-            return 0;   
+            return 0;
         }
         return m_goal - m_mechanism.getVelocityM_S();
     }
