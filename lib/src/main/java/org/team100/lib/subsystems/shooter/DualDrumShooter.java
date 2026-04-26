@@ -46,16 +46,16 @@ public class DualDrumShooter extends SubsystemBase {
         set(0);
     }
 
-    public void spinUp(double speed) {
-        set(speed);
+    public void spinUp(double velocityM_S) {
+        set(velocityM_S);
     }
 
     public boolean atGoal() {
         return m_right.atGoal() && m_left.atGoal();
     }
 
-    public Command spin(double x) {
-        return run(() -> spinUp(x));
+    public Command spin(double velocityM_S) {
+        return run(() -> spinUp(velocityM_S));
     }
 
     @Override

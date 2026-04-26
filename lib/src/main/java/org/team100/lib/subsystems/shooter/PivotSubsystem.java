@@ -27,7 +27,10 @@ public class PivotSubsystem extends SubsystemBase {
     private final DoubleLogger m_log_angle;
 
     public PivotSubsystem(
-            LoggerFactory parent, TotalCurrentLog currentLog, CurrentLimit limit) {
+            LoggerFactory parent,
+            TotalCurrentLog currentLog,
+            CurrentLimit limit,
+            CanId canId) {
         LoggerFactory logger = parent.type(this);
         m_log_angle = logger.doubleLogger(Level.TRACE, "Angle (rad)");
         m_pivot = (switch (Identity.instance) {
@@ -36,7 +39,7 @@ public class PivotSubsystem extends SubsystemBase {
             default -> new Neo550CANSparkMotor(
                     logger,
                     currentLog,
-                    new CanId(5),
+                    canId,
                     NeutralMode100.BRAKE,
                     MotorPhase.FORWARD, limit,
                     new SimpleDynamics(logger, 0, 0),

@@ -2,7 +2,9 @@ package org.team100.lib.subsystems.tank;
 
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;
 import org.team100.lib.logging.LoggerFactory.DoubleArrayLogger;
+import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.visualization.VizUtil;
 
@@ -24,20 +26,32 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class TankDrive extends SubsystemBase {
     private final DoubleArrayLogger m_log_field_robot;
     private final double m_trackWidthM;
+    private final double m_maxSpeedM_S;
     // using "servos" because they compute acceleration.
     private final OutboardLinearVelocityServo m_left;
     private final OutboardLinearVelocityServo m_right;
     private final DifferentialDriveKinematics m_kinematics;
+
+    private final ChassisSpeedsLogger m_logChassisSpeeds;
+    private final DoubleLogger m_logLeft;
+    private final DoubleLogger m_logRight;
+
     private DifferentialDriveWheelPositions m_positions;
     private Pose2d m_pose;
 
     public TankDrive(
+            LoggerFactory log,
             LoggerFactory fieldLogger,
             double trackWidthM,
+            double maxSpeedM_S,
             OutboardLinearVelocityServo left,
             OutboardLinearVelocityServo right) {
+        m_logChassisSpeeds = log.chassisSpeedsLogger(Level.TRACE, "chassis speeds");
+        m_logLeft = log.doubleLogger(Level.TRACE, "left");
+        m_logRight = log.doubleLogger(Level.TRACE, "right");
         m_log_field_robot = fieldLogger.doubleArrayLogger(Level.COMP, "robot");
         m_trackWidthM = trackWidthM;
+        m_maxSpeedM_S = maxSpeedM_S;
         m_left = left;
         m_right = right;
         m_kinematics = new DifferentialDriveKinematics(m_trackWidthM);
@@ -56,9 +70,15 @@ public class TankDrive extends SubsystemBase {
     /** Use inverse kinematics to set wheel speeds. */
     public void setVelocity(double translationM_S, double rotationRad_S) {
         ChassisSpeeds speed = new ChassisSpeeds(translationM_S, 0, rotationRad_S);
+        m_logChassisSpeeds.log(() -> speed);
         DifferentialDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(speed);
-        m_left.setVelocityDirect(wheelSpeeds.leftMetersPerSecond);
-        m_right.setVelocityDirect(wheelSpeeds.rightMetersPerSecond);
+        wheelSpeeds.desaturate(m_maxSpeedM_S);
+        double left = wheelSpeeds.leftMetersPerSecond;
+        double right = wheelSpeeds.rightMetersPerSecond;
+        m_logLeft.log(() -> left);
+        m_logRight.log(() -> right);
+        m_left.setVelocityDirect(left);
+        m_right.setVelocityDirect(right);
     }
 
     public void stop() {

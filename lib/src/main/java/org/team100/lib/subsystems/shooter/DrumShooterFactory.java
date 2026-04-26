@@ -26,16 +26,17 @@ public class DrumShooterFactory {
     private static final double WHEEL_DIA_M = .33;
 
     public static DualDrumShooter make(
-            LoggerFactory parent, TotalCurrentLog currentLog, CurrentLimit limit) {
+            LoggerFactory parent,
+            TotalCurrentLog currentLog,
+            CurrentLimit limit,
+            CanId canL,
+            CanId canR) {
         LoggerFactory log = parent.name("shooter");
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
 
-        CanId canL = new CanId(39);
-        CanId canR = new CanId(19);
-
         SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
-        Friction friction = new Friction(log, 0, 0.07, 0.01, 0.5);
+        Friction friction = new Friction(log, 0.07, 0.07, 0.01, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.02);
 
         BareMotor motorL = getMotor(limit, logL, currentLog, canL, ff, friction, pid);
