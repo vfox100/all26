@@ -25,6 +25,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class ChartUtil {
+    // LEAVE THIS OFF or the tests will pop up lots of windows
     public static final boolean SHOW = false;
     public static final int SIZE = 500;
 
