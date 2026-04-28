@@ -39,8 +39,20 @@ public class DualDrumShooter extends SubsystemBase {
      * Will not work in Command.initialize().
      */
     public void set(double velocityM_S) {
-        m_left.setVelocityProfiled(velocityM_S);
-        m_right.setVelocityProfiled(velocityM_S);
+
+        //
+        //
+        // TODO: figure out why velocity control isn't working
+        //
+        //
+        m_left.setDutyCycle(0.1);
+        m_right.setDutyCycle(0.1);
+
+        // m_left.setVelocityDirect(velocityM_S);
+        // m_right.setVelocityDirect(velocityM_S);
+
+        // m_left.setVelocityProfiled(velocityM_S);
+        // m_right.setVelocityProfiled(velocityM_S);
     }
 
     public double get() {
@@ -48,7 +60,8 @@ public class DualDrumShooter extends SubsystemBase {
     }
 
     public void stop() {
-        set(0);
+        m_left.stop();
+        m_right.stop();
     }
 
     public boolean atGoal() {
@@ -56,7 +69,9 @@ public class DualDrumShooter extends SubsystemBase {
     }
 
     public Command spin(double velocityM_S) {
-        return run(() -> {set(velocityM_S);});
+        return run(() -> {
+            set(velocityM_S);
+        });
     }
 
     @Override

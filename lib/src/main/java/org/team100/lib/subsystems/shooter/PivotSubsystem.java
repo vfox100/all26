@@ -34,7 +34,12 @@ public class PivotSubsystem extends SubsystemBase {
         LoggerFactory logger = parent.type(this);
         m_log_angle = logger.doubleLogger(Level.TRACE, "Angle (rad)");
         m_pivot = (switch (Identity.instance) {
-            case BLANK ->
+            case BLANK, DEMO_BOT ->
+            //
+            //
+            // ALERT!  turning the pivot off temporarily!
+            //
+            //
                 new SimulatedBareMotor(logger, 600);
             default -> new Neo550CANSparkMotor(
                     logger,
@@ -43,7 +48,7 @@ public class PivotSubsystem extends SubsystemBase {
                     NeutralMode100.BRAKE,
                     MotorPhase.FORWARD, limit,
                     new SimpleDynamics(logger, 0, 0),
-                    new Friction(logger, 0, 0.07, 0.01, 0.5),
+                    new Friction(logger, 0.07, 0.07, 0.01, 0.5),
                     PIDConstants.zero(logger));
         });
     }

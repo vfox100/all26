@@ -29,6 +29,6 @@ public class IndexerServo extends SubsystemBase {
     }
 
     public Command feed() {
-        return run(() -> set(1));
+        return run(() -> set(-1));
     }
 }

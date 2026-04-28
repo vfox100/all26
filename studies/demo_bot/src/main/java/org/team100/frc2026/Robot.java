@@ -42,7 +42,7 @@ public class Robot extends TimedRobot100 {
     private static final double MAX_OMEGA_RAD_S = 3.0;
 
     private static final double SHOOTER_GEAR_RATIO = 1.00;
-    private static final double SHOOTER_WHEEL_DIA_M = 0.33;
+    private static final double SHOOTER_WHEEL_DIA_M = 0.16;
 
     private final RobotLog m_robotLog;
     private final TankDrive m_drive;
@@ -105,18 +105,23 @@ public class Robot extends TimedRobot100 {
         // this shows two ways to do the "shoot when spinning fast enough" thing.
 
         // a command class that contains the condition
-        new Trigger(driverControl::a).whileTrue(new Shoot(m_shooter, m_indexer));
+        // new Trigger(driverControl::a).whileTrue(new Shoot(m_shooter, m_indexer));
 
         // "fluent" command assembly.
+        // new Trigger(driverControl::y).whileTrue(
+        // parallel(
+        // m_shooter.spin(10),
+        // repeatingSequence(
+        // waitUntil(m_shooter::atGoal),
+        // m_indexer.feed().withTimeout(0.5))));
+
+        new Trigger(driverControl::x).whileTrue(
+                m_shooter.spin(10)
+                        .withName("Shooter Spin"));
+
         new Trigger(driverControl::y).whileTrue(
-                parallel(
-                        m_shooter.spin(10),
-                        repeatingSequence(
-                                waitUntil(m_shooter::atGoal),
-                                m_indexer.feed().withTimeout(0.5))));
-
-
-        new Trigger(driverControl::x).whileTrue(m_shooter.spin(10));
+                m_indexer.feed()
+                        .withName("Indexer feed"));
         m_auton = null;
     }
 

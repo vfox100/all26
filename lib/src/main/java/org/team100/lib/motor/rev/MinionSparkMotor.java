@@ -1,0 +1,51 @@
+package org.team100.lib.motor.rev;
+
+import org.team100.lib.config.CurrentLimit;
+import org.team100.lib.config.Friction;
+import org.team100.lib.config.PIDConstants;
+import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.TotalCurrentLog;
+import org.team100.lib.motor.MotorPhase;
+import org.team100.lib.motor.NeutralMode100;
+import org.team100.lib.util.CanId;
+
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+
+/**
+ * Minion motor on the sparkmax controller
+ * 
+ * @see https://store.ctr-electronics.com/products/minion-brushless-motor
+ */
+public class MinionSparkMotor extends CANSparkMotor {
+    public MinionSparkMotor(
+            LoggerFactory parent,
+            TotalCurrentLog currentLog,
+            CanId canId,
+            NeutralMode100 neutral,
+            MotorPhase motorPhase,
+            CurrentLimit limit,
+            SimpleDynamics ff,
+            Friction friction,
+            PIDConstants pid) {
+        super(parent, currentLog,
+                new SparkMax(canId.id, MotorType.kBrushless),
+                neutral, motorPhase, limit, ff, friction, pid);
+    }
+
+    @Override
+    public double kROhms() {
+        return 0.056;
+    }
+
+    @Override
+    public double kTNm_amp() {
+        return 0.015;
+    }
+
+    @Override
+    public double kFreeSpeedRPM() {
+        return 7700;
+    }
+}
