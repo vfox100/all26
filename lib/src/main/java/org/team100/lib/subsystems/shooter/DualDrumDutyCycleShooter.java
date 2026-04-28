@@ -11,22 +11,27 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 public class DualDrumDutyCycleShooter extends SubsystemBase implements DualDrumShooter {
     /** full output duty cycle */
-    private final double m_full;
+    private final double m_fullDutyCycle;
     private final BareMotor m_left;
     private final BareMotor m_right;
 
     public DualDrumDutyCycleShooter(
             LoggerFactory log,
-            double full,
+            double fullDutyCycle,
             BareMotor left,
             BareMotor right) {
-        m_full = full;
+        m_fullDutyCycle = fullDutyCycle;
         m_left = left;
         m_right = right;
     }
 
     @Override
-    public Command spin() {
+    public Command spinSlow() {
+        return run(this::half);
+    }
+
+    @Override
+    public Command spinFast() {
         return run(this::full);
     }
 
@@ -43,8 +48,12 @@ public class DualDrumDutyCycleShooter extends SubsystemBase implements DualDrumS
 
     ///////////////////////////////////////////////////////
 
+    private void half() {
+        set(m_fullDutyCycle / 2);
+    }
+
     private void full() {
-        set(m_full);
+        set(m_fullDutyCycle);
     }
 
     private void zero() {

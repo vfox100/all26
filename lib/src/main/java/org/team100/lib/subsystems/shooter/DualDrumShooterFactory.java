@@ -23,13 +23,55 @@ import org.team100.lib.util.CanId;
 /** Configuration of motors on the demobot shooter. */
 public class DualDrumShooterFactory {
 
-    public static DualDrumDutyCycleShooter makeDutyCycleShooter(
+    public enum ShooterType {
+        /** open-loop duty cycle. simple. */
+        DUTY_CYCLE,
+        /** closed-loop velocity, REV controller needs tuning to make this work */
+        VELOCITY
+    }
+
+    private final LoggerFactory parent;
+    private final TotalCurrentLog currentLog;
+    private final double fullDutyCycle;
+    private final double fullSpeedM_S;
+    private final CurrentLimit limit;
+    private final CanId canL;
+    private final CanId canR;
+    private final double gearRatio;
+    private final double wheelDiaM;
+    private final boolean profiled;
+
+    public DualDrumShooterFactory(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
-            double full, // full speed m/s
+            double fullDutyCycle,
+            double fullSpeedM_S,
             CurrentLimit limit,
             CanId canL,
-            CanId canR) {
+            CanId canR,
+            double gearRatio,
+            double wheelDiaM,
+            boolean profiled) {
+        this.parent = parent;
+        this.currentLog = currentLog;
+        this.fullDutyCycle = fullDutyCycle;
+        this.fullSpeedM_S = fullSpeedM_S;
+        this.limit = limit;
+        this.canL = canL;
+        this.canR = canR;
+        this.gearRatio = gearRatio;
+        this.wheelDiaM = wheelDiaM;
+        this.profiled = profiled;
+    }
+
+    public DualDrumShooter get(ShooterType type) {
+        return switch (type) {
+            case DUTY_CYCLE -> makeDutyCycleShooter();
+            case VELOCITY -> makeVelocityShooter();
+        };
+    }
+
+    public DualDrumDutyCycleShooter makeDutyCycleShooter() {
         LoggerFactory log = parent.name("shooter");
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
@@ -46,19 +88,10 @@ public class DualDrumShooterFactory {
                 MotorPhase.REVERSE, ff, friction, pid);
 
         return new DualDrumDutyCycleShooter(
-                parent, full, left, right);
+                parent, fullDutyCycle, left, right);
     }
 
-    public static DualDrumVelocityShooter makeVelocityShooter(
-            LoggerFactory parent,
-            TotalCurrentLog currentLog,
-            double full, // full speed m/s
-            boolean profiled,
-            CurrentLimit limit,
-            CanId canL,
-            CanId canR,
-            double gearRatio,
-            double wheelDiaM) {
+    public DualDrumVelocityShooter makeVelocityShooter() {
         LoggerFactory log = parent.name("shooter");
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
@@ -85,7 +118,7 @@ public class DualDrumShooterFactory {
 
         return new DualDrumVelocityShooter(
                 parent,
-                full,
+                fullSpeedM_S,
                 new OutboardLinearVelocityServo(logL, mechL, ref, 1),
                 new OutboardLinearVelocityServo(logR, mechR, ref, 1),
                 profiled);

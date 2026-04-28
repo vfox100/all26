@@ -28,19 +28,73 @@ public class IndexerFactory {
     private static final double VELOCITY = 10;
     private static final double ACCEL = 20;
 
-    public static PWMIndexer makePWMIndexer(
-            LoggerFactory parent, int channel) {
-        return new PWMIndexer(parent, new RoboRioChannel(channel));
+    public enum IndexerType {
+        /** PWM indexer (servo) is the original design, and a fallback */
+        PWM,
+        /** open-loop duty cycle. simple. */
+        DUTY_CYCLE,
+        /** closed-loop velocity, hard to control single shots */
+        VELOCITY,
+        /** closed-loop position, easier to advance one ball at a time */
+        POSITION
     }
 
-    public static DutyCycleIndexer makeDutyCycleIndexer(
+    private final LoggerFactory parent;
+    private final RoboRioChannel channel;
+    private final TotalCurrentLog currentLog;
+    private final double fullDutyCycle;
+    private final double fullVelocityM_S;
+    private final CurrentLimit limit;
+    private final CanId canId;
+    private final double gearRatio;
+    private final double wheelDiaM;
+    private final boolean profiled;
+
+    public IndexerFactory(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
-            double full, // full output duty cycle
+            RoboRioChannel channel,
+            double fullDutyCycle,
+            double fullVelocityM_S,
             CurrentLimit limit,
             CanId canId,
             double gearRatio,
-            double wheelDiaM) {
+            double wheelDiaM,
+            boolean profiled
+
+    ) {
+        this.parent = parent;
+        this.channel = channel;
+        this.currentLog = currentLog;
+        this.fullDutyCycle = fullDutyCycle;
+        this.fullVelocityM_S = fullVelocityM_S;
+        this.limit = limit;
+        this.canId = canId;
+        this.gearRatio = gearRatio;
+        this.wheelDiaM = wheelDiaM;
+        this.profiled = profiled;
+    }
+
+    public ShooterIndexer get(IndexerType type) {
+        return switch (type) {
+            case PWM -> makePWMIndexer();
+            case DUTY_CYCLE -> makeDutyCycleIndexer();
+            case VELOCITY -> makeVelocityIndexer();
+            case POSITION -> makePositionIndexer();
+        };
+    }
+
+    public PWMIndexer makePWMIndexer() {
+        if (channel == null)
+            throw new IllegalArgumentException();
+        return new PWMIndexer(parent, channel);
+    }
+
+    public DutyCycleIndexer makeDutyCycleIndexer() {
+        if (canId == null)
+            throw new IllegalArgumentException();
+        if (fullDutyCycle == 0)
+            throw new IllegalArgumentException();
         LoggerFactory log = parent.name("indexer");
         SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
         Friction friction = new Friction(log, 0.07, 0.07, 0.01, 0.5);
@@ -51,17 +105,12 @@ public class IndexerFactory {
         BareMotor motor = getMotor(
                 limit, log, currentLog, freeSpeedRad_S, canId,
                 MotorPhase.REVERSE, ff, friction, pid);
-        return new DutyCycleIndexer(parent, full, motor);
+        return new DutyCycleIndexer(parent, fullDutyCycle, motor);
     }
 
-    public static PositionIndexer makePositionIndexer(
-            LoggerFactory parent,
-            TotalCurrentLog currentLog,
-            CurrentLimit limit,
-            CanId canId,
-            double gearRatio,
-            double wheelDiaM,
-            boolean profiled) {
+    public PositionIndexer makePositionIndexer() {
+        if (canId == null)
+            throw new IllegalArgumentException();
         LoggerFactory log = parent.name("indexer");
         LinearMechanism mech = getMech(
                 log, currentLog, limit, canId, gearRatio, wheelDiaM);
@@ -74,14 +123,11 @@ public class IndexerFactory {
         return new PositionIndexer(parent, servo, profiled);
     }
 
-    public static VelocityIndexer makeVelocityIndexer(
-            LoggerFactory parent,
-            TotalCurrentLog currentLog,
-            CurrentLimit limit,
-            CanId canId,
-            double gearRatio,
-            double wheelDiaM,
-            boolean profiled) {
+    public VelocityIndexer makeVelocityIndexer() {
+        if (canId == null)
+            throw new IllegalArgumentException();
+        if (fullVelocityM_S == 0)
+            throw new IllegalArgumentException();
         LoggerFactory log = parent.name("indexer");
         LinearMechanism mech = getMech(
                 log, currentLog, limit,
@@ -91,7 +137,7 @@ public class IndexerFactory {
                 log, () -> profile, 1);
         OutboardLinearVelocityServo servo = new OutboardLinearVelocityServo(
                 log, mech, ref, 1);
-        return new VelocityIndexer(parent, servo, profiled);
+        return new VelocityIndexer(parent, fullVelocityM_S, servo, profiled);
     }
 
     private static LinearMechanism getMech(

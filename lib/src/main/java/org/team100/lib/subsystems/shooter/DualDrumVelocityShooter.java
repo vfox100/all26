@@ -33,7 +33,12 @@ public class DualDrumVelocityShooter extends SubsystemBase implements DualDrumSh
     }
 
     @Override
-    public Command spin() {
+    public Command spinSlow() {
+        return run(this::half);
+    }
+
+    @Override
+    public Command spinFast() {
         return run(this::full);
     }
 
@@ -58,13 +63,21 @@ public class DualDrumVelocityShooter extends SubsystemBase implements DualDrumSh
     }
     ///////////////////////////////////////////////////////
 
+    private void half() {
+        set(m_full / 2);
+    }
+
     private void full() {
+        set(m_full);
+    }
+
+    private void set(double x) {
         if (m_profiled) {
-            m_left.setVelocityProfiled(m_full);
-            m_right.setVelocityProfiled(m_full);
+            m_left.setVelocityProfiled(x);
+            m_right.setVelocityProfiled(x);
         } else {
-            m_left.setVelocityDirect(m_full);
-            m_right.setVelocityDirect(m_full);
+            m_left.setVelocityDirect(x);
+            m_right.setVelocityDirect(x);
         }
     }
 

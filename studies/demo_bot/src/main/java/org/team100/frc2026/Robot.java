@@ -13,7 +13,9 @@ import org.team100.lib.logging.RobotLog;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.subsystems.shooter.DualDrumShooter;
 import org.team100.lib.subsystems.shooter.DualDrumShooterFactory;
+import org.team100.lib.subsystems.shooter.DualDrumShooterFactory.ShooterType;
 import org.team100.lib.subsystems.shooter.IndexerFactory;
+import org.team100.lib.subsystems.shooter.IndexerFactory.IndexerType;
 import org.team100.lib.subsystems.shooter.PivotDefault;
 import org.team100.lib.subsystems.shooter.PivotSubsystem;
 import org.team100.lib.subsystems.shooter.ShooterIndexer;
@@ -22,6 +24,7 @@ import org.team100.lib.subsystems.tank.TankDriveFactory;
 import org.team100.lib.subsystems.tank.commands.TankManual;
 import org.team100.lib.util.Banner;
 import org.team100.lib.util.CanId;
+import org.team100.lib.util.RoboRioChannel;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -31,14 +34,34 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Robot extends TimedRobot100 {
+    /**
+     * Ball velocity is the most sensitive variable influencing safety.
+     * 
+     * The 50% cornea contusion limit is 1500 J/m^2. The ball area is
+     * about 0.005 m^2, so the KE limit is around 7.5 J, or around 20 m/s.
+     * 
+     * For more detail, see the design doc:
+     * 
+     * https://docs.google.com/document/d/14Ebyd1gQzmyat9dlTWtNtymE9XSHsTXXHNyspYBy_Ys
+     */
+    private static final double MAXIMUM_BALL_VELOCITY_M_S = 20;
+
+    private static final ShooterType SHOOTER = ShooterType.VELOCITY;
+    private static final double MAXIMUM_SHOOTER_DUTY_CYCLE = 0.1;
+    private static final double SHOOTER_GEAR_RATIO = 1.00;
+    private static final double SHOOTER_WHEEL_DIA_M = 0.16;
+
+    private static final IndexerType INDEXER = IndexerType.POSITION;
+    private static final double MAXIMUM_INDEXER_DUTY_CYCLE = 1.0;
+    private static final double MAX_INDEXER_VELOCITY_M_S = 10;
+    private static final double INDEXER_WHEEL_DIAMETER = 0.1;
+    private static final double INDEXER_GEAR_RATIO = 1.0;
+
     private static final double FIVE_TO_ONE = 5.2307692308;
     private static final double DRIVE_GEAR_RATIO = FIVE_TO_ONE * FIVE_TO_ONE;
     private static final double DRIVE_WHEEL_DIAM = 0.098425;
     private static final double MAX_SPEED_M_S = 3.0;
     private static final double MAX_OMEGA_RAD_S = 3.0;
-
-    private static final double SHOOTER_GEAR_RATIO = 1.00;
-    private static final double SHOOTER_WHEEL_DIA_M = 0.16;
 
     private final RobotLog m_robotLog;
     private final TankDrive m_drive;
@@ -60,7 +83,7 @@ public class Robot extends TimedRobot100 {
         LoggerFactory fieldLogger = logging.fieldLogger;
         LoggerFactory logger = logging.rootLogger;
 
-        DriverXboxControl driverControl = new DriverXboxControl(0);
+        DriverXboxControl xbox = new DriverXboxControl(0);
 
         m_drive = TankDriveFactory.make(
                 fieldLogger,
@@ -74,47 +97,35 @@ public class Robot extends TimedRobot100 {
                 DRIVE_GEAR_RATIO,
                 DRIVE_WHEEL_DIAM);
         m_drive.setDefaultCommand(new TankManual(
-                logger, driverControl::rightY, driverControl::rightX,
+                logger, xbox::rightY, xbox::rightX,
                 MAX_SPEED_M_S, MAX_OMEGA_RAD_S, m_drive));
 
-        //////////////////////////////////////////////////////
-        ///
-        /// There are multiple shooter implementations
-        ///
-        // m_shooter = DualDrumShooterFactory.makeDutyCycleShooter(
-        // logger,
-        // m_currentLog,
-        // 0.1, // full output duty cycle
-        // new CurrentLimit(20, 20),
-        // new CanId(39),
-        // new CanId(8));
-        m_shooter = DualDrumShooterFactory.makeVelocityShooter(
+        DualDrumShooterFactory shooterFactory = new DualDrumShooterFactory(
                 logger,
                 m_currentLog,
-                10,
-                true,
+                MAXIMUM_SHOOTER_DUTY_CYCLE,
+                MAXIMUM_BALL_VELOCITY_M_S,
                 new CurrentLimit(20, 20),
                 new CanId(39),
                 new CanId(8),
                 SHOOTER_GEAR_RATIO,
-                SHOOTER_WHEEL_DIA_M);
+                SHOOTER_WHEEL_DIA_M,
+                false);
+        m_shooter = shooterFactory.get(SHOOTER);
         m_shooter.setDefaultCommand(m_shooter.stop());
 
-        /////////////////////////////////////////////////
-        ///
-        /// There are several indexer implementations.
-        ///
-        // m_indexer = new PWMIndexerServo(logger, 0);
-        // m_indexer = IndexerFactory.makeVelocityIndexer(
-        // logger, m_currentLog,
-        // new CurrentLimit(20, 20),
-        // new CanId(100), // TODO: CANID
-        // 1.0, 0.1);
-        m_indexer = IndexerFactory.makePositionIndexer(
-                logger, m_currentLog,
+        IndexerFactory indexerFactory = new IndexerFactory(
+                logger,
+                m_currentLog,
+                new RoboRioChannel(0),
+                MAXIMUM_INDEXER_DUTY_CYCLE,
+                MAX_INDEXER_VELOCITY_M_S,
                 new CurrentLimit(20, 20),
                 new CanId(100), // TODO: CANID
-                1.0, 0.1, false);
+                INDEXER_GEAR_RATIO,
+                INDEXER_WHEEL_DIAMETER,
+                false);
+        m_indexer = indexerFactory.get(INDEXER);
         m_indexer.setDefaultCommand(m_indexer.stop());
 
         m_pivot = new PivotSubsystem(
@@ -123,19 +134,22 @@ public class Robot extends TimedRobot100 {
                 new CurrentLimit(15, 15),
                 new CanId(5));
         m_pivot.setDefaultCommand(
-                new PivotDefault(driverControl::leftY, m_pivot));
+                new PivotDefault(xbox::leftY, m_pivot));
 
         /////////////////////////////////////////////////////////////////////////////////////
         ///
         /// SHOOTER CONTROLS
         ///
-        new Trigger(driverControl::leftTrigger)
-                .whileTrue(m_shooter.spin()
-                        .withName("Shooter spin"));
-        new Trigger(driverControl::leftBumper)
+        new Trigger(xbox::leftTrigger)
+                .whileTrue(m_shooter.spinSlow()
+                        .withName("Shooter slow"));
+        new Trigger(xbox::leftTrigger).and(xbox::rightTrigger)
+                .whileTrue(m_shooter.spinFast()
+                        .withName("Shooter fast"));
+        new Trigger(xbox::leftBumper)
                 .onTrue(m_indexer.single()
                         .withName("Indexer single"));
-        new Trigger(driverControl::rightBumper)
+        new Trigger(xbox::rightBumper)
                 .whileTrue(m_indexer.continuous()
                         .withName("Indexer continuous"));
 

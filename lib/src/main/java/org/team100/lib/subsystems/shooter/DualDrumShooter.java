@@ -5,7 +5,10 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public interface DualDrumShooter extends Subsystem {
     /** Runs forever */
-    Command spin();
+    Command spinSlow();
+
+    /** Runs forever */
+    Command spinFast();
 
     /** Runs forever. */
     Command stop();
