@@ -31,7 +31,7 @@ public class Neo550CANSparkMotor extends CANSparkMotor {
             PIDConstants pid) {
         super(parent, currentLog,
                 new SparkMax(canId.id, MotorType.kBrushless),
-                neutral, motorPhase, limit, ff, friction, pid);
+                neutral, motorPhase, limit, ff, friction, pid, 0);
     }
 
     @Override

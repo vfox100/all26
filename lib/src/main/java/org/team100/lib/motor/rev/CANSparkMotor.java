@@ -97,7 +97,8 @@ public abstract class CANSparkMotor implements BareMotor {
             CurrentLimit limit,
             SimpleDynamics ff,
             Friction friction,
-            PIDConstants pid) {
+            PIDConstants pid,
+            double commutationDegrees) {
         currentLog.register(this);
         m_motor = motor;
         m_log = parent.type(this);
@@ -110,7 +111,8 @@ public abstract class CANSparkMotor implements BareMotor {
                 neutral,
                 motorPhase,
                 limit,
-                pid);
+                pid,
+                commutationDegrees);
         m_configurator.longCANTimeout();
         m_configurator.baseConfig();
         m_configurator.motorConfig();

@@ -34,6 +34,13 @@ public class RevConfigurator {
     private final MotorPhase m_phase;
     private final Mutable m_statorCurrentLimit;
     private final PIDConstants m_pid;
+    /**
+     * Used for the Minion motor, see SparkMaxConfig.Presets.CTRE_Minion.
+     * 
+     * REV do not document the default for any other motor, so pass zero
+     * to ignore this parameter.
+     */
+    private final double m_commutationDegrees;
 
     /**
      * Stator current limit is mutable.
@@ -46,7 +53,8 @@ public class RevConfigurator {
             NeutralMode100 neutral,
             MotorPhase phase,
             CurrentLimit limit,
-            PIDConstants pid) {
+            PIDConstants pid,
+            double commutationDegrees) {
         m_motor = motor;
         m_neutral = neutral;
         m_phase = phase;
@@ -54,6 +62,7 @@ public class RevConfigurator {
         m_pid = pid;
         // reapply the pid parameters if any change.
         m_pid.register(this::pidConfig);
+        m_commutationDegrees = commutationDegrees;
     }
 
     /**
@@ -90,6 +99,8 @@ public class RevConfigurator {
             case FORWARD -> false;
             case REVERSE -> true;
         });
+        if (m_commutationDegrees != 0)
+            conf.advanceCommutation(m_commutationDegrees);
         conf.signals.primaryEncoderVelocityPeriodMs(ENCODER_REPORT_PERIOD_MS);
         conf.signals.primaryEncoderVelocityAlwaysOn(true);
         conf.signals.primaryEncoderPositionPeriodMs(ENCODER_REPORT_PERIOD_MS);
