@@ -126,9 +126,9 @@ class RealCamera(Camera):
                 "bit_depth": 10,
             },
             # YUYV is YUV422 so the luma is the same
-            main={"format": "YUYV", "size": (size.width, size.height)},
+            # main={"format": "YUYV", "size": (size.width, size.height)},
             # it's a mono camera so what does it do for MJPEG?
-            # main={"format": "MJPEG", "size": (size.width, size.height)},
+            main={"format": "MJPEG", "size": (size.width, size.height)},
             # main={"format": "RGB888", "size": (size.width, size.height)},
             # lores={"format": "YUV420", "size": (size.width, size.height)},
             raw=None,

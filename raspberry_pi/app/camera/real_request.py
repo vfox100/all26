@@ -79,6 +79,7 @@ class RealRequest(Request):
 
     @override
     def rgb(self) -> AbstractContextManager[Buffer]:
+        ## TODO: add a jpeg one?  rename these "main" and 'lores?"
         return self._buffer("main")
 
     @override

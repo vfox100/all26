@@ -118,16 +118,24 @@ class TagDetector(Interpreter):
 
     @override
     def analyze(self, req: Request) -> None:
-        with req.yuv() as buffer:
+        # TODO: allow both yuv420 and yuyv and mjpeg etc.
+        # with req.yuv() as buffer:
+        with req.rgb() as buffer:
+# FOR MJPEG
+            # buffer here is jpeg encoded.
+            jpg: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+            img = cv2.imdecode(jpg, 0) # grayscale
 
-            img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
-            img = img.reshape((self._height, self._width * 2))  # type:ignore
-            img = img[:, ::2]
-            # the stride above is just a noncontiguous view, so:
-            img = np.ascontiguousarray(img)
-
-            # TODO: make some utility methods for this.
-
+# FOR YUYV
+#            img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+#            img = img.reshape((self._height, self._width * 2))  # type:ignore
+#            img = img[:, ::2]
+#            # the stride above is just a noncontiguous view, so:
+#            img = np.ascontiguousarray(img)
+#
+#            # TODO: make some utility methods for this.
+#
+# FOR YUV420
 #            # truncate, ignore chrominance. this makes a view, very fast (300 ns)
 #            img: NDArray[np.uint8] = cast(
 #                NDArray[np.uint8],

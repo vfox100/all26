@@ -2,6 +2,7 @@
 
 # pylint: disable=R0903
 
+import cv2
 import numpy as np
 from numpy.typing import NDArray
 from typing_extensions import override
@@ -33,9 +34,23 @@ class NullDetector(Interpreter):
 
     @override
     def analyze(self, req: Request) -> None:
+        self.analyzeMJPEG(req)
         # self.analyzeRGB(req)
         # self.analyzeYUV420(req)
-        self.analyzeYUYV(req)
+        # self.analyzeYUYV(req)
+
+    def analyzeMJPEG(self, req: Request) -> None:
+        buffer: Buffer
+        with req.rgb() as buffer:
+            # buffer here is jpeg encoded.
+            img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+            img_bgr = cv2.imdecode(img, 0) # grayscale
+            fps = req.fps()
+            self._fps.send(fps)
+            delay_us = req.delay_us()
+            self.display.text(img_bgr, f"FPS {fps:2.0f}", (5, 65))
+            self.display.text(img_bgr, f"delay (ms) {delay_us/1000:2.0f}", (5, 105))
+            self.display.put(img_bgr)
 
     def analyzeRGB(self, req: Request) -> None:
         buffer: Buffer
@@ -45,9 +60,9 @@ class NullDetector(Interpreter):
             fps = req.fps()
             self._fps.send(fps)
             delay_us = req.delay_us()
-            self._display.text(img_bgr, f"FPS {fps:2.0f}", (5, 65))
-            self._display.text(img_bgr, f"delay (ms) {delay_us/1000:2.0f}", (5, 105))
-            self._display.put(img_bgr)
+            self.display.text(img_bgr, f"FPS {fps:2.0f}", (5, 65))
+            self.display.text(img_bgr, f"delay (ms) {delay_us/1000:2.0f}", (5, 105))
+            self.display.put(img_bgr)
 
     def analyzeYUV420(self, req: Request) -> None:
         # YUV420 puts all the luminance first
@@ -75,7 +90,7 @@ class NullDetector(Interpreter):
             img = img[:, ::2]
             # the stride above is just a noncontiguous view, so:
             img = np.ascontiguousarray(img)
-            
+
             fps = req.fps()
             self._fps.send(fps)
             delay_us = req.delay_us()
