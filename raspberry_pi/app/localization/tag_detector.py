@@ -119,21 +119,23 @@ class TagDetector(Interpreter):
     @override
     def analyze(self, req: Request) -> None:
         # TODO: allow both yuv420 and yuyv and mjpeg etc.
-        # with req.yuv() as buffer:
-        with req.rgb() as buffer:
 # FOR MJPEG
+        # with req.rgb() as buffer:
             # buffer here is jpeg encoded.
-            jpg: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
-            img = cv2.imdecode(jpg, 0) # grayscale
+            # jpg: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+            # img = cv2.imdecode(jpg, 0) # grayscale
+            # if img is None:
+            #     return
 
 # FOR YUYV
-#            img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
-#            img = img.reshape((self._height, self._width * 2))  # type:ignore
-#            img = img[:, ::2]
-#            # the stride above is just a noncontiguous view, so:
-#            img = np.ascontiguousarray(img)
-#
-#            # TODO: make some utility methods for this.
+        with req.yuv() as buffer:
+            img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+            img = img.reshape((self._height, self._width * 2))  # type:ignore
+            img = img[:, ::2]
+            # # the stride above is just a noncontiguous view, so:
+            img = np.ascontiguousarray(img)
+
+# TODO: make some utility methods for this.
 #
 # FOR YUV420
 #            # truncate, ignore chrominance. this makes a view, very fast (300 ns)
@@ -187,6 +189,7 @@ class TagDetector(Interpreter):
 
             # Do the drawing after the NT payload is written to minimize latency.
             # This is not particularly fast or important for prod.
+
             self._display.text(img, f"FPS {fps:2.0f}", (10, 80))
             self._display.text(img, f"DELAY (ms) {delay_us/1000:2.0f}", (10, 160))
             self._display.put(img)
