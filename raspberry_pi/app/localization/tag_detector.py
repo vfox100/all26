@@ -1,9 +1,7 @@
-"""A wrapper for the AprilTag detector."""
-
-# pylint: disable=E0611,E1101,R0902,R0903,R0913,R0914,R0917,W0212
+# pylint: disable=E0611,E1101,R0902,R0903,R0913,R0914,R0917,W0212,W0611
 
 import os
-from typing import cast
+from typing import cast  # pyright: ignore[reportUnusedImport]
 import cv2
 import ntcore
 import numpy as np
@@ -19,6 +17,8 @@ from app.network.structs import Blip
 
 
 class TagDetector(Interpreter):
+    """A wrapper for the AprilTag detector."""
+
     IMAGE_DIR = "images"
 
     def __init__(
@@ -119,15 +119,15 @@ class TagDetector(Interpreter):
     @override
     def analyze(self, req: Request) -> None:
         # TODO: allow both yuv420 and yuyv and mjpeg etc.
-# FOR MJPEG
+        # FOR MJPEG
         # with req.rgb() as buffer:
-            # buffer here is jpeg encoded.
-            # jpg: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
-            # img = cv2.imdecode(jpg, 0) # grayscale
-            # if img is None:
-            #     return
+        # buffer here is jpeg encoded.
+        # jpg: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
+        # img = cv2.imdecode(jpg, 0) # grayscale
+        # if img is None:
+        #     return
 
-# FOR YUYV
+        # FOR YUYV
         with req.yuv() as buffer:
             img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
             img = img.reshape((self._height, self._width * 2))  # type:ignore
@@ -135,19 +135,17 @@ class TagDetector(Interpreter):
             # # the stride above is just a noncontiguous view, so:
             img = np.ascontiguousarray(img)
 
-# TODO: make some utility methods for this.
-#
-# FOR YUV420
-#            # truncate, ignore chrominance. this makes a view, very fast (300 ns)
-#            img: NDArray[np.uint8] = cast(
-#                NDArray[np.uint8],
-#                np.frombuffer(buffer, dtype=np.uint8, count=self._y_len),  # type:ignore
-#            )
-#
-#            # this  makes a view, very fast (150 ns)
-#            img = img.reshape((self._height, self._width))  # type:ignore
-
-
+            # TODO: make some utility methods for this.
+            #
+            # FOR YUV420
+            #            # truncate, ignore chrominance. this makes a view, very fast (300 ns)
+            #            img: NDArray[np.uint8] = cast(
+            #                NDArray[np.uint8],
+            #                np.frombuffer(buffer, dtype=np.uint8, count=self._y_len),  # type:ignore
+            #            )
+            #
+            #            # this  makes a view, very fast (150 ns)
+            #            img = img.reshape((self._height, self._width))  # type:ignore
 
             if self._network.calibrate():
                 self.write_calibration_image(img)

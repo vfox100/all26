@@ -1,6 +1,5 @@
 # pylint: disable=E0401
 
-from pprint import pprint
 
 from contextlib import AbstractContextManager
 from typing import cast
@@ -15,6 +14,7 @@ from app.util.timer import Timer
 # Extra constant delay.
 EXTRA_DELAY_MS: float = 2.5
 
+
 class RealRequest(Request):
     def __init__(self, req: CompletedRequest, fps: float, rolling: bool):  # type: ignore
         # Before we get a CompletedRequest, its constructor has used the
@@ -25,14 +25,6 @@ class RealRequest(Request):
         self._req: CompletedRequest = req
         self._fps = fps
         self._rolling = rolling
-        # print("#### REAL REQUEST ####")
-        # print(req)
-        # print("config")
-        # print(req.config)
-        # print(req.config.keys())
-        # foo = req.make_image("main")
-        # print("#### FOO ####")
-        # print(foo)
 
     @override
     def fps(self) -> float:
@@ -42,8 +34,6 @@ class RealRequest(Request):
     @override
     def delay_us(self) -> int:
         metadata = self._req.get_metadata()  # type: ignore
-        # print("\n*** METADATA")
-        # pprint(metadata)
         # Time of first row received, this is roughly the "readout timestamp"
         sensor_timestamp_ns = cast(int, metadata["SensorTimestamp"])
 
@@ -118,11 +108,6 @@ class RealRequest(Request):
         # the easiest way to get at the mmap buffer.
         #
         # To use the buffer, you can pass it to np.frombuffer().
-        # print("**** REQ BUFFERS ****")
-        # print(self._req.request.buffers.keys())
-        # print("**** STREAM ****")
-        # print(stream)
-        # print("***** WOO *****")
         return _MappedBuffer(self._req, stream)  # type: ignore
 
     @override

@@ -1,12 +1,10 @@
-"""A detector that does nothing but publish its input."""
+# pylint: disable=C0103,E1101,R0903
 
-# pylint: disable=R0903
-
+from collections.abc import Buffer
 import cv2
 import numpy as np
 from numpy.typing import NDArray
 from typing_extensions import override
-
 from app.camera.camera_protocol import Camera, Request, Size
 from app.camera.interpreter_protocol import Interpreter
 from app.dashboard.display import Display
@@ -14,6 +12,8 @@ from app.network.network_protocol import Network
 
 
 class NullDetector(Interpreter):
+    """A detector that does nothing but publish its input."""
+
     def __init__(
         self,
         cam: Camera,
@@ -44,7 +44,7 @@ class NullDetector(Interpreter):
         with req.rgb() as buffer:
             # buffer here is jpeg encoded.
             img: NDArray[np.uint8] = np.frombuffer(buffer, dtype=np.uint8)
-            img_bgr = cv2.imdecode(img, 0) # grayscale
+            img_bgr = cv2.imdecode(img, 0)  # grayscale
             fps = req.fps()
             self._fps.send(fps)
             delay_us = req.delay_us()

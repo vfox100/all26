@@ -1,37 +1,33 @@
-"""The Raspberry Pi Global Shutter camera, monochrome.
-
-It uses the YUV420 12-bit encoding option from the camera.
-"""
-
 # pylint: disable=E0401
 
 from typing import Any
-
 from typing_extensions import override
 
-from app.camera.real_camera import RealCamera
-from app.config.identity import Identity
+from app.camera.config_protocol import Config
+from app.camera.size import Size
 
 
-class CameraGsMono(RealCamera):
-    def __init__(self, identity: Identity) -> None:
-        print("\n*** Camera: CameraGsMono")
-        super().__init__(identity)
-        self._fail_mismatched_size()
+class ConfigGsMono(Config):
+    """The Raspberry Pi Global Shutter camera, monochrome.
+    It uses the YUV420 12-bit encoding option from the camera.
+    """
+
+    def __init__(self) -> None:
+        print("\n*** Config: ConfigGsMono")
 
     @override
-    def _sensor(self) -> dict[str, Any]:
+    def sensor(self, size: Size) -> dict[str, Any]:
         # for rpi camera
         return {
-            "output_size": (self._size.sensor_width, self._size.sensor_height),
+            "output_size": (size.sensor_width, size.sensor_height),
             "bit_depth": 10,
         }
 
     @override
-    def _main(self) -> dict[str, Any]:
-        return {"format": "YUV420", "size": (self._size.width, self._size.height)}
+    def main(self, size: Size) -> dict[str, Any]:
+        return {"format": "YUV420", "size": (size.width, size.height)}
 
-    def _controls(self) -> dict[str, Any]:
+    def controls(self) -> dict[str, Any]:
         return {
             # ANALOGUE GAIN
             # To minimize blur, set this as high as possible.
@@ -59,3 +55,8 @@ class CameraGsMono(RealCamera):
             # See libcamera.controls.draft.NoiseReductionModeEnum.Off,
             # "NoiseReductionMode": 0,
         }
+
+    @override
+    def ok(self, conf: dict[str, Any], cam: dict[str, Any]) -> bool:
+        """Configured size and actual size must match."""
+        return conf["sensor"]["output_size"] == cam["sensor"]["output_size"]

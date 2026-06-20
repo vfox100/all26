@@ -12,12 +12,18 @@ from app.localization.tag_detector import TagDetector
 from app.localization.null_detector import NullDetector
 from app.network.network_protocol import Network
 
+USE_NULL: bool = False
+
 
 class InterpreterFactory:
     @staticmethod
     def get(
         identity: Identity, cam: Camera, display: Display, network: Network
     ) -> Interpreter:
+        if USE_NULL:
+            # For testing.
+            return NullDetector(cam, display, network)
+
         # GREEN TARGET VALUES
         # object_lower = np.array((40, 50, 100))
         # object_higher = np.array((70, 255, 255))
@@ -30,8 +36,6 @@ class InterpreterFactory:
         match identity:
             case Identity.FUNNEL:
                 return TagDetector(identity, cam, display, network)
-                # print("USING NULL DETECTOR")
-                # return NullDetector(cam, display, network)
             case Identity.GAME_PIECE:
                 return TargetDetector(
                     cam,

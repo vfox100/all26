@@ -1,16 +1,3 @@
-"""This is a wrapper for Picamera2.
-
-It handles configuration of each camera according to the Pi identity.
-
-For more on the Picamera2 library, see the manual:
-
-https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf
-
-and the source:
-
-https://github.com/raspberrypi/picamera2/
-"""
-
 # pylint: disable=E0401
 
 from pprint import pprint
@@ -18,10 +5,12 @@ from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
-from picamera2 import CompletedRequest, Picamera2, libcamera  # type: ignore
+from picamera2 import CompletedRequest, Picamera2  # type: ignore
 from typing_extensions import override
 
 from app.camera.camera_protocol import Camera, Request
+from app.camera.config_factory import ConfigFactory
+from app.camera.config_protocol import Config
 from app.camera.distortion import Distortion
 from app.camera.intrinsic import Intrinsic
 from app.camera.model import Model
@@ -33,8 +22,20 @@ from app.util.timer import Timer
 
 
 class RealCamera(Camera):
-    def __init__(self, identity: Identity) -> None:
+    """This is a wrapper for Picamera2.
 
+    It handles configuration of each camera according to the Pi identity.
+
+    For more on the Picamera2 library, see the manual:
+
+    https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf
+
+    and the source:
+
+    https://github.com/raspberrypi/picamera2/
+    """
+
+    def __init__(self, identity: Identity) -> None:
         Picamera2.set_logging(Picamera2.INFO)  # type: ignore
         # debug logs with every frame (!)
         # Picamera2.set_logging(Picamera2.DEBUG)
@@ -60,19 +61,19 @@ class RealCamera(Camera):
         self._size: Size = Size.from_model(model)
 
         print("\n\n*** CONFIG! ***\n\n")
+        config: Config = ConfigFactory.get(identity)
         self._camera_config: dict[str, Any] = self._get_config(  # type: ignore
-            identity, self._cam  # type: ignore
+            config, self._size, identity, self._cam  # type: ignore
         )
-
         print("\n*** REQUESTED CONFIG")
         print(self._camera_config)
-
         # optimal alignment makes the ISP a little faster
         self._cam.align_configuration(self._camera_config, optimal=True)  # type:ignore
         print("\n*** ALIGNED CONFIG")
         print(self._camera_config)
 
         self._cam.configure(self._camera_config)  # type:ignore
+        self._check_config(config)
 
         self._cam.start()  # type:ignore
         self._frame_time = Timer.time_ns()
@@ -103,61 +104,26 @@ class RealCamera(Camera):
     def get_dist(self) -> NDArray[np.float32]:
         return self._dist.get()
 
-    def _buffer_count(self) -> int:
-        # more buffers seem to make the pipeline a little smoother
-        return 5
-
-    def _queue(self) -> bool:
-        # Without queueing, every capture waits for the current
-        # frame, which means less FPS and more latency.
-        return True
-
-    def _sensor(self) -> dict[str, Any]:
-        # not all cameras use the "sensor" field
-        return {}
-
-    def _main(self) -> dict[str, Any]:
-        # override this
-        return {}
-
-    def _transform(self, identity: Identity) -> libcamera.Transform:  # type: ignore
-        # Flip for upside-down cameras.
-        # see libcamera/src/libcamera/transform.cpp
-        match identity:
-            case Identity.FLIPPED | Identity.CLIMB_RIGHT:
-                return libcamera.Transform(  # type: ignore
-                    rotation=0, hflip=True, vflip=True, transpose=False
-                )
-            case _:
-                return libcamera.Transform()  # type: ignore
-
-    def _controls(self) -> dict[str, Any]:
-        # override this
-        return {}
-
     def _get_config(
         self,
+        conf: Config,
+        size: Size,
         identity: Identity,
         cam: Picamera2,  # type: ignore
     ) -> dict[str, Any]:
         return cam.create_still_configuration(  # type:ignore
-            buffer_count=self._buffer_count(),
-            queue=self._queue(),
-            sensor=self._sensor(),
-            main=self._main(),
-            raw=None,
-            transform=self._transform(identity),  # type:ignore
-            controls=self._controls(),
+            buffer_count=conf.buffer_count(),
+            queue=conf.queue(),
+            sensor=conf.sensor(size),
+            main=conf.main(size),
+            raw=conf.raw(),
+            transform=conf.transform(identity),  # type:ignore
+            controls=conf.controls(),
         )
 
-    def _fail_mismatched_size(self):
-        """Configured size and actual size must match."""
-        if (
-            self._camera_config["sensor"]["output_size"]
-            != self._cam.camera_config["sensor"]["output_size"]  # type:ignore
-        ):
-            raise ValueError(
-                "Desired sensor size must match selected sensor size.",
-                self._camera_config["sensor"]["output_size"],
-                self._cam.camera_config["sensor"]["output_size"],  # type:ignore
-            )
+    def _check_config(self, config: Config):
+        """Verify the requested config matches the camera config."""
+        if not config.ok(self._camera_config, self._cam.camera_config):  # type:ignore
+            pprint(self._camera_config)
+            pprint(self._cam.camera_config)  # type:ignore
+            raise ValueError("Config check fail")

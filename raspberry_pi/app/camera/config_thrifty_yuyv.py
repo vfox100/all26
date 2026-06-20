@@ -1,25 +1,23 @@
-"""The Thrifty Cam camera, using the YUYV encoding."""
-
 # pylint: disable=E0401
 
 from typing import Any
-
 from typing_extensions import override
 
-from app.camera.real_camera import RealCamera
-from app.config.identity import Identity
+from app.camera.config_protocol import Config
+from app.camera.size import Size
 
 
-class CameraThriftyYuyv(RealCamera):
-    def __init__(self, identity: Identity) -> None:
-        print("\n*** Camera: CameraThriftyYuyv")
-        super().__init__(identity)
+class ConfigThriftyYuyv(Config):
+    """The Thrifty Cam camera, using the YUYV encoding."""
+
+    def __init__(self) -> None:
+        print("\n*** Config: ConfigThriftyYuyv")
 
     @override
-    def _main(self) -> dict[str, Any]:
-        return {"format": "YUYV", "size": (self._size.width, self._size.height)}
+    def main(self, size: Size) -> dict[str, Any]:
+        return {"format": "YUYV", "size": (size.width, size.height)}
 
-    def _controls(self) -> dict[str, Any]:
+    def controls(self) -> dict[str, Any]:
         return {
             # ANALOGUE GAIN
             # To minimize blur, set this as high as possible.
