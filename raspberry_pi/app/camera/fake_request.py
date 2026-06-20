@@ -3,6 +3,7 @@
 from contextlib import AbstractContextManager, nullcontext
 from typing_extensions import Buffer, override
 import cv2
+import numpy as np
 from cv2.typing import MatLike
 from app.camera.request_protocol import Request
 
@@ -35,7 +36,9 @@ class FakeRequest(Request):
         return nullcontext(self.img.copy().data)
 
     def yuv(self) -> AbstractContextManager[Buffer]:
-        return nullcontext(cv2.cvtColor(self.img, cv2.COLOR_RGB2YUV_I420).data)
+        img_yuv: MatLike = cv2.cvtColor(self.img, cv2.COLOR_RGB2YUV_I420)
+        img_yuv = np.ascontiguousarray(img_yuv)
+        return nullcontext(img_yuv.data)
 
     @override
     def release(self) -> None:

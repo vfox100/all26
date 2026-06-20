@@ -97,6 +97,7 @@ class CombinedDetector(Interpreter):
         """Detect AprilTags in a BGR image by converting to grayscale internally."""
         # Convert BGR to grayscale for tag detection
         img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+        img_gray = np.ascontiguousarray(img_gray)
         result: list[AprilTagDetection] = self._at_detector.detect(img_gray.data)
         blips: list[Blip] = []
 
