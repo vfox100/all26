@@ -1,14 +1,6 @@
-"""This is a wrapper for Picamera2.
+"""The Raspberry Pi Global Shutter camera, color.
 
-It handles configuration of each camera according to the Pi identity.
-
-For more on the Picamera2 library, see the manual:
-
-https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf
-
-and the source:
-
-https://github.com/raspberrypi/picamera2/
+It uses the 24-bit RGB encoding option from the camera.
 """
 
 # pylint: disable=E0401
@@ -21,7 +13,8 @@ from numpy.typing import NDArray
 from picamera2 import CompletedRequest, Picamera2, libcamera  # type: ignore
 from typing_extensions import override
 
-from app.camera.camera_protocol import Camera, Request
+from app.camera.camera_protocol import Request
+from app.camera.real_camera import RealCamera
 from app.camera.distortion import Distortion
 from app.camera.intrinsic import Intrinsic
 from app.camera.model import Model
@@ -31,10 +24,9 @@ from app.camera.size import Size
 from app.config.identity import Identity
 from app.util.timer import Timer
 
-
-class RealCamera(Camera):
+class CameraGsColor(RealCamera):
     def __init__(self, identity: Identity) -> None:
-        print("\n*** Camera: RealCamera")
+        print("\n*** Camera: CameraGsColor")
         Picamera2.set_logging(Picamera2.INFO)
         # debug logs with every frame (!)
         # Picamera2.set_logging(Picamera2.DEBUG)
@@ -60,7 +52,7 @@ class RealCamera(Camera):
         self._size: Size = Size.from_model(model)
 
         print("\n\n*** CONFIG! ***\n\n")
-        self._camera_config: dict[str, Any] = RealCamera.__get_config(  # type: ignore
+        self._camera_config: dict[str, Any] = CameraGsColor.__get_config(  # type: ignore
             identity, self._cam, self._size  # type: ignore
         )
 
@@ -116,21 +108,16 @@ class RealCamera(Camera):
         identity: Identity, cam: Picamera2, size: Size  # type: ignore
     ) -> dict[str, Any]:
         print("creating config")
-
+    
         camera_config: dict[str, Any] = cam.create_still_configuration(  # type:ignore
             # more buffers seem to make the pipeline a little smoother
             buffer_count=5,
             queue=True,
-            sensor={
+            sensor={ # rpi camera listens to this
                 "output_size": (size.sensor_width, size.sensor_height),
                 "bit_depth": 10,
             },
-            # YUYV is YUV422 so the luma is the same
-            main={"format": "YUYV", "size": (size.width, size.height)},
-            # it's a mono camera so what does it do for MJPEG?
-            # main={"format": "MJPEG", "size": (size.width, size.height)},
-            # main={"format": "RGB888", "size": (size.width, size.height)},
-            # lores={"format": "YUV420", "size": (size.width, size.height)},
+            main={"format": "RGB888", "size": (size.width, size.height)},
             raw=None,
             transform=RealCamera._transform(identity),  # type:ignore
             controls={
@@ -171,20 +158,6 @@ class RealCamera(Camera):
             },
         )
         return camera_config  # type: ignore
-
-    @staticmethod
-    def _transform(identity: Identity) -> libcamera.Transform:  # type: ignore
-        # Flip for upside-down cameras.
-        # see libcamera/src/libcamera/transform.cpp
-        if identity in (
-            Identity.FLIPPED,
-            # Identity.FUNNEL,
-            Identity.CLIMB_RIGHT,
-        ):
-            return libcamera.Transform(  # type: ignore
-                rotation=0, hflip=True, vflip=True, transpose=False
-            )
-        return libcamera.Transform()  # type: ignore
 
     def _fail_mismatched_size(self):
         """Configured size and actual size must match."""
