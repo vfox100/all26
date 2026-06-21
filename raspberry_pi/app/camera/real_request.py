@@ -1,5 +1,4 @@
 # pylint: disable=E0401
-from pprint import pprint
 from contextlib import AbstractContextManager
 from typing import cast
 from typing_extensions import Buffer, override

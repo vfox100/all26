@@ -1,12 +1,11 @@
 # pylint: disable=E0401
 
 from pprint import pprint
-import time
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
-from app.decoder.decoder_protocol import Decoder
+
 from picamera2 import CompletedRequest, Picamera2  # type: ignore
 from typing_extensions import override
 
@@ -19,6 +18,7 @@ from app.camera.model import Model
 from app.camera.real_request import RealRequest
 from app.camera.size import Size
 from app.config.identity import Identity
+from app.decoder.decoder_protocol import Decoder
 from app.util.timer import Timer
 
 
@@ -79,7 +79,7 @@ class RealCamera(Camera):
         self._cam.start()  # type:ignore
         # Controls need to be set *after* the camera starts,
         # or AeEnable doesn't do anything!
-        self._cam.set_controls(config.controls()) # type:ignore
+        self._cam.set_controls(config.controls())  # type:ignore
         self._frame_time = Timer.time_ns()
 
     @override

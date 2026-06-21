@@ -1,7 +1,4 @@
-"""A combined detector for AprilTags and colored objects (notes) using BGR image only."""
-
 # pylint: disable=C0103,E0611,E1101,E1121,R0902,R0903,R0913,R0914,R0917,W0212,W0612
-
 
 import cv2
 import numpy as np
@@ -21,6 +18,8 @@ from app.network.network_protocol import Network
 
 
 class CombinedDetector(Interpreter):
+    """A combined detector for AprilTags and colored objects."""
+
     def __init__(
         self,
         identity: Identity,

@@ -1,4 +1,3 @@
-"""A wrapper for the note detector."""
 
 # pylint: disable=C0103,E1101,E1121,R0902,R0903,R0913,R0914,R0917,W0612
 
@@ -19,6 +18,8 @@ from app.decoder.decoder_protocol import Decoder
 
 
 class TargetDetector(Interpreter):
+    """Detects colored objects."""
+
     def __init__(
         self,
         cam: Camera,

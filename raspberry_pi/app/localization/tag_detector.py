@@ -129,7 +129,6 @@ class TagDetector(Interpreter):
             img: MatLike | None = decoder.mono(buffer)
             if img is None:
                 return
-          
             if self._network.calibrate():
                 self.write_calibration_image(img)
 
