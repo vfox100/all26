@@ -49,7 +49,7 @@ public class Robot extends TimedRobot100 {
      * This value is from the testboard, experimenting until the
      * "sensor minus camera" is zero at rest.
      */
-    private static final double STATIC_OFFSET = 0.951;
+    private static final double STATIC_OFFSET = 0.94922;
 
     /**
      * The AS5048 duty cycle sensor itself has a propagation delay of 100 us and a
