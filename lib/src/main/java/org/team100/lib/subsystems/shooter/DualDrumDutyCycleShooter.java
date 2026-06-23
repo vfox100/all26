@@ -66,4 +66,9 @@ public class DualDrumDutyCycleShooter extends SubsystemBase implements DualDrumS
         m_right.setDutyCycle(dutyCycle);
     }
 
+    @Override
+    public boolean atGoal() {
+        return false;
+    }
+
 }

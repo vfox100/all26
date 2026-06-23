@@ -12,4 +12,6 @@ public interface DualDrumShooter extends Subsystem {
 
     /** Runs forever. */
     Command stop();
+
+    boolean atGoal();
 }

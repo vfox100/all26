@@ -1,5 +1,9 @@
 package org.team100.frc2026;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
+
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.config.CurrentLimit;
@@ -17,7 +21,6 @@ import org.team100.lib.subsystems.shooter.DualDrumShooterFactory;
 import org.team100.lib.subsystems.shooter.DualDrumShooterFactory.ShooterType;
 import org.team100.lib.subsystems.shooter.IndexerFactory;
 import org.team100.lib.subsystems.shooter.IndexerFactory.IndexerType;
-import org.team100.lib.subsystems.shooter.PivotDefault;
 import org.team100.lib.subsystems.shooter.PivotSubsystem;
 import org.team100.lib.subsystems.shooter.ShooterIndexer;
 import org.team100.lib.subsystems.tank.TankDrive;
@@ -63,8 +66,9 @@ public class Robot extends TimedRobot100 {
     private static final double DRIVE_WHEEL_DIAM = 0.098425;
     // measured 4/30/26, used to be 0.4.
     private static final double TRACK_WIDTH = 0.5;
-    private static final double MAX_SPEED_M_S = 2.0;
-    private static final double MAX_OMEGA_RAD_S = 4.0;
+    // slower in order to preserve the tires on the blacktop
+    private static final double MAX_SPEED_M_S = 1.0;
+    private static final double MAX_OMEGA_RAD_S = 2.0;
 
     private final SolidIndicator m_led;
     private final RobotLog m_robotLog;
@@ -105,6 +109,7 @@ public class Robot extends TimedRobot100 {
                 MAX_SPEED_M_S,
                 DRIVE_GEAR_RATIO,
                 DRIVE_WHEEL_DIAM);
+        // changed back to all-right-side because it's easier to explain
         m_drive.setDefaultCommand(new TankManual(
                 logger,
                 () -> xbox.rightY() * -1.0,
@@ -146,27 +151,35 @@ public class Robot extends TimedRobot100 {
                 m_currentLog,
                 new CurrentLimit(20, 20),
                 new CanId(5));
-        m_pivot.setDefaultCommand(
-                new PivotDefault(
-                        () -> xbox.leftY() * -1.0,
-                        m_pivot));
+        m_pivot.setDefaultCommand(m_pivot.stop());
+        // m_pivot.setDefaultCommand(
+        // new PivotDefault(
+        // () -> xbox.leftY() * -1.0,
+        // m_pivot));
 
         /////////////////////////////////////////////////////////////////////////////////////
         ///
         /// SHOOTER CONTROLS
         ///
-        new Trigger(xbox::leftTrigger)
-                .whileTrue(m_shooter.spinSlow()
-                        .withName("Shooter slow"));
-        new Trigger(xbox::leftTrigger).and(xbox::rightTrigger)
-                .whileTrue(m_shooter.spinFast()
-                        .withName("Shooter fast"));
-        new Trigger(xbox::leftBumper)
-                .onTrue(m_indexer.single()
-                        .withName("Indexer single"));
-        new Trigger(xbox::rightBumper)
-                .whileTrue(m_indexer.continuous()
-                        .withName("Indexer continuous"));
+        // changed shooter to "b" because it's easier to see
+        new Trigger(xbox::b)
+                .whileTrue(
+                        parallel(
+                                m_shooter.spinSlow(),
+                                waitUntil(m_shooter::atGoal)
+                                        .andThen(m_indexer.single()
+                                                .andThen(m_indexer.stop().withTimeout(0.5)))
+                                        .repeatedly())
+                                .withName("Shooter slow"));
+        // new Trigger(xbox::leftTrigger).and(xbox::rightTrigger)
+        // .whileTrue(m_shooter.spinFast()
+        // .withName("Shooter fast"));
+        // new Trigger(xbox::leftBumper)
+        // .onTrue(m_indexer.single()
+        // .withName("Indexer single"));
+        // new Trigger(xbox::rightBumper)
+        // .whileTrue(m_indexer.continuous()
+        // .withName("Indexer continuous"));
 
         m_auton = null;
     }
