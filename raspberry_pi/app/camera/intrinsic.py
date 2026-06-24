@@ -4,7 +4,15 @@ import numpy as np
 from numpy.typing import NDArray
 
 from app.config.identity import Identity
-
+//case identity.FUNNEL:
+              //  self._mtx = np.array(
+                //    [   
+                  //      [381.36481],
+                    //    [1382.951086],
+                      //  [749.8494768, 708.7874336],
+                    //]
+                //)
+                
 
 class Intrinsic:
     """Camera intrinsic matrix.
