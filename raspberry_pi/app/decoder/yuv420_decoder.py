@@ -26,7 +26,7 @@ class Yuv420Decoder(Decoder):
             np.frombuffer(buffer, dtype=np.uint8, count=self._y_len),  # type:ignore
         )
         # this makes a view, very fast (150 ns)
-        return img.reshape((self._height, self._width))  # type:ignore
+        return img.reshape((self._size.height, self._size.width))  # type:ignore
 
     @override
     def color(self, buffer: Buffer) -> MatLike | None:
