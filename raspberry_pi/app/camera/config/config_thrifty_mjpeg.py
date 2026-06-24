@@ -34,7 +34,7 @@ class ConfigThriftyMjpeg(Config):
             # To minimize blur, set this as high as possible.
             # On the Thiftycam the range is [1.0, 4.0]
             # 4.0 seems to produce lots of noise
-            "AnalogueGain": 2.0,
+            "AnalogueGain": 1.0,
             #
             # AUTO EXPOSURE
             # Must be true for outside or in bright sun.
@@ -42,8 +42,5 @@ class ConfigThriftyMjpeg(Config):
             "AeEnable": False,
             #
             # EXPOSURE TIME (microseconds)
-            # Minimizes blur.  Requires pretty good light.
-            # "ExposureTime": 500,
-            # Works in less light, slightly more blur.
-            "ExposureTime": 1000,
+            "ExposureTime": 500,
         }

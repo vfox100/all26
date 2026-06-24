@@ -15,6 +15,9 @@ class ConfigFactory:
     def get(identity: Identity, size: Size) -> Config:
         match identity:
             case Identity.FUNNEL:
+                # test the RPi GS camera
+                # return ConfigGsMono(size)
+                # test the ThriftyCam
                 return ConfigThriftyMjpeg(size)
                 # return ConfigThriftyYuyv(size)
             case Identity.CLIMB_RIGHT:
