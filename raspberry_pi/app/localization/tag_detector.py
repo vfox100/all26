@@ -17,6 +17,7 @@ from app.network.network_protocol import Network
 from app.network.structs import Blip
 from app.decoder.decoder_protocol import Decoder
 
+
 class TagDetector(Interpreter):
     """A wrapper for the AprilTag detector."""
 
@@ -191,7 +192,16 @@ class TagDetector(Interpreter):
         pairs = np.reshape(corners, [4, 2])
         # undistortImagePoints takes [u,v] pixel pairs
         # this is just undistortPoints with mtx as the new intrinsic.
-        pairs = cv2.undistortImagePoints(pairs, self._mtx, self._dist)
+        # the default iterates 5 times and often doesn't get there.
+        # TODO: maybe 40 iterations is too many?
+        pairs = cv2.undistortImagePoints(
+            pairs,
+            self._mtx,
+            self._dist,
+            None,
+            (cv2.TermCriteria_COUNT | cv2.TermCriteria_EPS, 40, 0.01),
+        )
+        # pairs = cv2.undistortImagePoints(pairs, self._mtx, self._dist)
 
         # the estimator wants [x0, y0, x1, y1, ...]
         # pairs has an extra dimension, so redo it:
