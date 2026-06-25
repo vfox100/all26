@@ -21,15 +21,11 @@ class FakeCamera(Camera):
         filename: str,
         size: Optional[tuple[int, int]] = None,
         k1: float = 0.0,
-        inv_k1: float = 0.0,
     ) -> None:
         """
         filename: in this directory.
-        yuv: if true, transcode to YUV420.
         size: if no size is supplied, the native size is used.
         k1: quadratic distortion term for undistortion
-        inv_k1: inverse distortion, used to distort the image
-        note: if k1 magnitude is more than about 7, undistort barfs.
         """
         p = Path(__file__).parent / filename
         pathstr: str = str(p)
@@ -46,16 +42,32 @@ class FakeCamera(Camera):
         self.c: int = self.img.shape[2]
         self.frame_time = Timer.time_ns()
         self.k1 = k1
-        # use undistort to distort the image, using the inverse
-        mtx: NDArray[np.float32] = self.get_intrinsic()
 
-        dist = np.array([inv_k1, 0, 0, 0])
-
-        self.img: MatLike = cv2.undistort(self.img, mtx, dist)
-        print("\n*** img shape:", self.img.shape)
+        # Here we want to *distort* the image, so the the "undistort" below inverts the distortion.
+        self.img: MatLike = self.redistort(self.img)
 
         # uncomment to see the distorted thing
-        # cv2.imwrite("blarg.jpg", self.img)
+        # cv2.imwrite("debug.jpg", self.img)
+
+    def redistort(self, undistorted_img: MatLike) -> MatLike:
+        """Use "remap" to invert the undistortion function."""
+        # Create a grid of every pixel coordinate in the target image
+        grid_y, grid_x = np.indices((self.h, self.w), dtype=np.float32)
+        flat_grid = np.stack([grid_x.ravel(), grid_y.ravel()], axis=-1).reshape(
+            -1, 1, 2
+        )
+
+        # Use the numerical inverter to find where clean pixels map to
+        distort_map = cv2.undistortPoints(
+            flat_grid, self.get_intrinsic(), self.get_dist(), P=self.get_intrinsic()
+        )
+        distort_map = distort_map.reshape(self.h, self.w, 2)
+
+        map_x = distort_map[:, :, 0]
+        map_y = distort_map[:, :, 1]
+
+        # Sample from your clean image to generate a synthetically distorted one
+        return cv2.remap(undistorted_img, map_x, map_y, interpolation=cv2.INTER_LINEAR)
 
     @override
     def capture_request(self) -> FakeRequest:

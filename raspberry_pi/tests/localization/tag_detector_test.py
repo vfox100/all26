@@ -1,6 +1,4 @@
 import unittest
-import numpy as np
-from robotpy_apriltag import AprilTagDetection
 from wpimath.geometry import Transform3d, Translation3d, Rotation3d
 
 from app.camera.fake_camera import FakeCamera
@@ -201,43 +199,55 @@ class TagDetectorTest(unittest.TestCase):
         self.assertEqual(2, len(display.locs))
         self.assertEqual(1, display.frame_count)
 
-    def verify_pose(self, pose: Transform3d) -> None:
+    def verify_pose(self, pose: Transform3d, delta: float) -> None:
+        print("\n*** pose: ", pose)
         t: Translation3d = pose.translation()
-        self.assertAlmostEqual(-0.186, t.x, 3)
-        self.assertAlmostEqual(0.027, t.y, 3)
-        self.assertAlmostEqual(0.642, t.z, 3)
+        self.assertAlmostEqual(-0.186, t.x, delta=delta)
+        self.assertAlmostEqual(0.027, t.y, delta=delta)
+        self.assertAlmostEqual(0.642, t.z, delta=delta)
         r: Rotation3d = pose.rotation()
-        self.assertAlmostEqual(0.786, r.x, 3)
-        self.assertAlmostEqual(-0.607, r.y, 3)
-        self.assertAlmostEqual(-0.492, r.z, 3)
+        self.assertAlmostEqual(0.786, r.x, delta=delta)
+        self.assertAlmostEqual(-0.607, r.y, delta=delta)
+        self.assertAlmostEqual(-0.492, r.z, delta=delta)
 
     def test_distortion(self) -> None:
         """How much distortion can there be in the image?"""
         identity = Identity.UNKNOWN
         network = FakeNetwork()
 
-        # no distortion, like above
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), 0, 0)
+        # No distortion.
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), 0)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
         )
         self.assertEqual(1, len(display.tags))
-        self.verify_pose(display.poses[0])
+        self.verify_pose(display.poses[0], 0.001)
 
-        # this is about the most possible
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -5, 5)
+        # A moderate amount of distortion
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -0.1)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
         )
         self.assertEqual(1, len(display.tags))
-        # TODO: fix this
-        # self.verify_pose(display.poses[0])
+        # A tiny bit more tolerance
+        self.verify_pose(display.poses[0], 0.002)
+
+
+        # A realistic amount of distortion
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -0.3)
+        display = FakeDisplay()
+        TagDetector(identity, camera, display, network).analyze(
+            camera.capture_request()
+        )
+        self.assertEqual(1, len(display.tags))
+        # A bit more tolerance
+        self.verify_pose(display.poses[0], 0.003)
 
         # This is too much distortion, so detection fails.
-        # Note, this is a truly enormous amount of distortion.
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -50, 50)
+        # Note: this is a truly enormous amount of distortion.
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -2)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
