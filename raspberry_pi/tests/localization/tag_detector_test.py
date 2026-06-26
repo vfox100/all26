@@ -1,5 +1,10 @@
+# pylint: disable=E1101,R0903,R1732
+
 import unittest
 from wpimath.geometry import Transform3d, Translation3d, Rotation3d
+
+import numpy as np
+import cv2
 
 from app.camera.fake_camera import FakeCamera
 from app.config.identity import Identity
@@ -234,7 +239,6 @@ class TagDetectorTest(unittest.TestCase):
         # A tiny bit more tolerance
         self.verify_pose(display.poses[0], 0.002)
 
-
         # A realistic amount of distortion
         camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -0.3)
         display = FakeDisplay()
@@ -253,3 +257,34 @@ class TagDetectorTest(unittest.TestCase):
             camera.capture_request()
         )
         self.assertEqual(0, len(display.tags))
+
+    def test_redistort(self) -> None:
+        """This is just to see what it's doing."""
+        height = 3
+        width = 5
+        grid_y, grid_x = np.indices((height, width), dtype=np.float32)
+        print("grid_y", grid_y)
+        print("grid_x", grid_x)
+        flat_grid = np.stack([grid_x.ravel(), grid_y.ravel()], axis=-1).reshape(
+            -1, 1, 2
+        )
+        print("flat_grid", flat_grid)
+        intrinsic = np.array(
+            [
+                [6, 0, 3],
+                [0, 6, 3],
+                [0, 0, 1],
+            ]
+        )
+        dist = np.array([-0.1, 0, 0, 0])
+        distort_map = cv2.undistortPoints(
+            flat_grid, intrinsic, dist, P=intrinsic
+        )
+        print("distort_map 1", distort_map)
+        distort_map = distort_map.reshape(height, width, 2)
+        print("distort_map 2", distort_map)
+        map_x = distort_map[:, :, 0]
+        print("map_x", map_x)
+        map_y = distort_map[:, :, 1]
+        print("map_y", map_y)
+
