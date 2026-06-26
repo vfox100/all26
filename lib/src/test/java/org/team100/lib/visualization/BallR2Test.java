@@ -21,7 +21,7 @@ public class BallR2Test {
     @Test
     void testBall() {
         LoggerFactory field = new TestLoggerFactory(new TestPrimitiveLogger());
-        BallR2 b = new BallR2(field, () -> robot, () -> azimuth, 1);
+        BallR2 b = new BallR2(field, () -> robot, () -> azimuth, () -> 1);
         assertNull(b.m_location);
         assertNull(b.m_velocity);
         b.launch();

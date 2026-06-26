@@ -52,7 +52,7 @@ public class ShootingMethodTest {
             Translation2d err = b.minus(T);
             return GeometryUtil.toVec(err);
         };
-        Matrix<N2, N2> j = NumericalJacobian100.numericalJacobian2(
+        Matrix<N2, N2> j = NumericalJacobian100.numericalJacobian(
                 Nat.N2(), Nat.N2(), fn, x0);
         // jacobian is
         // [dy1/dx1 dy1/dx2]

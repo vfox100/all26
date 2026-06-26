@@ -17,6 +17,10 @@ from app.network.network_protocol import Network
 from app.network.structs import Blip
 from app.decoder.decoder_protocol import Decoder
 
+# Tag corners for computing homography.
+SRC_POINTS = np.array([[-1, 1], [1, 1], [1, -1], [-1, -1]])
+
+
 class TagDetector(Interpreter):
     """A wrapper for the AprilTag detector."""
 
@@ -42,6 +46,8 @@ class TagDetector(Interpreter):
 
         self._mtx: NDArray[np.float32] = cam.get_intrinsic()
         self._dist: NDArray[np.float32] = cam.get_dist()
+        print("\n*** intrinsic:\n", self._mtx)
+        print("\n*** distortion:", self._dist)
 
         size: Size = cam.get_size()
         self._width: int = size.width
@@ -97,6 +103,9 @@ class TagDetector(Interpreter):
         else:
             # normal tag size is 6.5 inches
             tag_size = 0.1651
+
+        print("\n*** tag size:", tag_size)
+
         self._estimator = AprilTagPoseEstimator(
             AprilTagPoseEstimator.Config(
                 tag_size,
@@ -149,8 +158,32 @@ class TagDetector(Interpreter):
             for result_item in result:
                 if result_item.getHamming() > 0:
                     continue
+                # This homography is wrong, because it used the distorted corners.
+                # homography = result_item.getHomography()
+
+                # Undistorted corners
                 corners = self.tag_corners(result_item)
-                homography = result_item.getHomography()
+                # Redo the homography using the undistorted corners
+                dst_points = np.array(
+                    [
+                        [corners[0], corners[1]],
+                        [corners[2], corners[3]],
+                        [corners[4], corners[5]],
+                        [corners[6], corners[7]],
+                    ]
+                )
+                cv2_homography, _ = cv2.findHomography(SRC_POINTS, dst_points)
+                homography = (
+                    cv2_homography[0, 0],
+                    cv2_homography[0, 1],
+                    cv2_homography[0, 2],
+                    cv2_homography[1, 0],
+                    cv2_homography[1, 1],
+                    cv2_homography[1, 2],
+                    cv2_homography[2, 0],
+                    cv2_homography[2, 1],
+                    cv2_homography[2, 2],
+                )
                 pose = self._estimator.estimate(homography, corners)
                 blips.append(Blip(servertime, result_item.getId(), pose))
                 self._display.tag(img, result_item, pose)
@@ -177,7 +210,7 @@ class TagDetector(Interpreter):
     def tag_corners(
         self, result_item: AprilTagDetection
     ) -> tuple[float, float, float, float, float, float, float, float]:
-        """Extract tag corners from the detection and 'undistort' them"""
+        """Return undistorted tag corners."""
 
         # UNDISTORT EACH ITEM
         # undistortPoints is at least 10X faster than undistort on the whole image.
@@ -191,7 +224,16 @@ class TagDetector(Interpreter):
         pairs = np.reshape(corners, [4, 2])
         # undistortImagePoints takes [u,v] pixel pairs
         # this is just undistortPoints with mtx as the new intrinsic.
-        pairs = cv2.undistortImagePoints(pairs, self._mtx, self._dist)
+        # the default iterates 5 times and often doesn't get there.
+        # TODO: maybe 40 iterations is too many?
+        pairs = cv2.undistortImagePoints(
+            pairs,
+            self._mtx,
+            self._dist,
+            None,
+            (cv2.TermCriteria_COUNT | cv2.TermCriteria_EPS, 40, 0.01),
+        )
+        # pairs = cv2.undistortImagePoints(pairs, self._mtx, self._dist)
 
         # the estimator wants [x0, y0, x1, y1, ...]
         # pairs has an extra dimension, so redo it:

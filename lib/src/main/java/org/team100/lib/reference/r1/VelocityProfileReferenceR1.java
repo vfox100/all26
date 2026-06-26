@@ -25,8 +25,7 @@ public class VelocityProfileReferenceR1 implements VelocityReferenceR1 {
     /**
      * @param parent
      * @param profile
-     * @param positionTolerance used for profileDone()
-     * @param velocityTolerance used for profileDone()
+     * @param tolerance used for profileDone()
      */
     public VelocityProfileReferenceR1(
             LoggerFactory parent,

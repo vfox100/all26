@@ -10,21 +10,28 @@ import org.team100.lib.geometry.StateR2;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleArrayLogger;
+import org.team100.lib.mechanism.LinearMechanism;
 import org.team100.lib.mechanism.RotaryMechanism;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
+import org.team100.lib.profile.r1.AccelLimitedVelocityProfileR1;
 import org.team100.lib.profile.r1.ProfileR1;
 import org.team100.lib.profile.r1.TrapezoidProfileR1;
+import org.team100.lib.profile.r1.VelocityProfileR1;
 import org.team100.lib.reference.r1.ProfileReferenceR1;
 import org.team100.lib.reference.r1.ReferenceR1;
+import org.team100.lib.reference.r1.VelocityProfileReferenceR1;
+import org.team100.lib.reference.r1.VelocityReferenceR1;
 import org.team100.lib.sensor.position.absolute.sim.SimulatedRotaryPositionSensor;
 import org.team100.lib.sensor.position.incremental.IncrementalBareEncoder;
 import org.team100.lib.servo.AngularPositionServo;
+import org.team100.lib.servo.LinearVelocityServo;
 import org.team100.lib.servo.OnboardAngularPositionServo;
+import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.state.ModelSE2;
 import org.team100.lib.targeting.FiringParameters;
-import org.team100.lib.targeting.LaserSolver;
 import org.team100.lib.targeting.Solution;
 import org.team100.lib.targeting.Solver;
+import org.team100.lib.targeting.TimeOfFlightRecursion;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -37,19 +44,26 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * 
  * It provides Field2d visualization of the turret using the name "turret".
  * 
- * There's a version of this in the shooting_method study that has a few more methods.
+ * Now supports variable velocity.
+ * 
+ * TODO: add real motors.
  */
 public class Turret extends SubsystemBase {
+    // azimuth constants
     private static final double GEAR_RATIO = 100;
     private static final double MIN_POSITION = -3;
     private static final double MAX_POSITION = 3;
+    // drum constants
+    private static final double DRUM_RATIO = 1.0;
+    private static final double DRUM_DIAMETER = 0.1;
 
     private final DoubleArrayLogger m_log_field_turret;
     private final Supplier<ModelSE2> m_state;
-    private final Supplier<Translation2d> m_target;
+    private final Supplier<Optional<Translation2d>> m_target;
     private final AngularPositionServo m_pivot;
     private final AngularPositionServo m_elevation;
-    private final Solver m_laser;
+    private final LinearVelocityServo m_drum;
+    private final Solver m_solver;
     private boolean m_aiming;
 
     /**
@@ -63,15 +77,18 @@ public class Turret extends SubsystemBase {
             LoggerFactory field,
             DoubleFunction<Optional<FiringParameters>> rangeToParams,
             Supplier<ModelSE2> state,
-            Supplier<Translation2d> target,
-            double speed) {
+            Supplier<Optional<Translation2d>> target) {
         LoggerFactory log = parent.type(this);
         m_log_field_turret = field.doubleArrayLogger(Level.COMP, "turret");
         m_state = state;
         m_target = target;
         m_pivot = pivot(log);
         m_elevation = elevation(log);
-        m_laser = new LaserSolver(rangeToParams);
+        m_drum = drum(log);
+        // Laser solver always works
+        // m_solver = new LaserSolver(rangeToParams);
+        // TODO: make TOFR work
+        m_solver = new TimeOfFlightRecursion(rangeToParams, 0.01);
         m_aiming = false;
     }
 
@@ -79,6 +96,7 @@ public class Turret extends SubsystemBase {
         ProfileR1 profile = new TrapezoidProfileR1(log, 5, 10, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
+        // TODO: real motor
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(
@@ -95,6 +113,7 @@ public class Turret extends SubsystemBase {
         ProfileR1 profile = new TrapezoidProfileR1(log, 5, 10, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
+        // TODO: real motor
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(
@@ -105,6 +124,22 @@ public class Turret extends SubsystemBase {
                 log, mech, ref, feedback);
         pivot.reset();
         return pivot;
+    }
+
+    private static LinearVelocityServo drum(LoggerFactory log) {
+
+        VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(10);
+        VelocityReferenceR1 ref = new VelocityProfileReferenceR1(
+                log, () -> profile, 1);
+        // TODO: real motor
+        SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
+        IncrementalBareEncoder encoder = motor.encoder();
+
+        LinearMechanism mech = new LinearMechanism(
+                log, motor, encoder, DRUM_RATIO, DRUM_DIAMETER,
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        LinearVelocityServo drum = new OutboardLinearVelocityServo(log, mech, ref, 1.0);
+        return drum;
     }
 
     public boolean onTarget() {
@@ -119,6 +154,10 @@ public class Turret extends SubsystemBase {
 
     public Rotation2d getElevation() {
         return new Rotation2d(m_elevation.getWrappedPositionRad());
+    }
+
+    public double getSpeed() {
+        return m_drum.getVelocity();
     }
 
     private void moveToAim() {
@@ -137,17 +176,12 @@ public class Turret extends SubsystemBase {
     }
 
     private Optional<Solution> getSolution() {
-        // For shining a flashlight at the target.
-        return getAbsoluteBearingInstantaneous();
-    }
-
-    /**
-     * Compute absolute bearing from robot to target without compensating for the
-     * motion of either one.
-     */
-    private Optional<Solution> getAbsoluteBearingInstantaneous() {
-        StateR2 target = new StateR2(m_target.get(), GlobalVelocityR2.ZERO);
-        return m_laser.solve(m_state.get(), target);
+        Optional<Translation2d> targetOpt = m_target.get();
+        if (targetOpt.isEmpty())
+            return Optional.empty();
+        Translation2d targetTranslation = targetOpt.get();
+        StateR2 target = new StateR2(targetTranslation, GlobalVelocityR2.ZERO);
+        return m_solver.solve(m_state.get(), target);
     }
 
     private void stopAiming() {
@@ -160,6 +194,7 @@ public class Turret extends SubsystemBase {
     /// COMMANDS
 
     public Command aim() {
+        // TODO: add drum speed here
         return run(this::moveToAim);
     }
 

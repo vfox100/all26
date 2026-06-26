@@ -1,4 +1,11 @@
+# pylint: disable=E1101,R0903,R1732
+
 import unittest
+from wpimath.geometry import Transform3d, Translation3d, Rotation3d
+
+import numpy as np
+import cv2
+
 from app.camera.fake_camera import FakeCamera
 from app.config.identity import Identity
 from app.dashboard.fake_display import FakeDisplay
@@ -197,32 +204,87 @@ class TagDetectorTest(unittest.TestCase):
         self.assertEqual(2, len(display.locs))
         self.assertEqual(1, display.frame_count)
 
+    def verify_pose(self, pose: Transform3d, delta: float) -> None:
+        print("\n*** pose: ", pose)
+        t: Translation3d = pose.translation()
+        self.assertAlmostEqual(-0.186, t.x, delta=delta)
+        self.assertAlmostEqual(0.027, t.y, delta=delta)
+        self.assertAlmostEqual(0.642, t.z, delta=delta)
+        r: Rotation3d = pose.rotation()
+        self.assertAlmostEqual(0.786, r.x, delta=delta)
+        self.assertAlmostEqual(-0.607, r.y, delta=delta)
+        self.assertAlmostEqual(-0.492, r.z, delta=delta)
+
     def test_distortion(self) -> None:
         """How much distortion can there be in the image?"""
         identity = Identity.UNKNOWN
         network = FakeNetwork()
 
-        # no distortion, like above
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), 0, 0)
+        # No distortion.
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), 0)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
         )
         self.assertEqual(1, len(display.tags))
+        self.verify_pose(display.poses[0], 0.001)
 
-        # this is about the most possible
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -5, 5)
+        # A moderate amount of distortion
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -0.1)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
         )
         self.assertEqual(1, len(display.tags))
+        # A tiny bit more tolerance
+        self.verify_pose(display.poses[0], 0.002)
+
+        # A realistic amount of distortion
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -0.3)
+        display = FakeDisplay()
+        TagDetector(identity, camera, display, network).analyze(
+            camera.capture_request()
+        )
+        self.assertEqual(1, len(display.tags))
+        # A bit more tolerance
+        self.verify_pose(display.poses[0], 0.003)
 
         # This is too much distortion, so detection fails.
-        # Note, this is a truly enormous amount of distortion.
-        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -50, 50)
+        # Note: this is a truly enormous amount of distortion.
+        camera = FakeCamera("images/tag_and_board.jpg", (1100, 620), -2)
         display = FakeDisplay()
         TagDetector(identity, camera, display, network).analyze(
             camera.capture_request()
         )
         self.assertEqual(0, len(display.tags))
+
+    def test_redistort(self) -> None:
+        """This is just to see what it's doing."""
+        height = 3
+        width = 5
+        grid_y, grid_x = np.indices((height, width), dtype=np.float32)
+        print("grid_y", grid_y)
+        print("grid_x", grid_x)
+        flat_grid = np.stack([grid_x.ravel(), grid_y.ravel()], axis=-1).reshape(
+            -1, 1, 2
+        )
+        print("flat_grid", flat_grid)
+        intrinsic = np.array(
+            [
+                [6, 0, 3],
+                [0, 6, 3],
+                [0, 0, 1],
+            ]
+        )
+        dist = np.array([-0.1, 0, 0, 0])
+        distort_map = cv2.undistortPoints(
+            flat_grid, intrinsic, dist, P=intrinsic
+        )
+        print("distort_map 1", distort_map)
+        distort_map = distort_map.reshape(height, width, 2)
+        print("distort_map 2", distort_map)
+        map_x = distort_map[:, :, 0]
+        print("map_x", map_x)
+        map_y = distort_map[:, :, 1]
+        print("map_y", map_y)
+
