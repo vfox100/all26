@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint2f;
@@ -45,6 +48,7 @@ public class CornerTest {
      * and they appear in build/resources/test.
      */
     private String res(String filename) {
+        // this puts "/" before "C:" on windows which does not work
         return getClass().getResource("/" + filename).getPath();
     }
 
@@ -53,11 +57,17 @@ public class CornerTest {
         OpenCvLoader.forceLoad();
         try (AprilTagDetector detector = new AprilTagDetector()) {
             detector.addFamily("tag36h11");
-            Mat img = Imgcodecs.imread(res("tag_and_board.jpg"));
+            // TODO: fix this filename issue
+            // Mat img = Imgcodecs.imread(res("tag_and_board.jpg"));
+            Mat img = Imgcodecs.imread(
+                    "C:/Users/joel/FRC/TRUHER/all26/studies/corner_vision/build/resources/test/tag_and_board.jpg");
             assertNotNull(img);
+            Size size = img.size();
+            assertEquals(5504, size.width);
+            assertEquals(3096, size.height);
             // the equivalent tag_detector_test.py resizes, so we do too.
             Imgproc.resize(img, img, new Size(1100, 620));
-            Size size = img.size();
+            size = img.size();
             assertEquals(1100, size.width);
             assertEquals(620, size.height);
             Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
@@ -117,13 +127,54 @@ public class CornerTest {
         }
     }
 
+    @Test
+    void testDetection2() throws IOException {
+        OpenCvLoader.forceLoad();
+        Mat img = Imgcodecs.imread(
+                "C:/Users/joel/FRC/TRUHER/all26/studies/corner_vision/build/resources/test/tag_and_board.jpg");
+        redistort(img);
+    }
+
+    Mat redistort(Mat undistorted_img) {
+        List<Point> points = new ArrayList<>();
+        for (int row = 0; row < undistorted_img.height(); ++row) {
+            for (int col = 0; col < undistorted_img.width(); ++col) {
+                points.add(new Point(col, row));
+            }
+        }
+        MatOfPoint2f srcPoints = new MatOfPoint2f();
+        srcPoints.fromList(points);
+
+        Mat cameraMatrix = new Mat(3, 3, CvType.CV_32FC1);
+        cameraMatrix.put(0, 0, //
+                935, 0, 550, //
+                0, 935, 310, //
+                0, 0, 1);
+        Mat distCoeffs = new Mat(1, 5, CvType.CV_32FC1);
+        distCoeffs.put(0, 0, -0.1, 0.0, 0.0, 0.0);
+
+        MatOfPoint2f dstPoints = new MatOfPoint2f();
+        Calib3d.undistortPoints(
+                srcPoints,
+                dstPoints,
+                cameraMatrix,
+                distCoeffs,
+                new Mat(),
+                cameraMatrix);
+        System.out.println(dstPoints);
+        // Mat mapX = new Mat(undistorted_img.size(), CvType.CV_32F);
+        // Mat mapY = new Mat(undistorted_img.size(), CvType.CV_32F);
+
+        Mat dst = new Mat();
+        // Imgproc.remap(undistorted_img, dst, mapX, mapY, Imgproc.INTER_LINEAR);
+        return dst;
+    }
+
     /**
      * One option is to ship *raw* camera corners, and for the camera to be unaware
      * of its own parameters.
-     * 
-     * @throws Throwable
      */
-    @Test
+    // @Test
     void testUndistortInJava() throws IOException {
         OpenCvLoader.forceLoad();
         // from the camera
@@ -145,7 +196,7 @@ public class CornerTest {
     }
 
     /** Instead of the tag-detector solver, we can use the OpenCV one. */
-    @Test
+    // @Test
     void testSolvePNP() throws IOException {
         OpenCvLoader.forceLoad();
         MatOfPoint3f obj = new MatOfPoint3f();
