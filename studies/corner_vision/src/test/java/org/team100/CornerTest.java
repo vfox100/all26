@@ -33,29 +33,56 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 public class CornerTest {
 
-    @BeforeAll
-    static void loader() throws IOException {
-        OpenCvLoader.forceLoad();
+    static {
+        try {
+            OpenCvLoader.forceLoad();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    double[] RAW_CORNERS = new double[] { //
-            955, 2477, //
-            1934, 1929, //
-            1847, 1042, //
-            649, 1465 };
-    double[] RAW_HOMOGRAPHY = new double[] { //
-            684, 202, 1413, //
-            -60, 612, 1741, //
-            0, 0, 0 };
     /**
-     * The proper corner order starts in the lower left, and goes counter-clockwise,
-     * in camera coordinates (x-right, y-down).
+     * The tag coordinate system defines the corner order, which starts in the lower
+     * left, and goes counter-clockwise, using the camera convention (x-right,
+     * y-down).
      */
-    MatOfPoint2f CORNERS_FOR_HOMOGRAPHY = new MatOfPoint2f(
+    private static final MatOfPoint2f CORNERS_FOR_HOMOGRAPHY = new MatOfPoint2f(
             new Point(-1, 1),
             new Point(1, 1),
             new Point(1, -1),
             new Point(-1, -1));
+
+    /** Corners from the full-scale image, in case we need them. */
+    @SuppressWarnings("unused")
+    private static final double[] RAW_CORNERS = new double[] { //
+            955, 2477, //
+            1934, 1929, //
+            1847, 1042, //
+            649, 1465 };
+
+    /** Homography from the full-scale image, in case we need it. */
+    @SuppressWarnings("unused")
+    private static final double[] RAW_HOMOGRAPHY = new double[] { //
+            684, 202, 1413, //
+            -60, 612, 1741, //
+            0, 0, 0 };
+
+    /**
+     * Homography between the +/-1 square above and the 0.2-scaled test image.
+     */
+    private static final double[] EXPECTED_HOMOGRAPHY = new double[] { //
+            137, 40, 282, //
+            -12, 122, 349, //
+            0, 0, 0 };
+
+    /**
+     * Corners in in the 0.2-scaled test image.
+     */
+    private static final double[] EXPECTED_CORNERS = new double[] { //
+            191, 496, //
+            387, 386, //
+            369, 209, //
+            130, 293 };
 
     /**
      * Verify the detection corner locations.
@@ -67,12 +94,7 @@ public class CornerTest {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] corners = detection.getCorners();
-            double[] expected = new double[] { //
-                    191, 496, //
-                    387, 386, //
-                    369, 209, //
-                    130, 293 };
-            assertArrayEquals(expected, corners, 1.0);
+            assertArrayEquals(EXPECTED_CORNERS, corners, 1.0);
         }
     }
 
@@ -83,16 +105,11 @@ public class CornerTest {
      */
     @Test
     void testDetectionHomography() {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+        try (AprilTagDetector detector = detector()) {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] homography = detection.getHomography();
-            double[] expected = new double[] { //
-                    137, 40, 282, //
-                    -12, 122, 349, //
-                    0, 0, 0 };
-            assertArrayEquals(expected, homography, 1.0);
+            assertArrayEquals(EXPECTED_HOMOGRAPHY, homography, 1.0);
         }
     }
 
@@ -101,17 +118,12 @@ public class CornerTest {
      */
     @Test
     void testOpenCvHomography() {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+        try (AprilTagDetector detector = detector()) {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] corners = detection.getCorners();
             double[] homography = getOpenCvHomographyArray(corners);
-            double[] expected = new double[] { //
-                    137, 40, 282, //
-                    -12, 122, 349, //
-                    0, 0, 0 };
-            assertArrayEquals(expected, homography, 1.0);
+            assertArrayEquals(EXPECTED_HOMOGRAPHY, homography, 1.0);
         }
     }
 
@@ -121,8 +133,7 @@ public class CornerTest {
      */
     @Test
     void testDetectedPose() {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+        try (AprilTagDetector detector = detector()) {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] corners = detection.getCorners();
@@ -143,17 +154,12 @@ public class CornerTest {
      */
     @Test
     void testPoseWithOpenCvHomography() {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+        try (AprilTagDetector detector = detector()) {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] corners = detection.getCorners();
             double[] homography = getOpenCvHomographyArray(corners);
-            // tag size is the real tag size
-            // camera intrinsic matches GS camera and python test
-            AprilTagPoseEstimator.Config conf = new AprilTagPoseEstimator.Config(
-                    0.1651, 935, 935, 550, 310);
-            AprilTagPoseEstimator estimator = new AprilTagPoseEstimator(conf);
+            AprilTagPoseEstimator estimator = estimator();
             Transform3d pose = estimator.estimate(homography, corners);
             verifyPose(pose, 0.001);
         }
@@ -161,12 +167,11 @@ public class CornerTest {
 
     /**
      * The OpenCV "Solve PNP" methods are not terrible but not better than the
-     * Apriltag pose estimator.
+     * Apriltag pose estimator. Don't do it this way.
      */
     @Test
     void testOpenCvPose() {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+        try (AprilTagDetector detector = detector()) {
             Mat img = loadVerbatim();
             AprilTagDetection detection = getDetection(detector, img);
             double[] corners = detection.getCorners();
@@ -174,73 +179,51 @@ public class CornerTest {
         }
     }
 
+    /**
+     * Extract corners from a distorted image, undistort them, and verify that
+     * they're correct. Note the slightly larger tolerance.
+     */
     @Test
-    void testDetectionWithDistortion() throws IOException {
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.addFamily("tag36h11");
+    void testCorrectedCorners() {
+        final double k1 = -0.3;
+        try (AprilTagDetector detector = detector()) {
+            Mat img = distort(loadVerbatim(), k1);
+            AprilTagDetection detection = getDetection(detector, img);
+            double[] corners = getCorrectedCorners(k1, detection);
+            assertArrayEquals(EXPECTED_CORNERS, corners, 2.0);
+        }
+    }
+
+    /**
+     * Compute the homography for the corrected corners (using OpenCV) and verify
+     * that it is correct.
+     */
+    @Test
+    void testCorrectedHomography() throws IOException {
+        try (AprilTagDetector detector = detector()) {
             double k1 = -0.3;
             Mat img = distort(loadVerbatim(), k1);
-
             AprilTagDetection detection = getDetection(detector, img);
+            double[] corners = getCorrectedCorners(k1, detection);
+            double[] homography = getOpenCvHomographyArray(corners);
+            assertArrayEquals(EXPECTED_HOMOGRAPHY, homography, 1.0);
+        }
+    }
 
-            // the detected corners are now in different places, so we have to fix them.
-            double[] detectedCorners = detection.getCorners();
-            MatOfPoint2f srcCorners = new MatOfPoint2f(
-                    new Point(detectedCorners[0], detectedCorners[1]),
-                    new Point(detectedCorners[2], detectedCorners[3]),
-                    new Point(detectedCorners[4], detectedCorners[5]),
-                    new Point(detectedCorners[6], detectedCorners[7]));
-            MatOfPoint2f dstCorners = new MatOfPoint2f();
-
-            // Undistort the corner points.
-            //
-            // Add extra iterations to be sure? This seems not to matter for this
-            // particular case but it's not a bad idea in general.
-            TermCriteria term = new TermCriteria(
-                    TermCriteria.COUNT | TermCriteria.EPS, 40, 0.01);
-            Calib3d.undistortImagePoints(
-                    srcCorners,
-                    dstCorners,
-                    getCameraMatrix(),
-                    getDistCoeffs(k1),
-                    term);
-            Point[] dstL = dstCorners.toArray();
-            double[] correctedCorners = new double[] { //
-                    dstL[0].x, dstL[0].y, //
-                    dstL[1].x, dstL[1].y, //
-                    dstL[2].x, dstL[2].y, //
-                    dstL[3].x, dstL[3].y };
-
-            // Verify the corrected corner locations.
-            double[] expectedCorners = new double[] { //
-                    191, 496, //
-                    387, 386, //
-                    369, 209, //
-                    130, 293 };
-            // Note the slightly larger tolerance.
-            assertArrayEquals(expectedCorners, correctedCorners, 2.0);
-
-            // Verify the computed homography for those corners.
-            double[] homographyArray = new double[] { //
-                    137, 40, 282, //
-                    -12, 122, 349, //
-                    0, 0, 0 };
-            // detection homography is not useful
-            // assertArrayEquals(homographyArray, detection.getHomography(), 1.0);
-
-            // Compute the homography with OpenCV using the corrected corners
-            double[] openCvHomographyArray = getOpenCvHomographyArray(correctedCorners);
-
-            assertArrayEquals(homographyArray, openCvHomographyArray, 1.0);
-
-            // tag size is the real tag size
-            // camera intrinsic matches GS camera and python test
-            AprilTagPoseEstimator.Config conf = new AprilTagPoseEstimator.Config(
-                    0.1651, 935, 935, 550, 310);
-            AprilTagPoseEstimator estimator = new AprilTagPoseEstimator(conf);
-            Transform3d pose = estimator.estimate(openCvHomographyArray, expectedCorners);
-
-            verifyPose(pose, 0.001);
+    /**
+     * Verify the corrected pose.  Note the slightly larger tolerance.
+     */
+    @Test
+    void testDetectionWithDistortion() throws IOException {
+        try (AprilTagDetector detector = detector()) {
+            double k1 = -0.3;
+            Mat img = distort(loadVerbatim(), k1);
+            AprilTagDetection detection = getDetection(detector, img);
+            double[] corners = getCorrectedCorners(k1, detection);
+            double[] homography = getOpenCvHomographyArray(corners);
+            AprilTagPoseEstimator estimator = estimator();
+            Transform3d pose = estimator.estimate(homography, corners);
+            verifyPose(pose, 0.003);
         }
     }
 
@@ -254,6 +237,60 @@ public class CornerTest {
     //////////////////////////////////////
     //////////////////////////////////////
     //////////////////////////////////////
+
+    /**
+     * Make a detector looking for 36h11. Remember to close it.
+     */
+    private AprilTagDetector detector() {
+        AprilTagDetector detector = new AprilTagDetector();
+        detector.addFamily("tag36h11");
+        return detector;
+    }
+
+    /**
+     * The pose estimator uses the real tag size, and the same intrinsics as the
+     * python test, which is similar to the Raspberry Pi GS camera.
+     */
+    private AprilTagPoseEstimator estimator() {
+        AprilTagPoseEstimator.Config conf = new AprilTagPoseEstimator.Config(
+                0.1651, 935, 935, 550, 310);
+        AprilTagPoseEstimator estimator = new AprilTagPoseEstimator(conf);
+        return estimator;
+    }
+
+    /**
+     * Return the corners from the detection, undistorted using k1.
+     */
+    private double[] getCorrectedCorners(final double k1, AprilTagDetection detection) {
+        // the detected corners are now in different places, so we have to fix them.
+        double[] detectedCorners = detection.getCorners();
+        MatOfPoint2f srcCorners = new MatOfPoint2f(
+                new Point(detectedCorners[0], detectedCorners[1]),
+                new Point(detectedCorners[2], detectedCorners[3]),
+                new Point(detectedCorners[4], detectedCorners[5]),
+                new Point(detectedCorners[6], detectedCorners[7]));
+        MatOfPoint2f dstCorners = new MatOfPoint2f();
+
+        // Undistort the corner points.
+        //
+        // Add extra iterations to be sure? This seems not to matter for this
+        // particular case but it's not a bad idea in general.
+        TermCriteria term = new TermCriteria(
+                TermCriteria.COUNT | TermCriteria.EPS, 40, 0.01);
+        Calib3d.undistortImagePoints(
+                srcCorners,
+                dstCorners,
+                getCameraMatrix(),
+                getDistCoeffs(k1),
+                term);
+        Point[] dstL = dstCorners.toArray();
+        double[] correctedCorners = new double[] { //
+                dstL[0].x, dstL[0].y, //
+                dstL[1].x, dstL[1].y, //
+                dstL[2].x, dstL[2].y, //
+                dstL[3].x, dstL[3].y };
+        return correctedCorners;
+    }
 
     private Mat distort(Mat undistorted_img, double k1) {
         Size size = undistorted_img.size();
@@ -336,6 +373,9 @@ public class CornerTest {
         return getClass().getResource("/" + filename).getPath();
     }
 
+    /**
+     * Load the test image and scale it to 0.2 in each dimension.
+     */
     private Mat loadVerbatim() {
         // TODO: fix this filename issue
         Mat img = Imgcodecs.imread(res("tag_and_board.jpg"));
