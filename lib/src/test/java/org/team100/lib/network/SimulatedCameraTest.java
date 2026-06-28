@@ -24,10 +24,11 @@ public class SimulatedCameraTest implements Timeless {
 
     @Test
     void test0() throws InterruptedException {
-        NetworkTableInstance.getDefault().startServer();
-        Thread.sleep(200);
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        inst.startServer();
+        Thread.sleep(500);
         stepTime();
-        
+
         // Use a real camera.
         RawTags camera = new RawTags(log, this::acceptTag);
 
@@ -39,7 +40,8 @@ public class SimulatedCameraTest implements Timeless {
         sim.run();
 
         // wait for NT rate-limiting
-        Thread.sleep(100);
+        Thread.sleep(500);
+        stepTime();
 
         camera.update();
         // Output = 0.
@@ -50,7 +52,8 @@ public class SimulatedCameraTest implements Timeless {
         sim.run();
 
         // wait for NT rate-limiting
-        Thread.sleep(100);
+        Thread.sleep(500);
+        stepTime();
 
         camera.update();
         // Output = pi/2.
