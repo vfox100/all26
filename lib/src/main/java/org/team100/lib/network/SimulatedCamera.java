@@ -33,7 +33,7 @@ public class SimulatedCamera implements Runnable {
         m_inst = NetworkTableInstance.create();
         // This is a client just like the camera is a client.
         m_inst.setServer("localhost");
-        m_inst.startClient4("SimulatedTagDetector");
+        m_inst.startClient4("SimulatedCamera");
         m_pub = m_inst.getStructArrayTopic("vision/0/blips", Blip.struct)
                 .publish(PubSubOption.keepDuplicates(true));
     }
@@ -54,6 +54,7 @@ public class SimulatedCamera implements Runnable {
         Blip b = new Blip(pastUs, 1, t);
 
         m_pub.set(new Blip[] { b }, pastUs);
+        m_inst.flushLocal();
     }
 
 }
