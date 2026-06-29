@@ -1,5 +1,6 @@
 package org.team100.lib.subsystems.five_bar;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import org.team100.lib.config.CurrentLimit;
@@ -35,20 +36,9 @@ public class FiveBarBare extends SubsystemBase {
     /** Low current limits */
     private static final double SUPPLY_LIMIT = 5;
     private static final double STATOR_LIMIT = 5;
-    private static final Scenario SCENARIO;
-    static {
-        // origin is P1
-        SCENARIO = new Scenario();
-        // These are fake link lengths.
-        SCENARIO.a1 = 0.1;
-        SCENARIO.a2 = 0.1;
-        SCENARIO.a3 = 0.1;
-        SCENARIO.a4 = 0.1;
-        SCENARIO.a5 = 0.1;
-        SCENARIO.xcenter = 0.5;
-        SCENARIO.ycenter = 0.15;
-    }
 
+    private final Scenario m_scenario;
+    private final FiveBarKinematics m_kinematics;
     /** Left motor, "P1" in the diagram. */
     private final BareMotor m_motorP1;
     /** Right motor, "P5" in the diagram. */
@@ -56,9 +46,13 @@ public class FiveBarBare extends SubsystemBase {
     private final RotaryPositionSensor m_sensorP1;
     private final RotaryPositionSensor m_sensorP5;
 
-    public FiveBarBare(LoggerFactory logger, TotalCurrentLog currentLog) {
+    public FiveBarBare(LoggerFactory parent, TotalCurrentLog currentLog, Scenario scenario) {
+        LoggerFactory logger = parent.type(this);
         LoggerFactory loggerP1 = logger.name("p1");
         LoggerFactory loggerP5 = logger.name("p5");
+
+        m_scenario = scenario;
+        m_kinematics = new FiveBarKinematics(logger);
 
         switch (Identity.instance) {
             case SWERVE_TWO -> {
@@ -74,12 +68,12 @@ public class FiveBarBare extends SubsystemBase {
         m_sensorP5 = new ProxyRotaryPositionSensor(m_motorP5.encoder(), 1.0, 0.0);
     }
 
-    public JointPositions getJointPositions() {
+    public Optional<JointPositions> getJointPositions() {
         double q1 = m_sensorP1.getWrappedPositionRad();
         double q5 = m_sensorP5.getWrappedPositionRad();
         if (DEBUG)
             System.out.printf("joint positions %f %f\n", q1, q5);
-        return FiveBarKinematics.forward(SCENARIO, q1, q5);
+        return m_kinematics.forward(m_scenario, q1, q5);
     }
 
     /////////////////////

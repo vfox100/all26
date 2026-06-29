@@ -98,6 +98,12 @@ public class Math100 {
         return x;
     }
 
+    public static double isFinite(double x) {
+        if (!Double.isFinite(x))
+            throw new IllegalArgumentException("arg is not finite");
+        return x;
+    }
+
     /** Throw if x is out of range. This is a more strict version of "clamp" :-) */
     public static double throwIfOutOfRange(double x, double minX, double maxX) {
         if (x < minX)

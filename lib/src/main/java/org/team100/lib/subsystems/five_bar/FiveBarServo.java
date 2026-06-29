@@ -1,5 +1,6 @@
 package org.team100.lib.subsystems.five_bar;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import org.team100.lib.config.CurrentLimit;
@@ -43,19 +44,9 @@ public class FiveBarServo extends SubsystemBase {
     private static final double STATOR_LIMIT = 5;
     private static final double MAX_VELOCITY = 190;
     private static final double MAX_ACCEL = 210;
-    private static final Scenario SCENARIO;
-    static {
-        // origin is P1
-        SCENARIO = new Scenario();
-        // These are fake link lengths.
-        SCENARIO.a1 = 0.1;
-        SCENARIO.a2 = 0.1;
-        SCENARIO.a3 = 0.1;
-        SCENARIO.a4 = 0.1;
-        SCENARIO.a5 = 0.1;
-        SCENARIO.xcenter = 0.5;
-        SCENARIO.ycenter = 0.15;
-    }
+
+    private final Scenario m_scenario;
+    private final FiveBarKinematics m_kinematics;
 
     /** Left motor, "P1" in the diagram. */
     /**
@@ -69,9 +60,13 @@ public class FiveBarServo extends SubsystemBase {
     private final ProxyRotaryPositionSensor m_sensorP5;
     private final AngularPositionServo m_servoP5;
 
-    public FiveBarServo(LoggerFactory logger, TotalCurrentLog currentLog) {
+    public FiveBarServo(LoggerFactory parent, TotalCurrentLog currentLog, Scenario scenario) {
+        LoggerFactory logger = parent.type(this);
         LoggerFactory loggerP1 = logger.name("p1");
         LoggerFactory loggerP5 = logger.name("p5");
+
+        m_scenario = scenario;
+        m_kinematics = new FiveBarKinematics(logger);
 
         // zeros
         PIDConstants pid = PIDConstants.zero(logger);
@@ -148,10 +143,10 @@ public class FiveBarServo extends SubsystemBase {
         m_servoP5.setPositionProfiled(p5, 0);
     }
 
-    public JointPositions getJointPositions() {
+    public Optional<JointPositions> getJointPositions() {
         double q1 = m_servoP1.getWrappedPositionRad();
         double q5 = m_servoP5.getWrappedPositionRad();
-        return FiveBarKinematics.forward(SCENARIO, q1, q5);
+        return m_kinematics.forward(m_scenario, q1, q5);
     }
 
     @Override
