@@ -943,7 +943,7 @@ class SwerveDrivePoseEstimator100Test implements Timeless {
                 // speed noise results in distance noise for each wheel (a lot of noise)
                 double velocityNoise = 1 - rand.nextGaussian() * 0.05;
                 double distanceMeters = positionsAll[i].distanceMeters()
-                        + moduleStatesAll[i].speedMetersPerSecond() * velocityNoise * DT;
+                        + moduleStatesAll[i].speed() * velocityNoise * DT;
 
                 Optional<Rotation2d> angle = moduleStatesAll[i].angle();
                 Optional<Rotation2d> newAngle = Optional.empty();

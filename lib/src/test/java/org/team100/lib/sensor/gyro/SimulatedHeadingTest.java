@@ -101,10 +101,10 @@ class SimulatedHeadingTest implements Timeless {
         // includes discretization
         SwerveModuleStates states = l.toSwerveModuleStates(speeds);
         // these are discretized so not symmetrical
-        assertEquals(0.787, states.frontLeft().speedMetersPerSecond(), DELTA);
-        assertEquals(1.273, states.frontRight().speedMetersPerSecond(), DELTA);
-        assertEquals(0.794, states.rearLeft().speedMetersPerSecond(), DELTA);
-        assertEquals(1.277, states.rearRight().speedMetersPerSecond(), DELTA);
+        assertEquals(0.787, states.frontLeft().speed(), DELTA);
+        assertEquals(1.273, states.frontRight().speed(), DELTA);
+        assertEquals(0.794, states.rearLeft().speed(), DELTA);
+        assertEquals(1.277, states.rearRight().speed(), DELTA);
         assertEquals(0.310, states.frontLeft().angle().get().getRadians(), DELTA);
         assertEquals(0.190, states.frontRight().angle().get().getRadians(), DELTA);
         assertEquals(-0.334, states.rearLeft().angle().get().getRadians(), DELTA);
@@ -125,10 +125,10 @@ class SimulatedHeadingTest implements Timeless {
         SwerveModuleStates states2 = c.states();
 
         // we get back what we put in
-        assertEquals(0.787, states2.frontLeft().speedMetersPerSecond(), DELTA);
-        assertEquals(1.273, states2.frontRight().speedMetersPerSecond(), DELTA);
-        assertEquals(0.794, states2.rearLeft().speedMetersPerSecond(), DELTA);
-        assertEquals(1.277, states2.rearRight().speedMetersPerSecond(), DELTA);
+        assertEquals(0.787, states2.frontLeft().speed(), DELTA);
+        assertEquals(1.273, states2.frontRight().speed(), DELTA);
+        assertEquals(0.794, states2.rearLeft().speed(), DELTA);
+        assertEquals(1.277, states2.rearRight().speed(), DELTA);
         assertEquals(0.308, states2.frontLeft().angle().get().getRadians(), DELTA);
         assertEquals(0.190, states2.frontRight().angle().get().getRadians(), 0.01);
         assertEquals(-0.332, states2.rearLeft().angle().get().getRadians(), DELTA);

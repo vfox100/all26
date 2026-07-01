@@ -62,8 +62,8 @@ public class SwerveModuleState100 implements Comparable<SwerveModuleState100>, S
         return desiredWrappedState;
     }
 
-    /** Speed of the wheel of the module. */
-    public double speedMetersPerSecond() {
+    /** Wheel speed, m/s. */
+    public double speed() {
         return m_speedM_S;
     }
 
@@ -76,19 +76,19 @@ public class SwerveModuleState100 implements Comparable<SwerveModuleState100>, S
     }
 
     public double vx() {
-         if (Math.abs(speedMetersPerSecond()) < 1e-6 || angle().isEmpty()) {
+        if (Math.abs(m_speedM_S) < 1e-6 || m_angle.isEmpty()) {
             // wheel is stopped, or angle is invalid so pretend it's stopped.
             return 0;
         }
-        return speedMetersPerSecond() * angle().get().getCos();
+        return m_speedM_S * m_angle.get().getCos();
     }
 
     public double vy() {
-        if (Math.abs(speedMetersPerSecond()) < 1e-6 || angle().isEmpty()) {
+        if (Math.abs(m_speedM_S) < 1e-6 || m_angle.isEmpty()) {
             // wheel is stopped, or angle is invalid so pretend it's stopped.
             return 0;
         }
-        return speedMetersPerSecond() * angle().get().getSin();
+        return m_speedM_S * m_angle.get().getSin();
     }
 
     @Override

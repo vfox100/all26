@@ -113,16 +113,16 @@ public class SimulatedDrivingTest implements Timeless {
         double dt = 0.02;
         SwerveModulePositions endPositions = new SwerveModulePositions(
                 new SwerveModulePosition100(
-                        states.frontLeft().speedMetersPerSecond() * dt,
+                        states.frontLeft().speed() * dt,
                         states.frontLeft().angle()),
                 new SwerveModulePosition100(
-                        states.frontRight().speedMetersPerSecond() * dt,
+                        states.frontRight().speed() * dt,
                         states.frontRight().angle()),
                 new SwerveModulePosition100(
-                        states.rearLeft().speedMetersPerSecond() * dt,
+                        states.rearLeft().speed() * dt,
                         states.rearLeft().angle()),
                 new SwerveModulePosition100(
-                        states.rearRight().speedMetersPerSecond() * dt,
+                        states.rearRight().speed() * dt,
                         states.rearRight().angle()));
 
         SwerveModuleDeltas modulePositionDelta = SwerveModuleDeltas.modulePositionDelta(

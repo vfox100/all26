@@ -94,11 +94,11 @@ public class SwerveModuleDelta {
     }
 
     public double dx() {
-        if (Math.abs(distanceMeters()) < 1e-6 || wrappedAngle().isEmpty()) {
+        if (Math.abs(m_distanceMeters) < 1e-6 || m_wrappedAngle.isEmpty()) {
             // wheel is stopped, or angle is invalid so pretend it's stopped.
             return 0;
         }
-        return distanceMeters() * wrappedAngle().get().getCos();
+        return m_distanceMeters * m_wrappedAngle.get().getCos();
     }
 
     public double dy() {
@@ -106,7 +106,7 @@ public class SwerveModuleDelta {
             // wheel is stopped, or angle is invalid so pretend it's stopped.
             return 0;
         }
-        return distanceMeters() * wrappedAngle().get().getSin();
+        return m_distanceMeters * m_wrappedAngle.get().getSin();
     }
 
     @Override

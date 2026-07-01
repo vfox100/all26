@@ -351,13 +351,13 @@ class SwerveDriveKinematics100Test {
         // this sets the steering
         SwerveModuleStates m = k.inverse(SwerveKinodynamics.discretize(s, 0.02));
         assertEquals(1.571, m.frontLeft().angle().get().getRadians(), DELTA);
-        assertEquals(1, m.frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(1, m.frontLeft().speed(), DELTA);
         s = new ChassisSpeeds(0, 0, 0);
         // this used to be the same even though the velocity is zero.
         // now it's just empty.
         m = k.inverse(SwerveKinodynamics.discretize(s, 0.02));
         assertTrue(m.frontLeft().angle().isEmpty());
-        assertEquals(0, m.frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(0, m.frontLeft().speed(), DELTA);
     }
 
     @Test
@@ -421,10 +421,10 @@ class SwerveDriveKinematics100Test {
         var moduleStates = m_kinematics.inverse(SwerveKinodynamics.discretize(speeds, 0.02));
 
         assertAll(
-                () -> assertEquals(5.0, moduleStates.frontLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.frontRight().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.rearLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.rearRight().speedMetersPerSecond(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.frontLeft().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.frontRight().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.rearLeft().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.rearRight().speed(), EPSILON),
                 () -> assertEquals(0.0, moduleStates.frontLeft().angle().get().getRadians(), EPSILON),
                 () -> assertEquals(0.0, moduleStates.frontRight().angle().get().getRadians(), EPSILON),
                 () -> assertEquals(0.0, moduleStates.rearLeft().angle().get().getRadians(), EPSILON),
@@ -462,10 +462,10 @@ class SwerveDriveKinematics100Test {
                 .inverse(SwerveKinodynamics.discretize(speeds, 0.02));
 
         assertAll(
-                () -> assertEquals(5.0, moduleStates.frontLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.frontRight().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.rearLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(5.0, moduleStates.rearRight().speedMetersPerSecond(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.frontLeft().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.frontRight().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.rearLeft().speed(), EPSILON),
+                () -> assertEquals(5.0, moduleStates.rearRight().speed(), EPSILON),
                 () -> assertEquals(90.0, moduleStates.frontLeft().angle().get().getDegrees(), EPSILON),
                 () -> assertEquals(90.0, moduleStates.frontRight().angle().get().getDegrees(), EPSILON),
                 () -> assertEquals(90.0, moduleStates.rearLeft().angle().get().getDegrees(), EPSILON),
@@ -508,10 +508,10 @@ class SwerveDriveKinematics100Test {
         // Now it returns empty angles, and the right thing happens downstream.
 
         assertAll(
-                () -> assertEquals(0.0, moduleStates.frontLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.frontRight().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.rearLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.rearRight().speedMetersPerSecond(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.frontLeft().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.frontRight().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.rearLeft().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.rearRight().speed(), EPSILON),
                 () -> assertTrue(moduleStates.frontLeft().angle().isEmpty()),
                 () -> assertTrue(moduleStates.frontRight().angle().isEmpty()),
                 () -> assertTrue(moduleStates.rearLeft().angle().isEmpty()),
@@ -524,10 +524,10 @@ class SwerveDriveKinematics100Test {
                 SwerveKinodynamics.discretize(new ChassisSpeeds(), 0.02));
         // Robot is stationary, so module angles are empty.
         assertAll(
-                () -> assertEquals(0.0, moduleStates.frontLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.frontRight().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.rearLeft().speedMetersPerSecond(), EPSILON),
-                () -> assertEquals(0.0, moduleStates.rearRight().speedMetersPerSecond(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.frontLeft().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.frontRight().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.rearLeft().speed(), EPSILON),
+                () -> assertEquals(0.0, moduleStates.rearRight().speed(), EPSILON),
                 () -> assertTrue(moduleStates.frontLeft().angle().isEmpty()),
                 () -> assertTrue(moduleStates.frontRight().angle().isEmpty()),
                 () -> assertTrue(moduleStates.rearLeft().angle().isEmpty()),
@@ -552,10 +552,10 @@ class SwerveDriveKinematics100Test {
          */
 
         assertAll(
-                () -> assertEquals(106.63, moduleStates.frontLeft().speedMetersPerSecond(), 0.1),
-                () -> assertEquals(106.63, moduleStates.frontRight().speedMetersPerSecond(), 0.1),
-                () -> assertEquals(106.63, moduleStates.rearLeft().speedMetersPerSecond(), 0.1),
-                () -> assertEquals(106.63, moduleStates.rearRight().speedMetersPerSecond(), 0.1),
+                () -> assertEquals(106.63, moduleStates.frontLeft().speed(), 0.1),
+                () -> assertEquals(106.63, moduleStates.frontRight().speed(), 0.1),
+                () -> assertEquals(106.63, moduleStates.rearLeft().speed(), 0.1),
+                () -> assertEquals(106.63, moduleStates.rearRight().speed(), 0.1),
                 () -> assertEquals(135.0, moduleStates.frontLeft().angle().get().getDegrees(), EPSILON),
                 () -> assertEquals(45.0, moduleStates.frontRight().angle().get().getDegrees(), EPSILON),
                 () -> assertEquals(-135.0, moduleStates.rearLeft().angle().get().getDegrees(), EPSILON),
