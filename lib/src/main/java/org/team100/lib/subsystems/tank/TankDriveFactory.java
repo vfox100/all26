@@ -4,7 +4,6 @@ import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.LinearMechanism;
@@ -14,8 +13,6 @@ import org.team100.lib.motor.NeutralMode100;
 import org.team100.lib.motor.rev.Neo550CANSparkMotor;
 import org.team100.lib.motor.rev.NeoCANSparkMotor;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
-import org.team100.lib.reference.r1.NoVelocityReferenceR1;
-import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.util.CanId;
 
 public class TankDriveFactory {
@@ -60,12 +57,7 @@ public class TankDriveFactory {
                 Double.POSITIVE_INFINITY);
 
         return new TankDrive(
-                log,
-                fieldLogger,
-                trackWidthM,
-                maxSpeedM_S,
-                new OutboardLinearVelocityServo(logL, mechL, new NoVelocityReferenceR1(), 1),
-                new OutboardLinearVelocityServo(logR, mechR, new NoVelocityReferenceR1(), 1));
+                log, fieldLogger, trackWidthM, maxSpeedM_S, mechL, mechR);
     }
 
     /**

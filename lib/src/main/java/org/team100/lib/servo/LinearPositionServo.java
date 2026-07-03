@@ -24,19 +24,24 @@ public interface LinearPositionServo {
      * 
      * You need to keep calling this to keep actuating.
      * 
-     * @param goalM             meters
-     * @param feedForwardTorque used for gravity compensation
+     * Gravity compensation used to be here; it should be in the
+     * dynamics now.
+     * 
+     * @param goalM meters
      */
-    void setPositionProfiled(double goalM, double feedForwardTorqueNm);
+    void setPositionProfiled(double goalM);
 
     /**
      * Invalidates the current profile, sets the setpoint directly.
      * This takes both current and next setpoints so that the implementation can
      * choose the current one for feedback and the next one for feedforward.
      *
-     * You need to keep calling this to keep actuating. 
+     * You need to keep calling this to keep actuating.
+     * 
+     * Gravity compensation used to be here; it should be in the
+     * dynamics now.
      */
-    void setPositionDirect(SetpointsR1 setpoint, double feedForwardTorqueNm);
+    void setPositionDirect(SetpointsR1 setpoint);
 
     double getPosition();
 

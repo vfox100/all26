@@ -4,7 +4,7 @@ import org.team100.frc2026.robot.CurrentLimits;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.motor.BareMotor;
@@ -18,7 +18,6 @@ import org.team100.lib.reference.r1.ReferenceR1;
 import org.team100.lib.servo.AngularPositionServo;
 import org.team100.lib.servo.OutboardAngularPositionServo;
 import org.team100.lib.util.CanId;
-import org.team100.lib.servo.Gravity;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,7 +32,6 @@ public class IntakeExtend extends SubsystemBase {
     // seems fine, 3/12/26
     private static final double EXTENDED_POSITION = 2.140017;
 
-    private final Gravity m_gravity;
     private final AngularPositionServo m_servo;
     private final AngularPositionServo m_Servo2;
 
@@ -41,9 +39,10 @@ public class IntakeExtend extends SubsystemBase {
         LoggerFactory log = parent.type(this);
         LoggerFactory log1 = log.name("Extend1");
         LoggerFactory log2 = log.name("Extend2");
-        m_gravity = new Gravity(log,
-                0, // Max gravity torque, Nm
-                0); // Gravity torque position offset, rad
+
+        // Mass is zero for now because gravity coordinate doesn't match
+        // the mechanism.
+        RDynamics dynamics = new RDynamics(0, 0, 0);
         TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 4, 8, 0.1);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.1, 0.05);
         final BareMotor motor;
@@ -73,10 +72,10 @@ public class IntakeExtend extends SubsystemBase {
             }
         }
         m_servo = OutboardAngularPositionServo.make(
-                log1, motor, ref, gearRatio,
+                log1, motor, dynamics, ref, gearRatio,
                 RETRACTED_POSITION, RETRACTED_POSITION, EXTENDED_POSITION);
         m_Servo2 = OutboardAngularPositionServo.make(
-                log2, motor2, ref, gearRatio,
+                log2, motor2, dynamics, ref, gearRatio,
                 RETRACTED_POSITION, RETRACTED_POSITION, EXTENDED_POSITION);
     }
 
@@ -100,7 +99,7 @@ public class IntakeExtend extends SubsystemBase {
     public Command goToExtendedPosition() {
         return startRun(
                 this::reset,
-                () -> actuateWithGravity(EXTENDED_POSITION))
+                () -> actuateWithProfile(EXTENDED_POSITION))
                 .until(m_servo::atGoal)
                 .withName("Intake Extend GoToExtendedPosition");
     }
@@ -160,8 +159,8 @@ public class IntakeExtend extends SubsystemBase {
         return startRun(
                 this::reset,
                 () -> {
-                    m_servo.actuateWithProfile(rad, 0);
-                    m_Servo2.actuateWithProfile(rad, 0);
+                    m_servo.actuateWithProfile(rad);
+                    m_Servo2.actuateWithProfile(rad);
                 })
                 .withName("set position");
     }
@@ -179,23 +178,12 @@ public class IntakeExtend extends SubsystemBase {
     }
 
     private void actuateWithProfile(double value) {
-        m_servo.actuateWithProfile(value, 0);
-        m_Servo2.actuateWithProfile(value, 0);
-    }
-
-    private void actuateWithGravity(double value) {
-        m_servo.actuateWithProfile(value, gravityTorque());
-        m_Servo2.actuateWithProfile(value, gravityTorque());
+        m_servo.actuateWithProfile(value);
+        m_Servo2.actuateWithProfile(value);
     }
 
     public boolean atExtendedPosition() {
         return MathUtil.isNear(m_servo.getUnwrappedPositionRad(), EXTENDED_POSITION, 0.1)
                 && MathUtil.isNear(m_Servo2.getUnwrappedPositionRad(), EXTENDED_POSITION, 0.1);
-    }
-
-    private double gravityTorque() {
-        return (m_gravity.applyAsDouble(m_servo.getWrappedPositionRad()) +
-                m_gravity.applyAsDouble(m_Servo2.getUnwrappedPositionRad())) / 2;
-
     }
 }

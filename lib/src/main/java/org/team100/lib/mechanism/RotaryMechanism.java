@@ -10,6 +10,8 @@ import org.team100.lib.sensor.position.absolute.RotaryPositionSensor;
 import org.team100.lib.sensor.position.incremental.IncrementalBareEncoder;
 import org.team100.lib.state.ModelR1;
 
+import edu.wpi.first.math.MathUtil;
+
 /**
  * Uses a motor and gears to produce rotational output, e.g. an arm joint.
  * 
@@ -124,6 +126,29 @@ public class RotaryMechanism implements Player {
         m_motor.setVelocity(
                 velocityRad_S * m_gearRatio,
                 torqueNm / m_gearRatio);
+    }
+
+    /**
+     * Choose a nearby unwrapped position.
+     * 
+     * Does not implement "spotting".  If the nearest unwrapped
+     * position is outside the bounds, it does nothing.  If you
+     * want spotting, use an AngularPositionServo.
+     */
+    public void setWrappedPosition(
+            double positionRad,
+            double velocityRad_S,
+            double torqueNm) {
+        double unwrappedMeasurement = getUnwrappedPositionRad();
+        double dx = MathUtil.angleModulus(positionRad - unwrappedMeasurement);
+        double unwrappedRad = unwrappedMeasurement + dx;
+        if (unwrappedRad > getMaxPositionRad()) {
+                return;
+        }
+        if (unwrappedRad < getMinPositionRad()) {
+                return;
+        }
+        setUnwrappedPosition(unwrappedRad, velocityRad_S, torqueNm);
     }
 
     /**

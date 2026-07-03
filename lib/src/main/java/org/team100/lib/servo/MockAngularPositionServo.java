@@ -18,11 +18,11 @@ public class MockAngularPositionServo implements AngularPositionServo {
     }
 
     @Override
-    public void setPositionProfiled(double goalRad, double torqueNm) {
+    public void setPositionProfiled(double goalRad) {
     }
 
     @Override
-    public void setPositionDirect(double goalRad, double velocityRad_S, double torqueNm) {
+    public void setPositionDirect(double goalRad, double velocityRad_S) {
         m_setpoint = goalRad;
     }
 
@@ -78,11 +78,11 @@ public class MockAngularPositionServo implements AngularPositionServo {
     }
 
     @Override
-    public void actuateWithProfile(double unwrappedGoalX, double torqueNm) {
+    public void actuateWithProfile(double unwrappedGoalX) {
     }
 
     @Override
-    public void actuateDirect(double unwrappedSetpoint, double torqueNm) {
+    public void actuateDirect(double unwrappedSetpoint) {
     }
 
     @Override

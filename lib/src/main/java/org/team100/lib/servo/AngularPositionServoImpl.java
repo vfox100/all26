@@ -1,5 +1,6 @@
 package org.team100.lib.servo;
 
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.BooleanLogger;
@@ -25,6 +26,7 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
     private static final double POSITION_TOLERANCE = 0.02;
     private static final double VELOCITY_TOLERANCE = 0.02;
     protected final RotaryMechanism m_mechanism;
+    protected final RDynamics m_dynamics;
     private final ReferenceR1 m_ref;
     private final BooleanLogger m_log_atGoal;
     private final DoubleLogger m_log_goal;
@@ -56,8 +58,10 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
     protected AngularPositionServoImpl(
             LoggerFactory parent,
             RotaryMechanism mechanism,
+            RDynamics dynamics,
             ReferenceR1 ref) {
         m_mechanism = mechanism;
+        m_dynamics = dynamics;
         m_ref = ref;
         LoggerFactory log = parent.type(this);
         m_log_atGoal = log.booleanLogger(Level.TRACE, "at goal");
@@ -68,7 +72,7 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
         m_log_velocity_error = log.doubleLogger(Level.TRACE, "velocity error");
     }
 
-    abstract void actuate(SetpointsR1 wrappedSetpoints, double torqueNm);
+    abstract void actuate(SetpointsR1 wrappedSetpoints);
 
     @Override
     public void reset() {
@@ -86,7 +90,7 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
     }
 
     @Override
-    public void setPositionDirect(double wrappedGoalRad, double velocityRad_S, double torqueNm) {
+    public void setPositionDirect(double wrappedGoalRad, double velocityRad_S) {
         m_log_velocity.log(() -> velocityRad_S);
         // make sure the reference gets reinitialized if required later
         m_unwrappedGoal = null;
@@ -105,13 +109,13 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
                 if (unwrappedGoalX >= m_mechanism.getMinPositionRad()) {
                     if (DEBUG)
                         System.out.println("use a profile to go around");
-                    actuateProfiledImpl(unwrappedGoalX, torqueNm);
+                    actuateProfiledImpl(unwrappedGoalX);
                     return;
                 } else {
                     if (DEBUG)
                         System.out.println("setpoint is inaccessible, hold position.");
                     m_nextUnwrappedSetpoint = m_mechanism.getUnwrappedMeasurement().control();
-                    actuate(new SetpointsR1(m_nextUnwrappedSetpoint, m_nextUnwrappedSetpoint), torqueNm);
+                    actuate(new SetpointsR1(m_nextUnwrappedSetpoint, m_nextUnwrappedSetpoint));
                     m_validSetpoint = false;
                     return;
                 }
@@ -126,13 +130,13 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
                 if (unwrappedGoalX <= m_mechanism.getMaxPositionRad()) {
                     if (DEBUG)
                         System.out.println("use a profile to go around");
-                    actuateProfiledImpl(unwrappedGoalX, torqueNm);
+                    actuateProfiledImpl(unwrappedGoalX);
                     return;
                 } else {
                     if (DEBUG)
                         System.out.println("setpoint is inaccessible; hold position.");
                     m_nextUnwrappedSetpoint = m_mechanism.getUnwrappedMeasurement().control();
-                    actuate(new SetpointsR1(m_nextUnwrappedSetpoint, m_nextUnwrappedSetpoint), torqueNm);
+                    actuate(new SetpointsR1(m_nextUnwrappedSetpoint, m_nextUnwrappedSetpoint));
                     m_validSetpoint = false;
                     return;
                 }
@@ -144,11 +148,11 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
         m_nextUnwrappedSetpoint = new ControlR1(unwrappedGoalX, velocityRad_S);
         if (currentUnwrappedSetpoint == null)
             currentUnwrappedSetpoint = m_nextUnwrappedSetpoint;
-        actuate(new SetpointsR1(currentUnwrappedSetpoint, m_nextUnwrappedSetpoint), torqueNm);
+        actuate(new SetpointsR1(currentUnwrappedSetpoint, m_nextUnwrappedSetpoint));
     }
 
     @Override
-    public void setPositionProfiled(double wrappedGoalRad, double torqueNm) {
+    public void setPositionProfiled(double wrappedGoalRad) {
         m_log_goal.log(() -> wrappedGoalRad);
         m_validSetpoint = true;
         double unwrappedMeasurement = m_mechanism.getUnwrappedPositionRad();
@@ -183,7 +187,7 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
                 }
             }
         }
-        actuateProfiledImpl(unwrappedGoalX, torqueNm);
+        actuateProfiledImpl(unwrappedGoalX);
     }
 
     /** For setting friction only */
@@ -198,18 +202,18 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
     }
 
     @Override
-    public void actuateWithProfile(double unwrappedGoalX, double torqueNm) {
+    public void actuateWithProfile(double unwrappedGoalX) {
         m_validSetpoint = true;
-        actuateProfiledImpl(unwrappedGoalX, torqueNm);
+        actuateProfiledImpl(unwrappedGoalX);
     }
 
     @Override
-    public void actuateDirect(double unwrappedSetpoint, double torqueNm) {
+    public void actuateDirect(double unwrappedSetpoint) {
         m_validSetpoint = true;
         m_unwrappedGoal = null;
         m_nextUnwrappedSetpoint = null;
         ControlR1 c = new ControlR1(unwrappedSetpoint);
-        actuate(new SetpointsR1(c, c), torqueNm);
+        actuate(new SetpointsR1(c, c));
     }
 
     @Override
@@ -310,11 +314,11 @@ public abstract class AngularPositionServoImpl implements AngularPositionServo {
     ///////////////////////////////////////////
     ///////////////////////////////////////////
 
-    private void actuateProfiledImpl(double unwrappedGoalX, double torqueNm) {
+    private void actuateProfiledImpl(double unwrappedGoalX) {
         initReference(new ModelR1(unwrappedGoalX, 0));
         SetpointsR1 unwrappedSetpoint = m_ref.get();
         m_nextUnwrappedSetpoint = unwrappedSetpoint.next();
-        actuate(unwrappedSetpoint, torqueNm);
+        actuate(unwrappedSetpoint);
     }
 
     /** The reference only understands unwrapped angles. */

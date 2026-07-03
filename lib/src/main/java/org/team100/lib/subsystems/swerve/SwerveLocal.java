@@ -106,10 +106,6 @@ public class SwerveLocal implements Player {
         return m_modules.positions();
     }
 
-    boolean[] atSetpoint() {
-        return m_modules.atSetpoint();
-    }
-
     ///////////////////////////////////////////
 
     void close() {

@@ -15,7 +15,7 @@ public class RDynamicsTest {
                 new RConfig(0),
                 new RAcceleration(0));
         // no torque
-        assertEquals(0, t.f1(), DELTA);
+        assertEquals(0, t.t(), DELTA);
     }
 
     @Test
@@ -26,7 +26,7 @@ public class RDynamicsTest {
                 new RConfig(Math.PI / 2),
                 new RAcceleration(0));
         // 1 kg is 0.5 m away, so 5Nm
-        assertEquals(-4.9, t.f1(), DELTA);
+        assertEquals(-4.9, t.t(), DELTA);
     }
 
     @Test
@@ -37,7 +37,7 @@ public class RDynamicsTest {
                 new RConfig(0),
                 new RAcceleration(1));
         // mass torque 0.25 + inertia 1 = 1.25
-        assertEquals(1.25, t.f1(), DELTA);
+        assertEquals(1.25, t.t(), DELTA);
 
     }
 
@@ -49,7 +49,7 @@ public class RDynamicsTest {
                 new RConfig(0),
                 new RAcceleration(-1));
         // slowing is the same
-        assertEquals(-1.25, t.f1(), DELTA);
+        assertEquals(-1.25, t.t(), DELTA);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class RDynamicsTest {
                 new RConfig(0), // doesn't matter
                 new RAcceleration(3));
         // t = I alpha
-        assertEquals(6, t.f1(), DELTA);
+        assertEquals(6, t.t(), DELTA);
     }
 
 }

@@ -6,8 +6,8 @@ import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.controller.r1.PIDFeedback;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.RotaryMechanism;
@@ -38,7 +38,8 @@ public class Climber2025 extends SubsystemBase {
 
     public Climber2025(LoggerFactory parent, TotalCurrentLog currentLog, CanId canID) {
         LoggerFactory log = parent.type(this);
-
+        // dynamics are unimportant for the climber
+        RDynamics dyn = new RDynamics(0, 0, 0);
         ProfileR1 profile = new TrapezoidProfileR1(log, 1, 2, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
@@ -60,7 +61,7 @@ public class Climber2025 extends SubsystemBase {
                         log, motor, sensor, gearRatio,
                         0, Math.PI / 2);
 
-                m_servo = new OnboardAngularPositionServo(log, rotaryMechanism, ref, feedback);
+                m_servo = new OnboardAngularPositionServo(log, rotaryMechanism, dyn, ref, feedback);
             }
 
             default -> {
@@ -73,7 +74,7 @@ public class Climber2025 extends SubsystemBase {
                         log, climberMotor, sensor, 1,
                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-                m_servo = new OnboardAngularPositionServo(log, climberMech, ref, feedback);
+                m_servo = new OnboardAngularPositionServo(log, climberMech, dyn, ref, feedback);
             }
         }
     }
@@ -134,6 +135,6 @@ public class Climber2025 extends SubsystemBase {
 
     /** Use a profile to set the position. */
     private void setAngle(double value) {
-        m_servo.setPositionProfiled(value, 0);
+        m_servo.setPositionProfiled(value);
     }
 }

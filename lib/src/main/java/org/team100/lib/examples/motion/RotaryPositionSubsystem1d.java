@@ -4,9 +4,9 @@ import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.controller.r1.FullStateFeedback;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.RotaryMechanism;
@@ -38,7 +38,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Examples of this sort of thing might be:
  * 
  * * a single-jointed arm
- * * an elevator
  * * the angle of a shooter
  */
 public class RotaryPositionSubsystem1d extends SubsystemBase {
@@ -66,6 +65,11 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
     public RotaryPositionSubsystem1d(LoggerFactory parent, TotalCurrentLog currentLog) {
         LoggerFactory log = parent.type(this);
 
+        RDynamics dynamics = new RDynamics(
+                0.2, // arm mass kg
+                0.3, // arm length m
+                0); // arm moment, kg m^2
+
         double positionGain = 4.0;
         double velocityGain = 0.11;
         double positionTolerance = 0.05;
@@ -77,7 +81,9 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
         double maxAccel = 40;
         ProfileR1 profile = new WPITrapezoidProfileR1(maxVel, maxAccel);
 
-        ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, positionTolerance,
+        ReferenceR1 ref = new ProfileReferenceR1(log,
+                () -> profile,
+                positionTolerance,
                 velocityTolerance);
 
         /*
@@ -104,7 +110,7 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
                 RotaryMechanism mech = new RotaryMechanism(
                         log, motor, sensor, GEAR_RATIO, MIN_POSITION, MAX_POSITION);
                 m_servo = new OnboardAngularPositionServo(
-                        log, mech, ref, feedback);
+                        log, mech, dynamics, ref, feedback);
                 m_servo.reset();
             }
             default -> {
@@ -115,7 +121,7 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
                 RotaryMechanism mech = new RotaryMechanism(
                         log, motor, sensor, GEAR_RATIO, MIN_POSITION, MAX_POSITION);
                 m_servo = new OnboardAngularPositionServo(
-                        log, mech, ref, feedback);
+                        log, mech, dynamics, ref, feedback);
                 m_servo.reset();
             }
         }
@@ -128,11 +134,11 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
     // These methods make the subsystem do something.
 
     public void setPositionProfiled(double goal) {
-        m_servo.setPositionProfiled(goal, 0);
+        m_servo.setPositionProfiled(goal);
     }
 
     public void setPositionDirect(double goal) {
-        m_servo.setPositionDirect(goal, 0, 0);
+        m_servo.setPositionDirect(goal, 0);
     }
 
     ///////////////////////////////////////////////////////

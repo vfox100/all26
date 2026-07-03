@@ -1,6 +1,9 @@
 package org.team100.lib.servo;
 
 import org.team100.lib.coherence.Takt;
+import org.team100.lib.dynamics.p.PAcceleration;
+import org.team100.lib.dynamics.p.PDynamics;
+import org.team100.lib.dynamics.p.PTorque;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -23,6 +26,7 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
     private static final boolean DEBUG = false;
 
     private final LinearMechanism m_mechanism;
+    private final PDynamics m_dynamics;
     private final VelocityReferenceR1 m_ref;
     private final double m_toleranceM_S;
 
@@ -42,10 +46,12 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
     public OutboardLinearVelocityServo(
             LoggerFactory parent,
             LinearMechanism mechanism,
+            PDynamics dynamics,
             VelocityReferenceR1 ref,
             double toleranceM_S) {
         LoggerFactory log = parent.type(this);
         m_mechanism = mechanism;
+        m_dynamics = dynamics;
         m_ref = ref;
         m_toleranceM_S = toleranceM_S;
         m_log_goal = log.doubleLogger(Level.COMP, "goal (m_s)");
@@ -60,6 +66,7 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
     public static OutboardLinearVelocityServo make(
             LoggerFactory log,
             BareMotor motor,
+            PDynamics dynamics,
             VelocityReferenceR1 ref,
             double gearRatio,
             double wheelDiameterM,
@@ -68,7 +75,7 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
                 log, motor, motor.encoder(), gearRatio, wheelDiameterM,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         return new OutboardLinearVelocityServo(
-                log, mech, ref, toleranceM_S);
+                log, mech, dynamics, ref, toleranceM_S);
     }
 
     @Override
@@ -140,7 +147,8 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
         m_nextSetpoint = setpoints;
         double velocityM_S = m_nextSetpoint.v();
         double accelM_S2 = m_nextSetpoint.a();
-        m_mechanism.setVelocity(velocityM_S, accelM_S2, 0);
+        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
+        m_mechanism.setVelocity(velocityM_S, t.f());
         m_log_control.log(() -> m_nextSetpoint);
     }
 

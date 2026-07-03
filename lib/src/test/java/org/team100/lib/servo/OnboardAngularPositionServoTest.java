@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.config.Friction;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.controller.r1.PIDFeedback;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
@@ -29,6 +29,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
     @Test
     void testNoReset() {
         // what happens if you don't reset it?
+        RDynamics dyn = new RDynamics(0, 0, 0);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
         MockBareMotor turningMotor = new MockBareMotor(friction);
         MockRotaryPositionSensor positionSensor = new MockRotaryPositionSensor();
@@ -40,13 +41,14 @@ public class OnboardAngularPositionServoTest implements Timeless {
         ProfileR1 profile = new TrapezoidProfileR1(logger, 1, 1, 0.05);
         ProfileReferenceR1 ref = new ProfileReferenceR1(logger, () -> profile, 0.05, 0.05);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
         // set to current position
-        servo.setPositionProfiled(0, 0);
+        servo.setPositionProfiled(0);
     }
 
     @Test
     void testOnboard() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
         final MockBareMotor turningMotor = new MockBareMotor(friction);
         final MockRotaryPositionSensor positionSensor = new MockRotaryPositionSensor();
@@ -58,11 +60,11 @@ public class OnboardAngularPositionServoTest implements Timeless {
         final ProfileR1 profile = new TrapezoidProfileR1(logger, 1, 1, 0.05);
         final ProfileReferenceR1 ref = new ProfileReferenceR1(logger, () -> profile, 0.05, 0.05);
         final OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
         servo.reset();
         // spin for 1 s
         for (int i = 0; i < 50; ++i) {
-            servo.setPositionProfiled(1, 0);
+            servo.setPositionProfiled(1);
             stepTime();
             if (DEBUG)
                 System.out.printf("i: %d position: %5.3f %5.3f\n", i, turningMotor.position, turningMotor.velocity);
@@ -80,6 +82,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
     /** This takes the short path. */
     @Test
     void testShortWayOnboardProfiled() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         SimulatedBareMotor motor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(logger, encoder, 1);
@@ -91,7 +94,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         ProfileR1 profile = new TrapezoidProfileR1(logger, 2, 2, 0.05);
         ProfileReferenceR1 ref = new ProfileReferenceR1(logger, () -> profile, 0.05, 0.05);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
 
         // at zero
         servo.reset();
@@ -101,7 +104,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // move to the starting point of -3
         for (int i = 0; i < 50; ++i) {
             servo.periodic();
-            servo.setPositionDirect(-3, 0, 0);
+            servo.setPositionDirect(-3, 0);
             stepTime();
         }
 
@@ -115,7 +118,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
         // move to 3
         for (int i = 0; i < 17; ++i) {
-            servo.setPositionProfiled(3, 0);
+            servo.setPositionProfiled(3);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -126,7 +129,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         assertEquals(-3.115, servo.getWrappedPositionRad(), 0.001);
         assertEquals(-3.115, servo.getUnwrappedPositionRad(), 0.001);
         for (int i = 17; i < 40; ++i) {
-            servo.setPositionProfiled(3, 0);
+            servo.setPositionProfiled(3);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -145,6 +148,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
      */
     @Test
     void testLongWayOnboardProfiled() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         SimulatedBareMotor motor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(logger, encoder, 1);
@@ -156,7 +160,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // IncrementalProfile profile = new TrapezoidProfileWPI(2, 2);
         ProfileReferenceR1 ref = new ProfileReferenceR1(logger, () -> profile, 0.05, 0.05);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
 
         // at zero
         servo.reset();
@@ -166,7 +170,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // move to the starting point of -3
         for (int i = 0; i < 50; ++i) {
             servo.periodic();
-            servo.setPositionDirect(-3, 0, 0);
+            servo.setPositionDirect(-3, 0);
             stepTime();
         }
 
@@ -180,7 +184,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
         // move to 3
         for (int i = 0; i < 100; ++i) {
-            servo.setPositionProfiled(3, 0);
+            servo.setPositionProfiled(3);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -191,7 +195,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         assertEquals(0, servo.getWrappedPositionRad(), 0.001);
         assertEquals(0, servo.getUnwrappedPositionRad(), 0.001);
         for (int i = 100; i < 250; ++i) {
-            servo.setPositionProfiled(3, 0);
+            servo.setPositionProfiled(3);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -205,6 +209,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
     @Test
     void testDirect() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         SimulatedBareMotor motor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(logger, encoder, 1);
@@ -215,7 +220,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         final FeedbackR1 turningFeedback2 = new PIDFeedback(
                 logger, 10, 0, 0, false, 0.05, 1);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
 
         servo.reset();
         servo.periodic();
@@ -229,7 +234,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
         for (int i = 0; i < 50; ++i) {
             servo.periodic();
-            servo.setPositionDirect(1, 0, 0);
+            servo.setPositionDirect(1, 0);
             stepTime();
         }
 
@@ -243,6 +248,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
     /** From -3 to 3 the short way */
     @Test
     void testShortWayOnboardDirect() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         SimulatedBareMotor motor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(logger, encoder, 1);
@@ -254,7 +260,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         final FeedbackR1 turningFeedback2 = new PIDFeedback(
                 logger, 10, 0, 0, false, 0.05, 1);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
 
         servo.reset();
         servo.periodic();
@@ -269,7 +275,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
         for (int i = 0; i < 50; ++i) {
             servo.periodic();
-            servo.setPositionDirect(-3, 0, 0);
+            servo.setPositionDirect(-3, 0);
             stepTime();
         }
 
@@ -285,7 +291,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // exponential.
 
         for (int i = 0; i < 5; ++i) {
-            servo.setPositionDirect(3, 0, 0);
+            servo.setPositionDirect(3, 0);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -297,7 +303,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // unwrapped continues
         assertEquals(-3.163, servo.getUnwrappedPositionRad(), 0.001);
         for (int i = 5; i < 20; ++i) {
-            servo.setPositionDirect(3, 0, 0);
+            servo.setPositionDirect(3, 0);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -312,6 +318,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
     /** From -3 to 3 the long way with "direct". */
     @Test
     void testLongWayOnboardDirect() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         SimulatedBareMotor motor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(logger, encoder, 1);
@@ -324,7 +331,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         final FeedbackR1 turningFeedback2 = new PIDFeedback(
                 logger, 10, 0, 0, false, 0.05, 1);
         OnboardAngularPositionServo servo = new OnboardAngularPositionServo(
-                logger, mech, ref, turningFeedback2);
+                logger, mech, dyn, ref, turningFeedback2);
 
         servo.reset();
         servo.periodic();
@@ -333,7 +340,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // move to the starting point of -3
         for (int i = 0; i < 50; ++i) {
             servo.periodic();
-            servo.setPositionDirect(-3, 0, 0);
+            servo.setPositionDirect(-3, 0);
             stepTime();
         }
 
@@ -352,7 +359,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         // exponential.
 
         for (int i = 0; i < 96; ++i) {
-            servo.setPositionDirect(3, 0, 0);
+            servo.setPositionDirect(3, 0);
             servo.periodic();
             stepTime();
             if (DEBUG)
@@ -363,7 +370,7 @@ public class OnboardAngularPositionServoTest implements Timeless {
         assertEquals(-0.16, servo.getWrappedPositionRad(), 0.001);
         assertEquals(-0.16, servo.getUnwrappedPositionRad(), 0.001);
         for (int i = 96; i < 150; ++i) {
-            servo.setPositionDirect(3, 0, 0);
+            servo.setPositionDirect(3, 0);
             servo.periodic();
             stepTime();
             if (DEBUG)

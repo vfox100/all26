@@ -13,7 +13,6 @@ import org.team100.lib.config.ElevatorUtil.ScoringLevel;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.geometry.AccelerationSE2;
 import org.team100.lib.geometry.DirectionSE2;
 import org.team100.lib.geometry.VelocitySE2;

@@ -1,5 +1,8 @@
 package org.team100.lib.servo;
 
+import org.team100.lib.dynamics.p.PAcceleration;
+import org.team100.lib.dynamics.p.PDynamics;
+import org.team100.lib.dynamics.p.PTorque;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -17,6 +20,7 @@ import org.team100.lib.state.ModelR1;
  */
 public class OutboardLinearPositionServo implements LinearPositionServo {
     private final LinearMechanism m_mechanism;
+    private final PDynamics m_dynamics;
     private final ReferenceR1 m_ref;
     private final double m_positionTolerance;
     private final double m_velocityTolerance;
@@ -34,11 +38,13 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
     public OutboardLinearPositionServo(
             LoggerFactory parent,
             LinearMechanism mechanism,
+            PDynamics dynamics,
             ReferenceR1 ref,
             double positionTolerance,
             double velocityTolerance) {
         LoggerFactory log = parent.type(this);
         m_mechanism = mechanism;
+        m_dynamics = dynamics;
         m_ref = ref;
         m_positionTolerance = positionTolerance;
         m_velocityTolerance = velocityTolerance;
@@ -56,6 +62,7 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
     public static OutboardLinearPositionServo make(
             LoggerFactory log,
             BareMotor motor,
+            PDynamics dyn,
             ReferenceR1 ref,
             double gearRatio,
             double wheelDiameterM) {
@@ -63,7 +70,7 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
                 log, motor, motor.encoder(), gearRatio, wheelDiameterM,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         OutboardLinearPositionServo s = new OutboardLinearPositionServo(
-                log, climberMech, ref, 0.01, 0.01);
+                log, climberMech, dyn, ref, 0.01, 0.01);
         return s;
     }
 
@@ -80,7 +87,7 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
 
     /** Resets the profile if necessary */
     @Override
-    public void setPositionProfiled(double goalM, double feedForwardTorqueNm) {
+    public void setPositionProfiled(double goalM) {
         m_log_goal.log(() -> goalM);
         ModelR1 goal = new ModelR1(goalM, 0);
 
@@ -94,33 +101,36 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
             // initialize with the setpoint, not the measurement, to avoid noise.
             m_ref.init(m_nextSetpoint.model());
         }
-        actuate(m_ref.get(), feedForwardTorqueNm);
+        actuate(m_ref.get());
     }
 
     /** Invalidates the current profile */
     @Override
-    public void setPositionDirect(SetpointsR1 setpoints, double feedForwardTorqueNm) {
+    public void setPositionDirect(SetpointsR1 setpoints) {
         m_goal = null;
-        actuate(setpoints, feedForwardTorqueNm);
+        actuate(setpoints);
     }
 
     /**
      * Pass the setpoint directly to the mechanism's position controller.
      * For outboard control we only use the "next" setpoint.
+     * 
+     * Gravity compensation used to be here; it should be in the
+     * dynamics now.
      */
-    private void actuate(SetpointsR1 setpoints, double torqueNm) {
+    private void actuate(SetpointsR1 setpoints) {
         // setpoint must be updated so the profile can see it
         m_nextSetpoint = setpoints.next();
         double positionM = m_nextSetpoint.x();
         double velocityM_S = m_nextSetpoint.v();
         double accelM_S2 = m_nextSetpoint.a();
+        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
         m_mechanism.setPosition(
                 positionM,
                 velocityM_S,
-                accelM_S2,
-                torqueNm);
+                t.f());
         m_log_control.log(() -> m_nextSetpoint);
-        m_log_ff_torque.log(() -> torqueNm);
+        m_log_ff_torque.log(() -> t.f());
     }
 
     @Override

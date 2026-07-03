@@ -7,13 +7,12 @@ import org.team100.frc2026.robot.CurrentLimits;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.p.PDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode100;
-//import org.team100.lib.motor.ctre.KrakenX60Motor;
 import org.team100.lib.motor.rev.NeoVortexCANSparkMotor;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.profile.r1.CurrentLimitedExponentialVelocityProfileR1;
@@ -23,7 +22,6 @@ import org.team100.lib.reference.r1.VelocityReferenceR1;
 import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.tuning.Mutable;
 import org.team100.lib.util.CanId;
-//import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -53,7 +51,10 @@ public class Shooter extends SubsystemBase {
      * @param parent log
      * @param speed  speed (m/s) for auto mode
      */
-    public Shooter(LoggerFactory parent, TotalCurrentLog currentLog, Supplier<OptionalDouble> speed) {
+    public Shooter(
+            LoggerFactory parent,
+            TotalCurrentLog currentLog,
+            Supplier<OptionalDouble> speed) {
         LoggerFactory log = parent.type(this);
         LoggerFactory log1 = log.name("Shooter1");
         LoggerFactory log2 = log.name("Shooter2");
@@ -62,6 +63,10 @@ public class Shooter extends SubsystemBase {
         m_speed = speed;
         m_tuningSetting = new Mutable(log, "for tuning", 0);
         TEST_SPEED = new Mutable(log, "Shooter test speed", 15);
+
+        // dynamics are actually about inertia, so we find the "effective"
+        // dynamics here.
+        PDynamics dynamics = PDynamics.drum(0.5, WHEEL_DIAMETER_M / 2);
 
         // tuned 3/12/26
         VelocityProfileR1 profile = new CurrentLimitedExponentialVelocityProfileR1(
@@ -105,13 +110,13 @@ public class Shooter extends SubsystemBase {
         }
         // note different gear ratio
         m_servo1 = OutboardLinearVelocityServo.make(
-                log1, m1, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log1, m1, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo2 = OutboardLinearVelocityServo.make(
-                log2, m2, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log2, m2, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo3 = OutboardLinearVelocityServo.make(
-                log3, m3, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log3, m3, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo4 = OutboardLinearVelocityServo.make(
-                log4, m4, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log4, m4, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
     }
 
     @Override

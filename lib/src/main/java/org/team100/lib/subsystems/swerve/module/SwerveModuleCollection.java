@@ -158,19 +158,19 @@ public class SwerveModuleCollection implements Player {
                  * {@link Timeless}).
                  */
                 return new SwerveModuleCollection(
-                        SimulatedSwerveModule100.get(frontLeftLogger, kinodynamics),
-                        SimulatedSwerveModule100.get(frontRightLogger, kinodynamics),
-                        SimulatedSwerveModule100.get(rearLeftLogger, kinodynamics),
-                        SimulatedSwerveModule100.get(rearRightLogger, kinodynamics));
+                        SimulatedSwerveModule100.get(frontLeftLogger),
+                        SimulatedSwerveModule100.get(frontRightLogger),
+                        SimulatedSwerveModule100.get(rearLeftLogger),
+                        SimulatedSwerveModule100.get(rearRightLogger));
         }
     }
 
     public static SwerveModuleCollection forTest(LoggerFactory log, SwerveKinodynamics kinodynamics) {
         return new SwerveModuleCollection(
-                SimulatedSwerveModule100.withInstantaneousSteering(log, kinodynamics),
-                SimulatedSwerveModule100.withInstantaneousSteering(log, kinodynamics),
-                SimulatedSwerveModule100.withInstantaneousSteering(log, kinodynamics),
-                SimulatedSwerveModule100.withInstantaneousSteering(log, kinodynamics));
+                SimulatedSwerveModule100.get(log),
+                SimulatedSwerveModule100.get(log),
+                SimulatedSwerveModule100.get(log),
+                SimulatedSwerveModule100.get(log));
     }
 
     //////////////////////////////////////////////////
@@ -245,15 +245,6 @@ public class SwerveModuleCollection implements Player {
                 m_frontRight.getState(),
                 m_rearLeft.getState(),
                 m_rearRight.getState());
-    }
-
-    public boolean[] atSetpoint() {
-        return new boolean[] {
-                m_frontLeft.atSetpoint(),
-                m_frontRight.atSetpoint(),
-                m_rearLeft.atSetpoint(),
-                m_rearRight.atSetpoint()
-        };
     }
 
     ////////////////////////////////////////////

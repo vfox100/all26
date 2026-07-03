@@ -4,7 +4,7 @@ import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.p.PDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.LinearMechanism;
@@ -40,6 +40,7 @@ public class DualDrumShooterFactory {
     private final double gearRatio;
     private final double wheelDiaM;
     private final boolean profiled;
+    private final PDynamics m_dynamics;
 
     public DualDrumShooterFactory(
             LoggerFactory parent,
@@ -51,7 +52,8 @@ public class DualDrumShooterFactory {
             CanId canR,
             double gearRatio,
             double wheelDiaM,
-            boolean profiled) {
+            boolean profiled,
+            PDynamics dynamics) {
         this.log = parent.name("Shooter");
         this.currentLog = currentLog;
         this.fullDutyCycle = fullDutyCycle;
@@ -62,6 +64,7 @@ public class DualDrumShooterFactory {
         this.gearRatio = gearRatio;
         this.wheelDiaM = wheelDiaM;
         this.profiled = profiled;
+        m_dynamics = dynamics;
     }
 
     public DualDrumShooter get(ShooterType type) {
@@ -74,17 +77,16 @@ public class DualDrumShooterFactory {
     public DualDrumDutyCycleShooter makeDutyCycleShooter() {
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
-        SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
         Friction friction = new Friction(log, 0.0, 0.0, 0.0, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.005);
 
         BareMotor left = getMotor(
                 limit, logL, currentLog, 600, canL,
-                MotorPhase.FORWARD, ff, friction, pid);
+                MotorPhase.FORWARD, friction, pid);
 
         BareMotor right = getMotor(
                 limit, logR, currentLog, 600, canR,
-                MotorPhase.REVERSE, ff, friction, pid);
+                MotorPhase.REVERSE, friction, pid);
 
         return new DualDrumDutyCycleShooter(
                 log, fullDutyCycle, left, right);
@@ -94,7 +96,6 @@ public class DualDrumShooterFactory {
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
 
-        SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
         Friction friction = new Friction(log, 0.0, 0.0, 0.0, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.005);
 
@@ -103,11 +104,11 @@ public class DualDrumShooterFactory {
         double freeSpeedRad_S = maxSpeedM_S * gearRatio / (0.5 * wheelDiaM);
 
         LinearMechanism mechL = getMech(
-                currentLog, limit, canL, gearRatio, wheelDiaM, logL, ff, friction, pid,
+                currentLog, limit, canL, gearRatio, wheelDiaM, logL, friction, pid,
                 freeSpeedRad_S, MotorPhase.REVERSE);
 
         LinearMechanism mechR = getMech(
-                currentLog, limit, canR, gearRatio, wheelDiaM, logR, ff, friction, pid,
+                currentLog, limit, canR, gearRatio, wheelDiaM, logR, friction, pid,
                 freeSpeedRad_S, MotorPhase.FORWARD);
 
         VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(10);
@@ -117,8 +118,8 @@ public class DualDrumShooterFactory {
         return new DualDrumVelocityShooter(
                 log,
                 fullSpeedM_S,
-                new OutboardLinearVelocityServo(logL, mechL, ref, 1),
-                new OutboardLinearVelocityServo(logR, mechR, ref, 1),
+                new OutboardLinearVelocityServo(logL, mechL, m_dynamics, ref, 1),
+                new OutboardLinearVelocityServo(logR, mechR, m_dynamics, ref, 1),
                 profiled);
     }
 
@@ -129,14 +130,13 @@ public class DualDrumShooterFactory {
             double gearRatio,
             double wheelDiaM,
             LoggerFactory log,
-            SimpleDynamics ff,
             Friction friction,
             PIDConstants pid,
             double freeSpeedRad_S,
             MotorPhase motorPhase) {
         BareMotor motor = getMotor(
                 limit, log, currentLog, freeSpeedRad_S, canId,
-                motorPhase, ff, friction, pid);
+                motorPhase, friction, pid);
         LinearMechanism mech = new LinearMechanism(
                 log, motor, motor.encoder(), gearRatio, wheelDiaM,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -153,7 +153,6 @@ public class DualDrumShooterFactory {
             double freeSpeedRad_S,
             CanId canId,
             MotorPhase phase,
-            SimpleDynamics ff,
             Friction friction,
             PIDConstants pid) {
         return switch (Identity.instance) {

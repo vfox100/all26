@@ -35,7 +35,7 @@ public class PositionAwareSubsytem extends SubsystemBase  {
             Pose2d pose = m_pose.get();
             double range = pose.getTranslation().getDistance(m_aimingPoint);
             double elevation = m_elevation.get(range);
-            m_servo.setPositionProfiled(elevation, 0);
+            m_servo.setPositionProfiled(elevation);
         });
     }
 

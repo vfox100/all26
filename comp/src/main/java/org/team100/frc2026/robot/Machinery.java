@@ -1,6 +1,5 @@
 package org.team100.frc2026.robot;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;

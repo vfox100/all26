@@ -5,7 +5,7 @@ import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;
 import org.team100.lib.logging.LoggerFactory.DoubleArrayLogger;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
-import org.team100.lib.servo.OutboardLinearVelocityServo;
+import org.team100.lib.mechanism.LinearMechanism;
 import org.team100.lib.visualization.VizUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,9 +27,8 @@ public class TankDrive extends SubsystemBase {
     private final DoubleArrayLogger m_log_field_robot;
     private final double m_trackWidthM;
     private final double m_maxSpeedM_S;
-    // using "servos" because they compute acceleration.
-    private final OutboardLinearVelocityServo m_left;
-    private final OutboardLinearVelocityServo m_right;
+    private final LinearMechanism m_left;
+    private final LinearMechanism m_right;
     private final DifferentialDriveKinematics m_kinematics;
 
     private final ChassisSpeedsLogger m_logChassisSpeeds;
@@ -44,8 +43,8 @@ public class TankDrive extends SubsystemBase {
             LoggerFactory fieldLogger,
             double trackWidthM,
             double maxSpeedM_S,
-            OutboardLinearVelocityServo left,
-            OutboardLinearVelocityServo right) {
+            LinearMechanism left,
+            LinearMechanism right) {
         LoggerFactory log = parent.type(this);
         m_logChassisSpeeds = log.chassisSpeedsLogger(Level.TRACE, "chassis speeds");
         m_logLeft = log.doubleLogger(Level.TRACE, "left");
@@ -78,8 +77,9 @@ public class TankDrive extends SubsystemBase {
         double right = wheelSpeeds.rightMetersPerSecond;
         m_logLeft.log(() -> left);
         m_logRight.log(() -> right);
-        m_left.setVelocityDirect(left);
-        m_right.setVelocityDirect(right);
+        // TODO: dynamics
+        m_left.setVelocity(left, 0);
+        m_right.setVelocity(right, 0);
     }
 
     public void stop() {
@@ -119,8 +119,8 @@ public class TankDrive extends SubsystemBase {
 
     private Twist2d twist() {
         DifferentialDriveWheelPositions newPositions = new DifferentialDriveWheelPositions(
-                m_left.getDistance(),
-                m_right.getDistance());
+                m_left.getPositionM(),
+                m_right.getPositionM());
         Twist2d twist = m_kinematics.toTwist2d(m_positions, newPositions);
         m_positions = newPositions;
         return twist;

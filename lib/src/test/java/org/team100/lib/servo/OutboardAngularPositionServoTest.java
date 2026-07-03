@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.config.Friction;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
@@ -45,13 +45,14 @@ public class OutboardAngularPositionServoTest implements Timeless {
         CombinedRotaryPositionSensor combinedEncoder = new CombinedRotaryPositionSensor(
                 log, sensor, proxy);
 
+        RDynamics dyn = new RDynamics(0, 0, 0);
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, combinedEncoder, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         ProfileR1 profile = new TrapezoidProfileR1(log, 1, 1, 0.05);
         ProfileReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.01, 0.01);
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
         // false upon construction
         assertFalse(servo.atGoal());
         // because there is no valid setpoint
@@ -62,7 +63,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         // because there is no valid setpoint
         assertFalse(servo.atSetpoint());
         // set the position which happens to be the measurement
-        servo.setPositionDirect(0, 0, 0);
+        servo.setPositionDirect(0, 0);
         // now we're at the goal
         assertTrue(servo.atGoal());
         // and the setpoint
@@ -80,6 +81,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
      */
     @Test
     void testNoReset() {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
         MockBareMotor motor = new MockBareMotor(friction);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
@@ -95,9 +97,9 @@ public class OutboardAngularPositionServoTest implements Timeless {
         ProfileR1 profile = new TrapezoidProfileR1(log, 1, 1, 0.05);
         ProfileReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.01, 0.01);
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
         // set to current position
-        servo.setPositionProfiled(0, 0);
+        servo.setPositionProfiled(0);
     }
 
     @Test
@@ -110,31 +112,31 @@ public class OutboardAngularPositionServoTest implements Timeless {
         final ProxyRotaryPositionSensor proxy = new ProxyRotaryPositionSensor(encoder, 1);
         final CombinedRotaryPositionSensor combinedEncoder = new CombinedRotaryPositionSensor(
                 log, sensor, proxy);
-
+        RDynamics dyn = new RDynamics(0, 0, 0);
         final RotaryMechanism mech = new RotaryMechanism(
                 log, motor, combinedEncoder, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         final ProfileR1 profile = new TrapezoidProfileR1(log, 1, 1, 0.05);
         final ProfileReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.01, 0.01);
         final OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
         servo.reset();
         // it moves slowly
-        servo.setPositionProfiled(1, 0);
+        servo.setPositionProfiled(1);
         stepTime();
 
         assertEquals(2e-4, motor.position, 1e-4);
-        servo.setPositionProfiled(1, 0);
+        servo.setPositionProfiled(1);
         stepTime();
 
         // assertEquals(8e-4, motor.position, 1e-4);
-        servo.setPositionProfiled(1, 0);
+        servo.setPositionProfiled(1);
         stepTime();
 
         assertEquals(0.002, motor.position, DELTA);
         for (int i = 0; i < 100; ++i) {
             // run it for awhile
-            servo.setPositionProfiled(1, 0);
+            servo.setPositionProfiled(1);
             stepTime();
             if (DEBUG)
                 System.out.printf("i: %d position: %5.3f\n", i, motor.position);
@@ -148,12 +150,13 @@ public class OutboardAngularPositionServoTest implements Timeless {
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
+        RDynamics dyn = new RDynamics(0, 0, 0);
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         // no profile for this test.
         ReferenceR1 ref = new MockProfileReferenceR1();
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
 
         servo.reset();
         servo.periodic();
@@ -168,7 +171,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(0, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(1, 0, 0);
+        servo.setPositionDirect(1, 0);
         stepTime();
 
         // move 0 to 1 in 0.02 => v = 50
@@ -182,7 +185,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(0.5, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(1, 0, 0);
+        servo.setPositionDirect(1, 0);
         stepTime();
 
         // all the way there now
@@ -207,13 +210,14 @@ public class OutboardAngularPositionServoTest implements Timeless {
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
+        RDynamics dyn = new RDynamics(0, 0, 0);
         // total range is 5.5 turns
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, 1, -11.0 * Math.PI / 4.0, 11.0 * Math.PI / 4.0);
         // no profile for this test.
         ReferenceR1 ref = new MockProfileReferenceR1();
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
 
         // Start at zero.
 
@@ -234,7 +238,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
             System.out.println("Move a quarter turn in the positive direction");
 
         servo.periodic();
-        servo.setPositionDirect(Math.PI / 2, 0, 0);
+        servo.setPositionDirect(Math.PI / 2, 0);
         stepTime();
 
         // +v
@@ -248,7 +252,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(Math.PI / 2, servo.m_nextUnwrappedSetpoint.x(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(Math.PI / 2, 0, 0);
+        servo.setPositionDirect(Math.PI / 2, 0);
         stepTime();
 
         assertEquals(0, motor.getVelocityRad_S(), DELTA);
@@ -264,7 +268,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
             System.out.println("Try to go one turn away directly? That does nothing.");
         // this also makes no sense, since setpoint is wrapped.
         servo.periodic();
-        servo.setPositionDirect(5.0 * Math.PI / 2, 0, 0);
+        servo.setPositionDirect(5.0 * Math.PI / 2, 0);
         stepTime();
 
         assertEquals(0, motor.getVelocityRad_S(), DELTA);
@@ -280,14 +284,14 @@ public class OutboardAngularPositionServoTest implements Timeless {
             System.out.println("move towards the limit a little at a time");
 
         servo.periodic();
-        servo.setPositionDirect(Math.PI, 0, 0);
+        servo.setPositionDirect(Math.PI, 0);
         stepTime();
         servo.periodic();
         stepTime();
         assertEquals(Math.PI, motor.getUnwrappedPositionRad(), DELTA);
         servo.periodic();
         // wrapped setpoint is now negative, so we choose to cross the boundary
-        servo.setPositionDirect(-Math.PI / 2, 0, 0);
+        servo.setPositionDirect(-Math.PI / 2, 0);
         stepTime();
         servo.periodic();
         stepTime();
@@ -295,21 +299,21 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(3 * Math.PI / 2, motor.getUnwrappedPositionRad(), DELTA);
         servo.periodic();
         // desired wrapped control is 0 but unwrapped will be 2pi.
-        servo.setPositionDirect(0, 0, 0);
+        servo.setPositionDirect(0, 0);
         stepTime();
         servo.periodic();
         stepTime();
         assertEquals(2 * Math.PI, motor.getUnwrappedPositionRad(), DELTA);
         servo.periodic();
         // keep going
-        servo.setPositionDirect(Math.PI / 2, 0, 0);
+        servo.setPositionDirect(Math.PI / 2, 0);
         stepTime();
         servo.periodic();
         stepTime();
         assertEquals(5 * Math.PI / 2, motor.getUnwrappedPositionRad(), DELTA);
         // again so the integrator catches up
         servo.periodic();
-        servo.setPositionDirect(Math.PI / 2, 0, 0);
+        servo.setPositionDirect(Math.PI / 2, 0);
         stepTime();
         servo.periodic();
         stepTime();
@@ -335,11 +339,12 @@ public class OutboardAngularPositionServoTest implements Timeless {
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
+        RDynamics dyn = new RDynamics(0, 0, 0);
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         ReferenceR1 ref = new MockProfileReferenceR1();
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
 
         servo.reset();
         servo.periodic();
@@ -353,7 +358,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(0, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(1, 0, 0);
+        servo.setPositionDirect(1, 0);
         stepTime();
 
         // move 0 to 1 in 0.02 => v = 50
@@ -366,7 +371,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(0.5, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(1, 0, 0);
+        servo.setPositionDirect(1, 0);
         stepTime();
 
         // all the way there now
@@ -391,6 +396,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
+        RDynamics dyn = new RDynamics(0, 0, 0);
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, 1, -3.1, 3.1);
         // very fast profile so we can see it; this is used for the "go around"
@@ -398,7 +404,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         ProfileR1 profile = new TrapezoidProfileR1(log, 200, 10000, 0.05);
         ProfileReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.01, 0.01);
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
 
         servo.reset();
         servo.periodic();
@@ -413,7 +419,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
 
         // First go to -3.
         servo.periodic();
-        servo.setPositionDirect(-3, 0, 0);
+        servo.setPositionDirect(-3, 0);
         stepTime();
 
         // back up 3 in 0.02, so v=-150.
@@ -426,7 +432,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(-1.5, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(-3, 0, 0);
+        servo.setPositionDirect(-3, 0);
         stepTime();
 
         // all the way there now
@@ -438,7 +444,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
 
         // Now try to go to 3. We want the "long way around."
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         assertEquals(100, motor.getVelocityRad_S(), DELTA);
@@ -449,7 +455,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(-2, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         assertEquals(175, motor.getVelocityRad_S(), DELTA);
@@ -459,7 +465,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(0.75, sensor.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         assertEquals(25, motor.getVelocityRad_S(), DELTA);
@@ -470,7 +476,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(2.75, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         assertEquals(0, motor.getVelocityRad_S(), DELTA);
@@ -489,11 +495,12 @@ public class OutboardAngularPositionServoTest implements Timeless {
         SimulatedBareMotor motor = new SimulatedBareMotor(log, 600);
         IncrementalBareEncoder encoder = motor.encoder();
         SimulatedRotaryPositionSensor sensor = new SimulatedRotaryPositionSensor(log, encoder, 1);
+        RDynamics dyn = new RDynamics(0, 0, 0);
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         ReferenceR1 ref = new MockProfileReferenceR1();
         OutboardAngularPositionServo servo = new OutboardAngularPositionServo(
-                log, mech, ref);
+                log, mech, dyn, ref);
 
         servo.reset();
         servo.periodic();
@@ -508,7 +515,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
 
         // First go to -3.
         servo.periodic();
-        servo.setPositionDirect(-3, 0, 0);
+        servo.setPositionDirect(-3, 0);
         stepTime();
 
         // back up 3 in 0.02, so v=-150.
@@ -521,7 +528,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(-1.5, servo.getWrappedPositionRad(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(-3, 0, 0);
+        servo.setPositionDirect(-3, 0);
         stepTime();
 
         // all the way there now
@@ -533,7 +540,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
 
         // Now try to go to 3. We want the "short way around."
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         // to get from -3 to 3 the short way, we go in the *negative* direction.
@@ -544,7 +551,7 @@ public class OutboardAngularPositionServoTest implements Timeless {
         assertEquals(-14.159, mech.getVelocityRad_S(), DELTA);
 
         servo.periodic();
-        servo.setPositionDirect(3, 0, 0);
+        servo.setPositionDirect(3, 0);
         stepTime();
 
         assertEquals(0, motor.getVelocityRad_S(), DELTA);

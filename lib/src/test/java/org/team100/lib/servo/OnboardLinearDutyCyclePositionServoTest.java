@@ -3,6 +3,7 @@ package org.team100.lib.servo;
 import org.junit.jupiter.api.Test;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.controller.r1.FullStateFeedback;
+import org.team100.lib.dynamics.p.PDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
@@ -20,7 +21,7 @@ public class OnboardLinearDutyCyclePositionServoTest implements Timeless {
 
     @Test
     void test1() {
-
+        PDynamics dyn = new PDynamics(0);
         SimulatedBareMotor driveMotor = new SimulatedBareMotor(logger, 600);
         IncrementalBareEncoder driveEncoder = driveMotor.encoder();
         LinearMechanism mech = new LinearMechanism(logger,
@@ -34,10 +35,10 @@ public class OnboardLinearDutyCyclePositionServoTest implements Timeless {
         FeedbackR1 feedback = new FullStateFeedback(logger, k1, k2, false, 1, 1);
 
         OnboardLinearDutyCyclePositionServo s = new OnboardLinearDutyCyclePositionServo(
-                logger, mech, ref, feedback, 0.1);
+                logger, mech, dyn, ref, feedback, 0.1, 0);
         s.reset();
         for (double t = 0; t < 3; t += 0.02) {
-            s.setPositionProfiled(1, 0);
+            s.setPositionProfiled(1);
             stepTime();
             if (DEBUG)
                 System.out.printf("%f, %f, %f, %f, %f\n",

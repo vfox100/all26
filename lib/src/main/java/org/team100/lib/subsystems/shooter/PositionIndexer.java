@@ -54,10 +54,10 @@ public class PositionIndexer extends SubsystemBase implements ShooterIndexer {
 
     private void goToGoal() {
         if (m_profiled) {
-            m_servo.setPositionProfiled(m_goal, 0);
+            m_servo.setPositionProfiled(m_goal);
         } else {
             ControlR1 c = new ControlR1(m_goal);
-            m_servo.setPositionDirect(new SetpointsR1(c, c), 0);
+            m_servo.setPositionDirect(new SetpointsR1(c, c));
         }
     }
 

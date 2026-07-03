@@ -1,7 +1,6 @@
 package org.team100.lib.motor;
 
 import org.team100.lib.config.Friction;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.sensor.position.incremental.IncrementalBareEncoder;
 
 public class MockBareMotor implements BareMotor, IncrementalBareEncoder {

@@ -1,6 +1,10 @@
 package org.team100.lib.servo;
 
 import org.team100.lib.controller.r1.FeedbackR1;
+import org.team100.lib.dynamics.r.RAcceleration;
+import org.team100.lib.dynamics.r.RConfig;
+import org.team100.lib.dynamics.r.RDynamics;
+import org.team100.lib.dynamics.r.RTorque;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -35,9 +39,10 @@ public class OnboardAngularPositionServo extends AngularPositionServoImpl {
     public OnboardAngularPositionServo(
             LoggerFactory parent,
             RotaryMechanism mech,
+            RDynamics dynamics,
             ReferenceR1 ref,
             FeedbackR1 feedback) {
-        super(parent, mech, ref);
+        super(parent, mech, dynamics, ref);
         if (feedback.handlesWrapping())
             throw new IllegalArgumentException("Do not supply wrapping feedback");
         LoggerFactory log = parent.type(this);
@@ -64,7 +69,8 @@ public class OnboardAngularPositionServo extends AngularPositionServoImpl {
      * Feedback using measurement and current setpoint. Feedforward using next
      * setpoint.
      */
-    void actuate(SetpointsR1 unwrappedSetpoint, double feedForwardTorqueNm) {
+    @Override
+    void actuate(SetpointsR1 unwrappedSetpoint) {
         if (DEBUG) {
             System.out.printf("setpoint %s\n", unwrappedSetpoint);
         }
@@ -72,6 +78,10 @@ public class OnboardAngularPositionServo extends AngularPositionServoImpl {
         ModelR1 unwrappedMeasurement = m_mechanism.getUnwrappedMeasurement();
         ModelR1 currentUnwrappedSetpoint = unwrappedSetpoint.current().model();
         ControlR1 nextUnwrappedSetpoint = unwrappedSetpoint.next();
+
+        RTorque t = m_dynamics.torque(
+                new RConfig(nextUnwrappedSetpoint.x()),
+                new RAcceleration(nextUnwrappedSetpoint.a()));
 
         if (DEBUG) {
             System.out.printf("unwrapped Measurement %s currentUnwrappedSetpoint %s\n",
@@ -84,9 +94,9 @@ public class OnboardAngularPositionServo extends AngularPositionServoImpl {
             System.out.printf("u_FB %6.3f u_FF %6.3f u_TOTAL %6.3f\n", u_FB, u_FF, u_TOTAL);
         }
 
-        m_mechanism.setVelocity(u_TOTAL, nextUnwrappedSetpoint.a(), feedForwardTorqueNm);
+        m_mechanism.setVelocity(u_TOTAL, t.t());
 
-        m_log_feedforward_torque.log(() -> feedForwardTorqueNm);
+        m_log_feedforward_torque.log(() -> t.t());
         m_log_measurement.log(() -> unwrappedMeasurement);
         m_log_control.log(() -> nextUnwrappedSetpoint);
         m_log_u_FB.log(() -> u_FB);

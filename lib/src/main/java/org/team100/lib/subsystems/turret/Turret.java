@@ -5,6 +5,8 @@ import java.util.function.DoubleFunction;
 import java.util.function.Supplier;
 
 import org.team100.lib.controller.r1.PIDFeedback;
+import org.team100.lib.dynamics.p.PDynamics;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.geometry.GlobalVelocityR2;
 import org.team100.lib.geometry.StateR2;
 import org.team100.lib.logging.Level;
@@ -104,6 +106,7 @@ public class Turret extends SubsystemBase {
     }
 
     private static AngularPositionServo pivot(LoggerFactory log) {
+        RDynamics dyn = new RDynamics(0.005);
         ProfileR1 profile = new TrapezoidProfileR1(log, 5, 10, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
@@ -115,12 +118,13 @@ public class Turret extends SubsystemBase {
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, GEAR_RATIO, MIN_POSITION, MAX_POSITION);
         AngularPositionServo pivot = new OnboardAngularPositionServo(
-                log, mech, ref, feedback);
+                log, mech, dyn, ref, feedback);
         pivot.reset();
         return pivot;
     }
 
     private static AngularPositionServo elevation(LoggerFactory log) {
+        RDynamics dyn = new RDynamics(0, 0, 0);
         ProfileR1 profile = new TrapezoidProfileR1(log, 5, 10, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
         PIDFeedback feedback = new PIDFeedback(log, 5, 0, 0, false, 0.05, 0.1);
@@ -132,12 +136,13 @@ public class Turret extends SubsystemBase {
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, sensor, GEAR_RATIO, 0, Math.PI / 2);
         AngularPositionServo pivot = new OnboardAngularPositionServo(
-                log, mech, ref, feedback);
+                log, mech, dyn, ref, feedback);
         pivot.reset();
         return pivot;
     }
 
     private static LinearVelocityServo drum(LoggerFactory log) {
+        PDynamics dyn = PDynamics.drum(0.0001, DRUM_DIAMETER / 2);
         VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(10);
         VelocityReferenceR1 ref = new VelocityProfileReferenceR1(
                 log, () -> profile, 1);
@@ -147,7 +152,8 @@ public class Turret extends SubsystemBase {
         LinearMechanism mech = new LinearMechanism(
                 log, motor, encoder, DRUM_RATIO, DRUM_DIAMETER,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        LinearVelocityServo drum = new OutboardLinearVelocityServo(log, mech, ref, 1.0);
+        LinearVelocityServo drum = new OutboardLinearVelocityServo(
+                log, mech, dyn, ref, 1.0);
         return drum;
     }
 
@@ -199,8 +205,8 @@ public class Turret extends SubsystemBase {
         Solution solution = soln.get();
         Rotation2d absoluteBearing = solution.azimuth();
         Rotation2d relativeBearing = absoluteBearing.minus(m_state.get().rotation());
-        m_pivot.setPositionProfiled(relativeBearing.getRadians(), 0);
-        m_elevation.setPositionProfiled(solution.parameters().elevation(), 0);
+        m_pivot.setPositionProfiled(relativeBearing.getRadians());
+        m_elevation.setPositionProfiled(solution.parameters().elevation());
         m_drum.setVelocityProfiled(solution.parameters().speed());
     }
 

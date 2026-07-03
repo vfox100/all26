@@ -12,13 +12,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class VelocityIndexer extends SubsystemBase implements ShooterIndexer {
     private static final double SINGLE_DURATION = 0.1;
     /** full output velocity */
-    private final double m_full;
+    private final double m_fullVelocityM_S;
     private final LinearVelocityServo m_servo;
     private final boolean m_profiled;
 
     public VelocityIndexer(
-            LoggerFactory log, double full, LinearVelocityServo servo, boolean profiled) {
-        m_full = full;
+            LoggerFactory log,
+            double fullVelocityM_S,
+            LinearVelocityServo servo,
+            boolean profiled) {
+        m_fullVelocityM_S = fullVelocityM_S;
         m_servo = servo;
         m_profiled = profiled;
     }
@@ -47,7 +50,7 @@ public class VelocityIndexer extends SubsystemBase implements ShooterIndexer {
     //////////////////////////////////////////////////////////
 
     private void full() {
-        set(m_full);
+        set(m_fullVelocityM_S);
     }
 
     private void zero() {

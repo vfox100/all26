@@ -7,7 +7,6 @@ import org.team100.lib.coherence.DoubleCache;
 import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -29,7 +28,8 @@ import com.revrobotics.spark.SparkLimitSwitch;
 /**
  * Base class for REV motors.
  * 
- * Relies on Cache and Takt, so you must put Cache.refresh() and Takt.update() in
+ * Relies on Cache and Takt, so you must put Cache.refresh() and Takt.update()
+ * in
  * Robot.robotPeriodic().
  * 
  * Current limit is stator current.
@@ -212,7 +212,7 @@ public abstract class CANSparkMotor implements BareMotor {
         double backEMFVolts = backEMFVoltage(motorRad_S);
         double frictionFFVolts = m_friction.frictionFFVolts(motorRad_S);
         double torqueFFVolts = getTorqueFFVolts(torqueNm);
-        double FFVolts = backEMFVolts + frictionFFVolts  + torqueFFVolts;
+        double FFVolts = backEMFVolts + frictionFFVolts + torqueFFVolts;
 
         // REV control unit is revolutions
         warn(() -> m_pidController.setSetpoint(

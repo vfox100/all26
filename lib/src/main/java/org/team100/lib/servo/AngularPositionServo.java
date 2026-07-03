@@ -33,6 +33,9 @@ public interface AngularPositionServo extends Player {
      */
     void setDutyCycle(double dutyCycle);
 
+    /**
+     * Limit torque via the motor current limit.
+     */
     void setTorqueLimit(double torqueNm);
 
     /**
@@ -47,12 +50,14 @@ public interface AngularPositionServo extends Player {
      * needs to be coordinated, e.g. with another mechanism, or with a target. It's
      * suitable for simple, smooth control of independent mechanisms.
      * 
+     * Gravity/spring compensation used to be here; it should be in the
+     * dynamics now.
+     * 
      * @param wrappedGoalRad The goal angle here wraps within [-pi, pi], using
      *                       output measurements, e.g. shaft radians, not motor
      *                       radians.
-     * @param torqueNm       Feedforward for gravity or spring compensation.
      */
-    void setPositionProfiled(double wrappedGoalRad, double torqueNm);
+    void setPositionProfiled(double wrappedGoalRad);
 
     /**
      * Invalidates the current profile, sets the setpoint directly, using the
@@ -66,29 +71,37 @@ public interface AngularPositionServo extends Player {
      * 
      * This method goes the "short way" directly and the "long way" with a profile.
      * 
+     * Gravity/spring compensation used to be here; it should be in the
+     * dynamics now.
+     * 
      * @param wrappedGoalRad Where the mechanism should be at the next time step.
      *                       The angle here wraps within [-pi, pi], using
      *                       output measurements, e.g. shaft radians, not motor
      *                       radians.
      * @param velocityRad_S  The desired velocity at the next time step, used for
      *                       feedforward.
-     * @param torqueNm       Feedforward for gravity or spring compensation.
      */
-    void setPositionDirect(double wrappedGoalRad, double velocityRad_S, double torqueNm);
+    void setPositionDirect(double wrappedGoalRad, double velocityRad_S);
 
     /**
      * For unwrapped goal.
      * 
      * You need to keep calling this to keep actuating.
+     * 
+     * Gravity/spring compensation used to be here; it should be in the
+     * dynamics now.
      */
-    void actuateWithProfile(double unwrappedGoalX, double torqueNm);
+    void actuateWithProfile(double unwrappedGoalX);
 
     /**
      * Unwrapped setpoint, no profile.
      * 
      * You need to keep calling this to keep actuating.
+     * 
+     * Gravity/spring compensation used to be here; it should be in the
+     * dynamics now.
      */
-    void actuateDirect(double unwrappedSetpoint, double torqueNm);
+    void actuateDirect(double unwrappedSetpoint);
 
     /**
      * This is the "wrapped" value, i.e. it is periodic within +/- pi.
@@ -105,7 +118,7 @@ public interface AngularPositionServo extends Player {
     /** For testing. */
     ModelR1 getUnwrappedGoal();
 
-    /** A valid setpoint exists.  Not true when the goal is inaccessible. */
+    /** A valid setpoint exists. Not true when the goal is inaccessible. */
     boolean validSetpoint();
 
     /** Mechanism is following the desired setpoint. */

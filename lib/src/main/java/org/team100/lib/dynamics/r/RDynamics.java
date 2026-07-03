@@ -1,5 +1,11 @@
 package org.team100.lib.dynamics.r;
 
+/**
+ * TODO: allow variable angle of gravity.
+ * 
+ * Alternatively, we could just have a convention such that the "zero"
+ * of every coordinate system is "up".
+ */
 public class RDynamics {
     /** Gravity. */
     private static final double g = 9.8;
@@ -10,10 +16,20 @@ public class RDynamics {
     /** Moment of inertia. */
     private final double izz1;
 
+    /** Arm. */
     public RDynamics(double m1, double lc1, double izz1) {
         this.m1 = m1;
         this.lc1 = lc1;
         this.izz1 = izz1;
+    }
+
+    /**
+     * Roller drum has only inertia.
+     * 
+     * @param I inertia kg m^2
+     */
+    public RDynamics(double I) {
+        this(0, 0, I);
     }
 
     /**

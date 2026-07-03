@@ -1,9 +1,10 @@
 package org.team100.frc2026.subsystems;
 
+import org.team100.frc2026.robot.CurrentLimits;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.p.PDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.motor.BareMotor;
@@ -21,7 +22,6 @@ import org.team100.lib.util.CanId;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.team100.frc2026.robot.CurrentLimits;
 
 public class Intake extends SubsystemBase {
     private static final CanId CAN_ID_1 = new CanId(20);
@@ -40,6 +40,8 @@ public class Intake extends SubsystemBase {
         LoggerFactory log2 = log.name("motor2");
         // tuned 3/12/26
         NORMAL_SPEED = new Mutable(log, "Intake Speed", 10);
+        // equivalent linear dynamics for the actual drum inertia.
+        PDynamics dynamics = PDynamics.drum(0.001, 0.025);
         // VelocityProfileR1 profile = new CurrentLimitedExponentialVelocityProfileR1(
         // 10, 10, 20, 30);
         VelocityProfileR1 profile = new AccelLimitedVelocityProfileR1(
@@ -68,9 +70,9 @@ public class Intake extends SubsystemBase {
             }
         }
         m_servo1 = OutboardLinearVelocityServo.make(
-                log1, m1, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log1, m1, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
         m_servo2 = OutboardLinearVelocityServo.make(
-                log2, m2, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
+                log2, m2, dynamics, ref, GEAR_RATIO, WHEEL_DIAMETER_M, TOLERANCE_M_S);
     }
 
     /**

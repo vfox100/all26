@@ -8,7 +8,6 @@ import org.team100.lib.coherence.Takt;
 import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -279,7 +278,7 @@ public abstract class Talon6Motor implements BareMotor {
         double backEMFVolts = backEMFVoltage(motorRad_S);
         double frictionFFVolts = m_friction.frictionFFVolts(motorRad_S);
         double torqueFFVolts = getTorqueFFVolts(torqueNm);
-        double FFVolts = backEMFVolts + frictionFFVolts  + torqueFFVolts;
+        double FFVolts = backEMFVolts + frictionFFVolts + torqueFFVolts;
 
         // CTRE control unit is rev.
         warn(() -> m_motor.setControl(

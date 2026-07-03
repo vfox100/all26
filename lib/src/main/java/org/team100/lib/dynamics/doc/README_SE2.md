@@ -1,5 +1,7 @@
 # SE2 Dynamics
 
+SE2 has three dimensions.
+
 For this system, we define the coordinates:
 
 ```math
@@ -25,6 +27,7 @@ m & 0 & 0 \\
 0 & 0 & I \\
 \end{bmatrix}
 ```
+
 ## Centrifugal and Coriolis
 
 For this system, there is no centrifugal/coriolis term.

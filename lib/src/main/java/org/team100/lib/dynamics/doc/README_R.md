@@ -184,3 +184,20 @@ m_1 l_{c_1}^2
 
 This expression does not depend on velocity ($\dot{q}$),
 so it doesn't appear in the implementation.
+
+For setups with no length (e.g. a flywheel), the expression
+simplifies to the familiar:
+
+```math
+\tau = 
+I_{zz_1}
+\ddot{q}
+```
+
+better known as:
+
+```math
+\tau = 
+I
+\alpha
+```

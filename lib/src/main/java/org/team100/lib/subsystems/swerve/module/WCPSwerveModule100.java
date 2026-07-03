@@ -1,11 +1,8 @@
 package org.team100.lib.subsystems.swerve.module;
 
-import java.util.function.Supplier;
-
 import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.LinearMechanism;
@@ -14,28 +11,17 @@ import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode100;
 import org.team100.lib.motor.ctre.Falcon500Motor;
 import org.team100.lib.motor.ctre.KrakenX60Motor;
-import org.team100.lib.profile.r1.ProfileR1;
-import org.team100.lib.reference.r1.NoVelocityReferenceR1;
-import org.team100.lib.reference.r1.ProfileReferenceR1;
-import org.team100.lib.reference.r1.ReferenceR1;
 import org.team100.lib.sensor.position.absolute.CombinedRotaryPositionSensor;
 import org.team100.lib.sensor.position.absolute.EncoderDrive;
 import org.team100.lib.sensor.position.absolute.ProxyRotaryPositionSensor;
 import org.team100.lib.sensor.position.absolute.RotaryPositionSensor;
 import org.team100.lib.sensor.position.absolute.wpi.AS5048RotaryPositionSensor;
 import org.team100.lib.sensor.position.incremental.ctre.Talon6Encoder;
-import org.team100.lib.servo.AngularPositionServo;
-import org.team100.lib.servo.LinearVelocityServo;
-import org.team100.lib.servo.OutboardAngularPositionServo;
-import org.team100.lib.servo.OutboardLinearVelocityServo;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
 
 public class WCPSwerveModule100 extends SwerveModule100 {
-    private static final double STEERING_POSITION_TOLERANCE_RAD = 0.05;
-    private static final double STEERING_VELOCITY_TOLERANCE_RAD_S = 0.05;
-
     /**
      * WCP calls this "rotation ratio" here, we use the "flipped belt" which is the
      * fastest steering ratio.
@@ -80,17 +66,16 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             RoboRioChannel turningEncoderChannel,
             double turningOffset,
             SwerveKinodynamics kinodynamics,
-            EncoderDrive drive,
+            EncoderDrive encoderDrive,
             NeutralMode100 neutral,
             MotorPhase motorPhase) {
-
-        LinearVelocityServo driveServo = driveKrakenServo(
+        LinearMechanism drive = driveKraken(
                 parent.name("Drive"),
                 currentLog,
                 driveLimit,
                 driveMotorCanId,
                 ratio);
-        AngularPositionServo turningServo = turningKrakenServo(
+        RotaryMechanism steer = steerKraken(
                 parent.name("Turning"),
                 currentLog,
                 steerLimit,
@@ -99,10 +84,10 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 turningOffset,
                 STEERING_RATIO,
                 kinodynamics,
-                drive,
+                encoderDrive,
                 neutral,
                 motorPhase);
-        return new WCPSwerveModule100(parent, driveServo, turningServo, ratio);
+        return new WCPSwerveModule100(parent, drive, steer, ratio);
     }
 
     /**
@@ -119,16 +104,16 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             RoboRioChannel turningEncoderChannel,
             double turningOffset,
             SwerveKinodynamics kinodynamics,
-            EncoderDrive drive,
+            EncoderDrive encoderDrive,
             NeutralMode100 neutral,
             MotorPhase motorPhase) {
-        LinearVelocityServo driveServo = driveFalconServo(
+        LinearMechanism drive = driveFalcon(
                 parent.name("Drive"),
                 currentLog,
                 driveLimit,
                 driveMotorCanId,
                 ratio);
-        AngularPositionServo turningServo = turningServo(
+        RotaryMechanism steer = steerFalcon(
                 parent.name("Turning"),
                 currentLog,
                 steerLimit,
@@ -136,14 +121,13 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 turningEncoderChannel,
                 turningOffset,
                 STEERING_RATIO,
-                kinodynamics,
-                drive,
+                encoderDrive,
                 neutral,
                 motorPhase);
-        return new WCPSwerveModule100(parent, driveServo, turningServo, ratio);
+        return new WCPSwerveModule100(parent, drive, steer, ratio);
     }
 
-    private static LinearVelocityServo driveKrakenServo(
+    private static LinearMechanism driveKraken(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
             CurrentLimit limit,
@@ -163,18 +147,16 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 friction,
                 pid);
         Talon6Encoder encoder = driveMotor.encoder();
-        LinearMechanism mech = new LinearMechanism(parent,
+        return new LinearMechanism(parent,
                 driveMotor,
                 encoder,
                 ratio.m_ratio,
                 WHEEL_DIAMETER_M,
                 Double.NEGATIVE_INFINITY,
                 Double.POSITIVE_INFINITY);
-        return new OutboardLinearVelocityServo(
-                parent, mech, new NoVelocityReferenceR1(), 1);
     }
 
-    private static LinearVelocityServo driveFalconServo(
+    private static LinearMechanism driveFalcon(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
             CurrentLimit limit,
@@ -192,14 +174,12 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 friction,
                 pid);
         Talon6Encoder encoder = driveMotor.encoder();
-        LinearMechanism mech = new LinearMechanism(parent,
+        return new LinearMechanism(parent,
                 driveMotor, encoder, ratio.m_ratio, WHEEL_DIAMETER_M, Double.NEGATIVE_INFINITY,
                 Double.POSITIVE_INFINITY);
-        return new OutboardLinearVelocityServo(
-                parent, mech, new NoVelocityReferenceR1(), 1);
     }
 
-    private static AngularPositionServo turningServo(
+    private static RotaryMechanism steerFalcon(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
             CurrentLimit limit,
@@ -207,7 +187,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             RoboRioChannel turningEncoderChannel,
             double turningOffset,
             double gearRatio,
-            SwerveKinodynamics kinodynamics,
             EncoderDrive drive,
             NeutralMode100 neutral,
             MotorPhase motorPhase) {
@@ -240,17 +219,12 @@ public class WCPSwerveModule100 extends SwerveModule100 {
         ProxyRotaryPositionSensor proxy = new ProxyRotaryPositionSensor(builtInEncoder, gearRatio);
         CombinedRotaryPositionSensor combined = new CombinedRotaryPositionSensor(parent, turningSensor, proxy);
 
-        RotaryMechanism mech = new RotaryMechanism(
-                parent, turningMotor, combined, gearRatio, Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY);
-
-        AngularPositionServo turningServo = outboardTurningServo(
-                parent, kinodynamics, mech, combined);
-        turningServo.reset();
-        return turningServo;
+        return new RotaryMechanism(
+                parent, turningMotor, combined, gearRatio,
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
-    private static AngularPositionServo turningKrakenServo(
+    private static RotaryMechanism steerKraken(
             LoggerFactory parent,
             TotalCurrentLog currentLog,
             CurrentLimit limit,
@@ -291,33 +265,17 @@ public class WCPSwerveModule100 extends SwerveModule100 {
         ProxyRotaryPositionSensor proxy = new ProxyRotaryPositionSensor(builtInEncoder, gearRatio);
         CombinedRotaryPositionSensor combined = new CombinedRotaryPositionSensor(parent, turningSensor, proxy);
 
-        RotaryMechanism mech = new RotaryMechanism(
-                parent, turningMotor, combined, gearRatio, Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY);
-
-        AngularPositionServo turningServo = outboardTurningServo(
-                parent, kinodynamics, mech, combined);
-        turningServo.reset();
-        return turningServo;
-    }
-
-    private static AngularPositionServo outboardTurningServo(
-            LoggerFactory parent,
-            SwerveKinodynamics kinodynamics,
-            RotaryMechanism mech,
-            CombinedRotaryPositionSensor combinedEncoder) {
-        Supplier<ProfileR1> profile = kinodynamics.getSteeringProfile();
-        ReferenceR1 ref = new ProfileReferenceR1(
-                parent, profile, STEERING_POSITION_TOLERANCE_RAD, STEERING_VELOCITY_TOLERANCE_RAD_S);
-        return new OutboardAngularPositionServo(parent, mech, ref);
+        return new RotaryMechanism(
+                parent, turningMotor, combined, gearRatio,
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     private WCPSwerveModule100(
             LoggerFactory log,
-            LinearVelocityServo driveServo,
-            AngularPositionServo turningServo,
+            LinearMechanism drive,
+            RotaryMechanism steer,
             DriveRatio ratio) {
         // primary is 2:1 so final is whatever is left.
-        super(log, driveServo, turningServo, WHEEL_DIAMETER_M, ratio.m_ratio / 2);
+        super(log, drive, steer, WHEEL_DIAMETER_M, ratio.m_ratio / 2);
     }
 }

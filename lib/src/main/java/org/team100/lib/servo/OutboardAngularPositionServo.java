@@ -1,5 +1,9 @@
 package org.team100.lib.servo;
 
+import org.team100.lib.dynamics.r.RAcceleration;
+import org.team100.lib.dynamics.r.RConfig;
+import org.team100.lib.dynamics.r.RDynamics;
+import org.team100.lib.dynamics.r.RTorque;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -28,8 +32,9 @@ public class OutboardAngularPositionServo extends AngularPositionServoImpl {
     public OutboardAngularPositionServo(
             LoggerFactory parent,
             RotaryMechanism mech,
+            RDynamics dynamics,
             ReferenceR1 ref) {
-        super(parent, mech, ref);
+        super(parent, mech, dynamics, ref);
         LoggerFactory log = parent.type(this);
         m_log_ff_torque = log.doubleLogger(Level.TRACE, "Feedforward Torque (Nm)");
         m_log_control = log.ControlR1Logger(Level.TRACE, "setpoint (rad)");
@@ -42,13 +47,14 @@ public class OutboardAngularPositionServo extends AngularPositionServoImpl {
     public static OutboardAngularPositionServo make(
             LoggerFactory log,
             BareMotor motor,
+            RDynamics dyn,
             ReferenceR1 ref,
             double gearRatio,
             double initialPosition) {
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, motor.encoder(), initialPosition, gearRatio,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        return new OutboardAngularPositionServo(log, mech, ref);
+        return new OutboardAngularPositionServo(log, mech, dyn, ref);
     }
 
     /**
@@ -58,6 +64,7 @@ public class OutboardAngularPositionServo extends AngularPositionServoImpl {
     public static OutboardAngularPositionServo make(
             LoggerFactory log,
             BareMotor motor,
+            RDynamics dyn,
             ReferenceR1 ref,
             double gearRatio,
             double initialPosition,
@@ -66,25 +73,29 @@ public class OutboardAngularPositionServo extends AngularPositionServoImpl {
         RotaryMechanism mech = new RotaryMechanism(
                 log, motor, motor.encoder(), initialPosition, gearRatio,
                 minPosition, maxPosition);
-        return new OutboardAngularPositionServo(log, mech, ref);
+        return new OutboardAngularPositionServo(log, mech, dyn, ref);
     }
 
     /**
      * Pass the next setpoint directly to the mechanism's position controller.
      * Ignores current setpoint. We only use the "next" setpoint.
      */
-    void actuate(SetpointsR1 unwrappedSetpoint, double torqueNm) {
+    @Override
+    void actuate(SetpointsR1 unwrappedSetpoint) {
 
         ControlR1 nextUnwrappedSetpoint = unwrappedSetpoint.next();
+
+        RTorque t = m_dynamics.torque(
+                new RConfig(nextUnwrappedSetpoint.x()),
+                new RAcceleration(nextUnwrappedSetpoint.a()));
 
         m_mechanism.setUnwrappedPosition(
                 nextUnwrappedSetpoint.x(),
                 nextUnwrappedSetpoint.v(),
-                nextUnwrappedSetpoint.a(),
-                torqueNm);
+                t.t());
 
         m_log_control.log(() -> nextUnwrappedSetpoint);
-        m_log_ff_torque.log(() -> torqueNm);
+        m_log_ff_torque.log(() -> t.t());
     }
 
 }

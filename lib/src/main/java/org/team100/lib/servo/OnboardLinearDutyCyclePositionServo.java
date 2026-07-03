@@ -1,6 +1,9 @@
 package org.team100.lib.servo;
 
 import org.team100.lib.controller.r1.FeedbackR1;
+import org.team100.lib.dynamics.p.PAcceleration;
+import org.team100.lib.dynamics.p.PDynamics;
+import org.team100.lib.dynamics.p.PTorque;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -20,9 +23,15 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
     private static final double POSITION_TOLERANCE = 0.01;
     private static final double VELOCITY_TOLERANCE = 0.01;
     private final LinearMechanism m_mechanism;
+    private final PDynamics m_dynamics;
     private final ReferenceR1 m_ref;
     private final FeedbackR1 m_feedback;
     private final double m_kV;
+    /**
+     * This is an awful hack that accounts for the real kT and also
+     * the gearing and drive diameter.
+     */
+    private final double m_kT;
     private final DoubleLogger m_log_goal;
     private final DoubleLogger m_log_position;
     private final DoubleLogger m_log_velocity;
@@ -40,14 +49,18 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
     public OnboardLinearDutyCyclePositionServo(
             LoggerFactory parent,
             LinearMechanism mechanism,
+            PDynamics dynamics,
             ReferenceR1 ref,
             FeedbackR1 feedback,
-            double kV) {
+            double kV,
+            double kT) {
         LoggerFactory log = parent.type(this);
         m_mechanism = mechanism;
+        m_dynamics = dynamics;
         m_ref = ref;
         m_feedback = feedback;
         m_kV = kV;
+        m_kT = kT;
 
         m_log_goal = log.doubleLogger(Level.TRACE, "goal (m)");
         m_log_position = log.doubleLogger(Level.TRACE, "position (m)");
@@ -83,7 +96,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
      * @param feedForwardTorqueNm ignored
      */
     @Override
-    public void setPositionProfiled(double goalM, double feedForwardTorqueNm) {
+    public void setPositionProfiled(double goalM) {
         m_log_goal.log(() -> goalM);
         final ModelR1 goal = new ModelR1(goalM, 0);
 
@@ -93,7 +106,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
             // initialize with the setpoint, not the measurement, to avoid noise.
             m_ref.init(m_setpoint.model());
         }
-        actuate(m_ref.get(), feedForwardTorqueNm);
+        actuate(m_ref.get());
     }
 
     /**
@@ -103,9 +116,9 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
      * @param feedForwardTorqueNm ignored
      */
     @Override
-    public void setPositionDirect(SetpointsR1 setpoints, double feedForwardTorqueNm) {
+    public void setPositionDirect(SetpointsR1 setpoints) {
         m_goal = null;
-        actuate(setpoints, feedForwardTorqueNm);
+        actuate(setpoints);
     }
 
     /**
@@ -113,15 +126,17 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
      * setpoint, and actuate using duty cycle.
      * Ignores torque
      */
-    private void actuate(SetpointsR1 setpoints, double feedForwardTorqueNm) {
+    private void actuate(SetpointsR1 setpoints) {
         // setpoint must be updated so the profile can see it
         m_setpoint = setpoints.next();
+        double accelM_S2 = m_setpoint.a();
+        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
 
         final double position = getPosition();
         final double velocity = getVelocity();
         final ModelR1 measurement = new ModelR1(position, velocity);
 
-        final double u_FF = m_kV * m_setpoint.v();
+        final double u_FF = m_kV * m_setpoint.v() + m_kT * t.f();
         final double u_FB = m_feedback.calculate(measurement, setpoints.current().model());
         final double u_TOTAL = MathUtil.clamp(u_FF + u_FB, -1.0, 1.0);
 

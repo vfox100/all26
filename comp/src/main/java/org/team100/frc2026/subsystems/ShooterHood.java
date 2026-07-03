@@ -7,13 +7,12 @@ import org.team100.frc2026.robot.CurrentLimits;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
-import org.team100.lib.config.SimpleDynamics;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.motor.BareMotor;
 import org.team100.lib.motor.MotorPhase;
 import org.team100.lib.motor.NeutralMode100;
-//import org.team100.lib.motor.ctre.KrakenX44Motor;
 import org.team100.lib.motor.rev.NeoVortexCANSparkMotor;
 import org.team100.lib.motor.sim.SimulatedBareMotor;
 import org.team100.lib.profile.r1.TrapezoidProfileR1;
@@ -52,6 +51,9 @@ public class ShooterHood extends SubsystemBase {
         m_angle = angle;
         m_tuningSetting = new Mutable(log, "for tuning", 0);
 
+        // mass is zero for now because dynamics gravity direction doesn't match.
+        // TODO: make the coordinates here match.
+        RDynamics dynamics = new RDynamics(0.000, 0.007, 0.001);
         TrapezoidProfileR1 profile = new TrapezoidProfileR1(log, 8, 16, 0.05);
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile, 0.05, 0.05);
 
@@ -74,7 +76,7 @@ public class ShooterHood extends SubsystemBase {
         }
 
         m_servo = OutboardAngularPositionServo.make(
-                log, motor, ref, GEAR_RATIO,
+                log, motor, dynamics, ref, GEAR_RATIO,
                 MIN_POSITION_RAD, MIN_POSITION_RAD, MAX_POSITION_RAD);
     }
 
@@ -163,7 +165,7 @@ public class ShooterHood extends SubsystemBase {
         return startRun(
                 this::reset,
                 () -> {
-                    m_servo.actuateWithProfile(rad, 0);
+                    m_servo.actuateWithProfile(rad);
                 })
                 .withName("set position");
     }
@@ -190,13 +192,13 @@ public class ShooterHood extends SubsystemBase {
 
     /** Use a profile to set the position. */
     private void actuateWithProfile(double value) {
-        m_servo.actuateWithProfile(value, 0);
+        m_servo.actuateWithProfile(value);
     }
 
     /** Do not use a profile. */
     @SuppressWarnings("unused")
     private void actuateDirect(double value) {
-        m_servo.actuateDirect(value, 0);
+        m_servo.actuateDirect(value);
     }
 
     private void autoPositionWork() {

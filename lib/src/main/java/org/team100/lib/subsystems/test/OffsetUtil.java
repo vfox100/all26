@@ -1,7 +1,6 @@
 package org.team100.lib.subsystems.test;
 
 import org.team100.lib.geometry.VelocitySE2;
-import org.team100.lib.state.VelocityControlSE2;
 
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;

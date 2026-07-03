@@ -4,6 +4,7 @@ import org.team100.lib.config.CurrentLimit;
 import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
+import org.team100.lib.dynamics.r.RDynamics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.mechanism.RotaryMechanism;
@@ -19,7 +20,6 @@ import org.team100.lib.reference.r1.ProfileReferenceR1;
 import org.team100.lib.reference.r1.ReferenceR1;
 import org.team100.lib.sensor.position.incremental.IncrementalBareEncoder;
 import org.team100.lib.servo.AngularPositionServo;
-import org.team100.lib.servo.Gravity;
 import org.team100.lib.servo.OutboardAngularPositionServo;
 import org.team100.lib.util.CanId;
 
@@ -36,14 +36,16 @@ public class OutboardRotaryPositionSubsystem extends SubsystemBase {
     /** Extended position, rad */
     private static final double EXTEND = 2;
 
-    private final Gravity m_gravity;
     private final AngularPositionServo m_servo;
 
     public OutboardRotaryPositionSubsystem(LoggerFactory parent, TotalCurrentLog currentLog) {
         LoggerFactory log = parent.type(this);
-        m_gravity = new Gravity(log,
-                5, // Max gravity torque, Nm
-                0); // Gravity torque position offset, rad
+        // NOTE! the coordinates of the dynamics assume "zero" is parallel
+        // to the force of gravity, which may not match.
+        RDynamics dynamics = new RDynamics(
+                0.2, // arm mass kg
+                0.3, // arm length m
+                0); // arm moment, kg m^2
         ProfileR1 profile = new TrapezoidProfileR1(
                 log,
                 1, // max velocity rad/s
@@ -52,7 +54,8 @@ public class OutboardRotaryPositionSubsystem extends SubsystemBase {
         ReferenceR1 ref = new ProfileReferenceR1(log, () -> profile,
                 0.01, // position tolerance, rad
                 0.01); // velocity tolerance, rad/s
-        m_servo = new OutboardAngularPositionServo(log, mech(log, currentLog), ref);
+        RotaryMechanism mech = mech(log, currentLog);
+        m_servo = new OutboardAngularPositionServo(log, mech, dynamics, ref);
         m_servo.reset();
     }
 
@@ -102,19 +105,13 @@ public class OutboardRotaryPositionSubsystem extends SubsystemBase {
      * gravity) forever.
      */
     public Command home() {
-        Command goHome = run(() -> m_servo.setPositionProfiled(HOME, gravityTorque()));
-        Command stayHome = run(() -> m_servo.setPositionProfiled(HOME, 0));
+        Command goHome = run(() -> m_servo.setPositionProfiled(HOME));
+        Command stayHome = run(() -> m_servo.setPositionProfiled(HOME));
         return goHome.until(m_servo::atGoal).andThen(stayHome);
     }
 
     /** Go to the extended position, and hold there forever. */
     public Command extend() {
-        return run(() -> m_servo.setPositionProfiled(EXTEND, gravityTorque()));
-    }
-
-    /////////////////////////////////////////////////////////////////
-
-    private double gravityTorque() {
-        return m_gravity.applyAsDouble(m_servo.getWrappedPositionRad());
+        return run(() -> m_servo.setPositionProfiled(EXTEND));
     }
 }
