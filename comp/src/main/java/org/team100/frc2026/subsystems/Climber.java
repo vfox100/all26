@@ -44,19 +44,18 @@ public class Climber extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0 -> {
                 CurrentLimit limit = new CurrentLimit(60, 40);
-                SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
                 Friction friction = new Friction(log, 0, 0, 0, 0);
                 PIDConstants pid = new PIDConstants(log, 1, 0, 0, 0, 0, 0);
                 m1 = new KrakenX60Motor(
                         log1, currentLog, new CanId(6),
                         NeutralMode100.BRAKE, MotorPhase.FORWARD,
                         limit,
-                        ff, friction, pid);
+                        friction, pid);
                 m2 = new KrakenX60Motor(
                         log2, currentLog, new CanId(7),
                         NeutralMode100.BRAKE, MotorPhase.FORWARD,
                         limit,
-                        ff, friction, pid);
+                        friction, pid);
             }
             default -> {
                 m1 = new SimulatedBareMotor(log1, 600);

@@ -59,14 +59,13 @@ public class ShooterHood extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0 -> {
 
-                SimpleDynamics ff = new SimpleDynamics(log, 0.00, 0.00);
                 Friction friction = new Friction(log, 0.350, 0.350, 0.0, 0.5);
                 // tuned 3/12/26
                 PIDConstants pid = PIDConstants.makePositionPID(log, 1.0);
 
                 motor = new NeoVortexCANSparkMotor(
                         log, currentLog, CAN_ID, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.SHOOTER_HOOD, ff, friction, pid, 0, 0);
+                        CurrentLimits.SHOOTER_HOOD, friction, pid, 0, 0);
 
             }
             default -> {

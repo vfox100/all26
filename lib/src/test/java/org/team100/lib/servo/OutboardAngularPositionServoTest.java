@@ -36,9 +36,8 @@ public class OutboardAngularPositionServoTest implements Timeless {
     /** At goal should be false after initialization */
     @Test
     void testAtGoal() {
-        SimpleDynamics ff = new SimpleDynamics(log, 0.100, 0.100);
         Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor motor = new MockBareMotor(ff, friction);
+        MockBareMotor motor = new MockBareMotor(friction);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         MockRotaryPositionSensor sensor = new MockRotaryPositionSensor();
 
@@ -81,9 +80,8 @@ public class OutboardAngularPositionServoTest implements Timeless {
      */
     @Test
     void testNoReset() {
-        SimpleDynamics ff = new SimpleDynamics(log, 0.100, 0.100);
         Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor motor = new MockBareMotor(ff, friction);
+        MockBareMotor motor = new MockBareMotor(friction);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         MockRotaryPositionSensor sensor = new MockRotaryPositionSensor();
 
@@ -104,9 +102,8 @@ public class OutboardAngularPositionServoTest implements Timeless {
 
     @Test
     void testProfiled() {
-        SimpleDynamics ff = new SimpleDynamics(log, 0.100, 0.100);
         Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
-        final MockBareMotor motor = new MockBareMotor(ff, friction);
+        final MockBareMotor motor = new MockBareMotor(friction);
         final MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         final MockRotaryPositionSensor sensor = new MockRotaryPositionSensor();
 

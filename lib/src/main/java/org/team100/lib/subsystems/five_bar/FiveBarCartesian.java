@@ -73,7 +73,6 @@ public class FiveBarCartesian extends SubsystemBase {
 
         // zeros
         PIDConstants pid = PIDConstants.makePositionPID(m_logger, 2.0);
-        SimpleDynamics ff = new SimpleDynamics(m_logger, 0, 0);
         Friction friction = new Friction(m_logger, 0, 0, 0, 0);
 
         BareMotor motorP1;
@@ -87,7 +86,6 @@ public class FiveBarCartesian extends SubsystemBase {
                         NeutralMode100.COAST,
                         MotorPhase.REVERSE,
                         new CurrentLimit(STATOR_LIMIT, SUPPLY_LIMIT),
-                        ff,
                         friction,
                         pid);
                 motorP5 = new Falcon500Motor(
@@ -97,7 +95,6 @@ public class FiveBarCartesian extends SubsystemBase {
                         NeutralMode100.COAST,
                         MotorPhase.REVERSE,
                         new CurrentLimit(STATOR_LIMIT, SUPPLY_LIMIT),
-                        ff,
                         friction,
                         pid);
             }
@@ -125,8 +122,8 @@ public class FiveBarCartesian extends SubsystemBase {
                 100.0);
 
         // TODO: what to do for initial position?
-        m_mechP1.setUnwrappedPosition(0, 0, 0, 0);
-        m_mechP5.setUnwrappedPosition(0, 0, 0, 0);
+        m_mechP1.setUnwrappedPosition(0, 0, 0);
+        m_mechP5.setUnwrappedPosition(0, 0, 0);
     }
 
     /**
@@ -147,8 +144,8 @@ public class FiveBarCartesian extends SubsystemBase {
         }
         ActuatorAngles p = optP.get();
         m_log_feasible.log(() -> true);
-        m_mechP1.setUnwrappedPosition(p.q1(), 0, 0, 0);
-        m_mechP5.setUnwrappedPosition(p.q5(), 0, 0, 0);
+        m_mechP1.setUnwrappedPosition(p.q1(), 0, 0);
+        m_mechP5.setUnwrappedPosition(p.q5(), 0, 0);
     }
 
     public Optional<JointPositions> getJointPositions() {

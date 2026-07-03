@@ -68,18 +68,26 @@ public class LinearMechanism implements Player {
         m_motor.setTorqueLimit(forceN * m_wheelRadiusM / m_gearRatio);
     }
 
-    /** Should actuate immediately. Use for homing. */
-    public void setVelocityUnlimited(double outputVelocityM_S, double outputAccelM_S2, double outputForceN) {
+    /**
+     * Should actuate immediately. Use for homing.
+     *
+     * Previously this included an accel term. Acceleration should be
+     * addressed with Subsystem-level dynamics.
+     */
+    public void setVelocityUnlimited(double outputVelocityM_S, double outputForceN) {
         m_motor.setVelocity(
                 (outputVelocityM_S / m_wheelRadiusM) * m_gearRatio,
-                (outputAccelM_S2 / m_wheelRadiusM) * m_gearRatio,
                 outputForceN * m_wheelRadiusM / m_gearRatio);
     }
 
-    /** Should actuate immediately. Limits position using the encoder. */
+    /**
+     * Should actuate immediately. Limits position using the encoder.
+     * 
+     * Previously this included an accel term. Acceleration should be
+     * addressed with Subsystem-level dynamics.
+     */
     public void setVelocity(
             double outputVelocityM_S,
-            double outputAccelM_S2,
             double outputForceN) {
         if (DEBUG) {
             System.out.printf("velocity %6.3f\n", outputVelocityM_S);
@@ -95,7 +103,6 @@ public class LinearMechanism implements Player {
         }
         m_motor.setVelocity(
                 (outputVelocityM_S / m_wheelRadiusM) * m_gearRatio,
-                (outputAccelM_S2 / m_wheelRadiusM) * m_gearRatio,
                 outputForceN * m_wheelRadiusM / m_gearRatio);
     }
 
@@ -105,12 +112,12 @@ public class LinearMechanism implements Player {
      * 
      * Should actuate immediately.
      * 
-     * Make sure you don't double-count factors of torque/accel.
+     * Previously this included an accel term. Acceleration should be
+     * addressed with Subsystem-level dynamics.
      */
     public void setPosition(
             double positionM,
             double velocityM_S,
-            double accelM_S2,
             double forceN) {
         if (positionM < m_minPositionM) {
             m_motor.stop();
@@ -123,7 +130,6 @@ public class LinearMechanism implements Player {
         m_motor.setUnwrappedPosition(
                 (positionM / m_wheelRadiusM) * m_gearRatio,
                 (velocityM_S / m_wheelRadiusM) * m_gearRatio,
-                (accelM_S2 / m_wheelRadiusM) * m_gearRatio,
                 forceN * m_wheelRadiusM / m_gearRatio);
     }
 
@@ -154,7 +160,7 @@ public class LinearMechanism implements Player {
      * TODO: I think this is unnecessary.
      */
     // public void resetEncoderPosition() {
-    //     m_encoder.reset();
+    // m_encoder.reset();
     // }
 
     /** For logging. */

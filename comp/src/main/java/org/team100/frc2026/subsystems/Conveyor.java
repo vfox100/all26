@@ -48,8 +48,6 @@ public class Conveyor extends SubsystemBase {
 
         switch (Identity.instance) {
             case TEST_BOARD_B0 -> {
-
-                SimpleDynamics dynamics = new SimpleDynamics(log, 0.00, 0.00);
                 // friction test 3/12/262
                 Friction friction = new Friction(log, 0.7, 0.7, 0.0, 0.5);
                 // tune 3/12/26
@@ -57,10 +55,10 @@ public class Conveyor extends SubsystemBase {
 
                 m1 = new KrakenX44Motor(
                         log1, currentLog, canID1, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.CONVEYOR, dynamics, friction, pid);
+                        CurrentLimits.CONVEYOR, friction, pid);
                 m2 = new KrakenX44Motor(
                         log2, currentLog, canID2, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.CONVEYOR, dynamics, friction, pid);
+                        CurrentLimits.CONVEYOR, friction, pid);
             }
             default -> {
                 m1 = new SimulatedBareMotor(log1, 600);

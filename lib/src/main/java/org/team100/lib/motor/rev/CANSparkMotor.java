@@ -50,7 +50,6 @@ import com.revrobotics.spark.SparkLimitSwitch;
  */
 public abstract class CANSparkMotor implements BareMotor {
     private final LoggerFactory m_log;
-    private final SimpleDynamics m_ff;
     private final Friction m_friction;
     private final SparkBase m_motor;
     private final RevConfigurator m_configurator;
@@ -77,11 +76,8 @@ public abstract class CANSparkMotor implements BareMotor {
     private final DoubleLogger m_log_desired_position;
     /** rad/s */
     private final DoubleLogger m_log_desired_speed;
-    /** rad/s^2 */
-    private final DoubleLogger m_log_desired_accel;
     private final DoubleLogger m_log_friction_FF;
     private final DoubleLogger m_log_velocity_FF;
-    private final DoubleLogger m_log_accel_FF;
     private final DoubleLogger m_log_torque_FF;
     /** duty cycle */
     private final DoubleLogger m_log_output;
@@ -99,7 +95,6 @@ public abstract class CANSparkMotor implements BareMotor {
             NeutralMode100 neutral,
             MotorPhase motorPhase,
             CurrentLimit limit,
-            SimpleDynamics ff,
             Friction friction,
             PIDConstants pid,
             double commutationDegrees,
@@ -109,7 +104,6 @@ public abstract class CANSparkMotor implements BareMotor {
         currentLog.register(this);
         m_motor = motor;
         m_log = parent.type(this);
-        m_ff = ff;
         m_friction = friction;
 
         m_configurator = new RevConfigurator(
@@ -148,10 +142,8 @@ public abstract class CANSparkMotor implements BareMotor {
         // LOGGERS
         m_log_desired_position = m_log.doubleLogger(Level.DEBUG, "desired position (rad)");
         m_log_desired_speed = m_log.doubleLogger(Level.DEBUG, "desired speed (rad_s)");
-        m_log_desired_accel = m_log.doubleLogger(Level.TRACE, "desired accel (rad_s2)");
         m_log_friction_FF = m_log.doubleLogger(Level.TRACE, "friction feedforward (V)");
         m_log_velocity_FF = m_log.doubleLogger(Level.TRACE, "velocity feedforward (V)");
-        m_log_accel_FF = m_log.doubleLogger(Level.TRACE, "accel feedforward (V)");
         m_log_torque_FF = m_log.doubleLogger(Level.TRACE, "torque feedforward (V)");
         m_log_output = m_log.doubleLogger(Level.DEBUG, "output [-1,1]");
         m_log_position = m_log.doubleLogger(Level.DEBUG, "position (rad)");
@@ -186,12 +178,11 @@ public abstract class CANSparkMotor implements BareMotor {
      * acceleration, and torque feedforwards.
      */
     @Override
-    public void setVelocity(double motorRad_S, double motorRad_S2, double torqueNm) {
+    public void setVelocity(double motorRad_S, double torqueNm) {
         double backEMFVolts = backEMFVoltage(motorRad_S);
         double frictionFFVolts = m_friction.frictionFFVolts(motorRad_S);
-        double accelFFVolts = m_ff.accelFFVolts(motorRad_S, motorRad_S2);
         double torqueFFVolts = getTorqueFFVolts(torqueNm);
-        double FFVolts = backEMFVolts + frictionFFVolts + accelFFVolts + torqueFFVolts;
+        double FFVolts = backEMFVolts + frictionFFVolts + torqueFFVolts;
 
         // REV control unit is RPM
         warn(() -> m_pidController.setSetpoint(
@@ -202,10 +193,8 @@ public abstract class CANSparkMotor implements BareMotor {
                 ArbFFUnits.kVoltage));
 
         m_log_desired_speed.log(() -> motorRad_S);
-        m_log_desired_accel.log(() -> motorRad_S2);
         m_log_friction_FF.log(() -> frictionFFVolts);
         m_log_velocity_FF.log(() -> backEMFVolts);
-        m_log_accel_FF.log(() -> accelFFVolts);
         m_log_torque_FF.log(() -> torqueFFVolts);
     }
 
@@ -219,13 +208,11 @@ public abstract class CANSparkMotor implements BareMotor {
     public void setUnwrappedPosition(
             double motorRad,
             double motorRad_S,
-            double motorRad_S2,
             double torqueNm) {
         double backEMFVolts = backEMFVoltage(motorRad_S);
         double frictionFFVolts = m_friction.frictionFFVolts(motorRad_S);
-        double accelFFVolts = m_ff.accelFFVolts(motorRad_S, motorRad_S2);
         double torqueFFVolts = getTorqueFFVolts(torqueNm);
-        double FFVolts = backEMFVolts + frictionFFVolts + accelFFVolts + torqueFFVolts;
+        double FFVolts = backEMFVolts + frictionFFVolts  + torqueFFVolts;
 
         // REV control unit is revolutions
         warn(() -> m_pidController.setSetpoint(
@@ -237,10 +224,8 @@ public abstract class CANSparkMotor implements BareMotor {
 
         m_log_desired_position.log(() -> motorRad);
         m_log_desired_speed.log(() -> motorRad_S);
-        m_log_desired_accel.log(() -> motorRad_S2);
         m_log_friction_FF.log(() -> frictionFFVolts);
         m_log_velocity_FF.log(() -> backEMFVolts);
-        m_log_accel_FF.log(() -> accelFFVolts);
         m_log_torque_FF.log(() -> torqueFFVolts);
     }
 

@@ -149,7 +149,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             CurrentLimit limit,
             CanId driveMotorCanId,
             DriveRatio ratio) {
-        SimpleDynamics ff = new SimpleDynamics(parent, 0.004, 0.002);
         // note (10/2/24) 0.4 produces oscillation, on carpet.
         Friction friction = new Friction(parent, 0.26, 0.26, 0.006, 0.5);
         // 3/14/26 lowered P from 0.05 to 0.03 to investigate oscillation
@@ -161,7 +160,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 NeutralMode100.COAST,
                 MotorPhase.FORWARD,
                 limit,
-                ff,
                 friction,
                 pid);
         Talon6Encoder encoder = driveMotor.encoder();
@@ -182,7 +180,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             CurrentLimit limit,
             CanId driveMotorCanId,
             DriveRatio ratio) {
-        SimpleDynamics ff = new SimpleDynamics(parent, 0.003, 0.003);
         Friction friction = new Friction(parent, 0.260, 0.260, 0.002, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(parent, 0.05);
         Falcon500Motor driveMotor = new Falcon500Motor(
@@ -192,7 +189,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 NeutralMode100.COAST,
                 MotorPhase.FORWARD,
                 limit,
-                ff,
                 friction,
                 pid);
         Talon6Encoder encoder = driveMotor.encoder();
@@ -215,8 +211,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             EncoderDrive drive,
             NeutralMode100 neutral,
             MotorPhase motorPhase) {
-
-        SimpleDynamics ff = new SimpleDynamics(parent, 0.002, 0.002);
         Friction friction = new Friction(parent, 0.100, 0.100, 0.005, 0.5);
 
         // Talon outboard POSITION PID
@@ -231,7 +225,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 neutral,
                 motorPhase,
                 limit,
-                ff,
                 friction,
                 pid);
 
@@ -269,8 +262,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
             EncoderDrive drive,
             NeutralMode100 neutral,
             MotorPhase motorPhase) {
-
-        SimpleDynamics ff = new SimpleDynamics(parent, 0.002, 0.002);
         Friction friction = new Friction(parent, 0.100, 0.100, 0.005, 0.5);
 
         // Talon outboard POSITION PID
@@ -285,7 +276,6 @@ public class WCPSwerveModule100 extends SwerveModule100 {
                 neutral,
                 motorPhase,
                 limit,
-                ff,
                 friction,
                 pid);
 

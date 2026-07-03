@@ -41,7 +41,7 @@ public class BareMotorController100 implements BareMotor {
      * Open-loop velocity control using velocity feedforward only.
      */
     @Override
-    public void setVelocity(double motorRad_S, double accelRad_S2, double torqueNm) {
+    public void setVelocity(double motorRad_S, double torqueNm) {
         final double motorDutyCycle = motorRad_S * velocityFFDutyCycle_Rad_S;
         m_motor.set(motorDutyCycle);
         m_log_duty.log(() -> motorDutyCycle);
@@ -49,7 +49,7 @@ public class BareMotorController100 implements BareMotor {
 
     /** MotorControllers do not support positional control. */
     @Override
-    public void setUnwrappedPosition(double position, double velocity, double accel, double torque) {
+    public void setUnwrappedPosition(double position, double velocity, double torque) {
         throw new UnsupportedOperationException();
     }
 

@@ -39,13 +39,12 @@ public class ClimberExtension extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_6B -> {
                 CurrentLimit limit = new CurrentLimit(40, 40);
-                SimpleDynamics ff = new SimpleDynamics(log, 0, 0);
                 Friction friction = new Friction(log, 0, 0, 0, 0);
                 PIDConstants pid = new PIDConstants(log, 1, 0, 0, 0, 0, 0);
                 motor = new NeoVortexCANSparkMotor(
                         log, currentLog, new CanId(2),
                         NeutralMode100.BRAKE, MotorPhase.FORWARD,
-                        limit, ff, friction, pid, 0, 0);
+                        limit, friction, pid, 0, 0);
             }
             default -> {
                 motor = new SimulatedBareMotor(log, 600);

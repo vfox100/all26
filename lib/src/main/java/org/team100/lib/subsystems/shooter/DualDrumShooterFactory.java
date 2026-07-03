@@ -161,10 +161,10 @@ public class DualDrumShooterFactory {
                 new SimulatedBareMotor(log, freeSpeedRad_S);
             case DEMO_BOT -> new MinionSparkMotor(
                     log, currentLog, canId, NeutralMode100.BRAKE, phase,
-                    limit, ff, friction, pid, 2, 4);
+                    limit, friction, pid, 2, 4);
             default -> new MinionSparkMotor(
                     log, currentLog, canId, NeutralMode100.BRAKE, phase,
-                    limit, ff, friction, pid, 2, 4);
+                    limit, friction, pid, 2, 4);
         };
     }
 

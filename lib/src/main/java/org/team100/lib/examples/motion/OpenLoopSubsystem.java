@@ -45,13 +45,11 @@ public class OpenLoopSubsystem extends SubsystemBase {
                 CanId canId = new CanId(1);
                 CurrentLimit limit = new CurrentLimit(90, 60);
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.05);
-                // you should make a case in the feedforward class for your constants
-                SimpleDynamics ff = new SimpleDynamics(log, 0.100, 0.100);
                 Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
                 m_motor = new Falcon500Motor(
                         log, currentLog, canId,
                         NeutralMode100.COAST, MotorPhase.FORWARD,
-                        limit, ff, friction, pid);
+                        limit, friction, pid);
             }
             default -> {
                 m_motor = new SimulatedBareMotor(log, 600);
@@ -70,7 +68,7 @@ public class OpenLoopSubsystem extends SubsystemBase {
     }
 
     public void setVelocity(double velocity) {
-        m_motor.setVelocity(velocity, 0, 0);
+        m_motor.setVelocity(velocity, 0);
     }
 
     ///////////////////////////////////////////////////////

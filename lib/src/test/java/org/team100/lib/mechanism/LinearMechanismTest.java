@@ -19,9 +19,8 @@ public class LinearMechanismTest implements Timeless {
     /** Show that the limits have effect. */
     @Test
     void testLimits() {
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor motor = new MockBareMotor(ff, friction);
+        MockBareMotor motor = new MockBareMotor(friction);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         double gearRatio = 1;
         double wheelDiameterM = 2;
@@ -41,28 +40,27 @@ public class LinearMechanismTest implements Timeless {
         // velocity limit observes the encoder
         // within bounds => ok
         encoder.position = 1.5;
-        mech.setVelocity(1.0, 0, 0);
+        mech.setVelocity(1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
         // out of bounds => stop
         encoder.position = 2.5;
-        mech.setVelocity(1.0, 0, 0);
+        mech.setVelocity(1.0, 0);
         assertEquals(0.0, motor.velocity, DELTA);
 
         // positional limits filter the input
         // within bounds => ok
-        mech.setPosition(1.5, 1.0, 0, 0);
+        mech.setPosition(1.5, 1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
         // out of bounds => stop
-        mech.setPosition(2.5, 1.0, 0, 0);
+        mech.setPosition(2.5, 1.0, 0);
         assertEquals(0.0, motor.velocity, DELTA);
     }
 
     /** Same cases as above, but unlimited */
     @Test
     void testUnlimited() {
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor motor = new MockBareMotor(ff, friction);
+        MockBareMotor motor = new MockBareMotor(friction);
         MockIncrementalBareEncoder encoder = new MockIncrementalBareEncoder();
         double gearRatio = 1;
         double wheelDiameterM = 2;
@@ -83,19 +81,19 @@ public class LinearMechanismTest implements Timeless {
         // velocity limit observes the encoder
         // within bounds => ok
         encoder.position = 1.5;
-        mech.setVelocity(1.0, 0, 0);
+        mech.setVelocity(1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
         // out of bounds => stop
         encoder.position = 2.5;
-        mech.setVelocity(1.0, 0, 0);
+        mech.setVelocity(1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
 
         // positional limits filter the input
         // within bounds => ok
-        mech.setPosition(1.5, 1.0, 0, 0);
+        mech.setPosition(1.5, 1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
         // out of bounds => stop
-        mech.setPosition(2.5, 1.0, 0, 0);
+        mech.setPosition(2.5, 1.0, 0);
         assertEquals(1.0, motor.velocity, DELTA);
     }
 

@@ -173,7 +173,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
                         new CanId(11),
                         NeutralMode100.BRAKE, MotorPhase.REVERSE,
                         new CurrentLimit(100, 100),
-                        new SimpleDynamics(elevatorfrontLog, 0.002, 0.002),
                         new Friction(elevatorfrontLog, 0.100, 0.100, 0.005, 0.5),
                         PIDConstants.makePositionPID(elevatorfrontLog, 1));
                 IncrementalBareEncoder elevatorFrontEncoder = elevatorFrontMotor.encoder();
@@ -189,7 +188,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
                         new CanId(12),
                         NeutralMode100.BRAKE, MotorPhase.FORWARD,
                         new CurrentLimit(100, 100),
-                        new SimpleDynamics(elevatorbackLog, 0.002, 0.002),
                         new Friction(elevatorbackLog, 0.100, 0.100, 0.005, 0.5),
                         PIDConstants.makePositionPID(elevatorbackLog, 1));
                 Talon6Encoder elevatorBackEncoder = elevatorBackMotor.encoder();
@@ -205,7 +203,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
                         NeutralMode100.BRAKE,
                         MotorPhase.REVERSE,
                         new CurrentLimit(100, 100),
-                        new SimpleDynamics(shoulderLog, 0.002, 0.002),
                         new Friction(shoulderLog, 0.100, 0.100, 0.005, 0.5),
                         PIDConstants.makePositionPID(shoulderLog, 1));
                 Talon6Encoder shoulderEncoder = shoulderMotor.encoder();
@@ -236,7 +233,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
                         new CanId(22),
                         NeutralMode100.COAST, MotorPhase.FORWARD,
                         new CurrentLimit(40, 60),
-                        new SimpleDynamics(wristLog, 0.002, 0.002),
                         new Friction(wristLog, 0.100, 0.100, 0.005, 0.5),
                         PIDConstants.makePositionPID(wristLog, 1));
                 // the wrist has no angle sensor, so it needs to start in the "zero" position.
@@ -340,14 +336,14 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         JointAccelerations ja = m_jacobian.inverseA(control);
         JointForce jf = m_dynamics.forward(getConfig(), jv, ja);
 
-        m_elevatorFront.setVelocity(jv.elevator(), ja.elevator(), jf.elevator());
-        m_elevatorBack.setVelocity(jv.elevator(), ja.elevator(), jf.elevator());
+        m_elevatorFront.setVelocity(jv.elevator(), jf.elevator());
+        m_elevatorBack.setVelocity(jv.elevator(), jf.elevator());
         if (DISABLED) {
-            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
+            m_wrist.setUnwrappedPosition(2, 0, 0);
             return;
         }
-        m_wrist.setVelocity(jv.wrist(), ja.wrist(), jf.wrist());
-        m_shoulder.setVelocity(jv.shoulder(), ja.shoulder(), jf.shoulder());
+        m_wrist.setVelocity(jv.wrist(), jf.wrist());
+        m_shoulder.setVelocity(jv.shoulder(), jf.shoulder());
     }
 
     /** There are no profiles here, so this control needs to be feasible. */
@@ -650,23 +646,23 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         m_elevatorFront.stop();
         m_elevatorBack.stop();
         if (DISABLED) {
-            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
+            m_wrist.setUnwrappedPosition(2, 0, 0);
             return;
         }
-        m_wrist.setUnwrappedPosition(0, 0, 0, 0);
-        m_shoulder.setUnwrappedPosition(0, 0, 0, 0);
+        m_wrist.setUnwrappedPosition(0, 0, 0);
+        m_shoulder.setUnwrappedPosition(0, 0, 0);
     }
 
     private void set(EAWConfig c, JointVelocities jv, JointAccelerations ja, JointForce jf) {
         logConfig(c, jv, ja, jf);
-        m_elevatorFront.setPosition(c.shoulderHeight(), jv.elevator(), 0, jf.elevator());
-        m_elevatorBack.setPosition(c.shoulderHeight(), jv.elevator(), 0, jf.elevator());
+        m_elevatorFront.setPosition(c.shoulderHeight(), jv.elevator(), jf.elevator());
+        m_elevatorBack.setPosition(c.shoulderHeight(), jv.elevator(), jf.elevator());
         if (DISABLED) {
-            m_wrist.setUnwrappedPosition(2, 0, 0, 0);
+            m_wrist.setUnwrappedPosition(2, 0, 0);
             return;
         }
-        m_wrist.setUnwrappedPosition(c.wristAngle(), jv.wrist(), 0, jf.wrist());
-        m_shoulder.setUnwrappedPosition(c.shoulderAngle(), jv.shoulder(), 0, jf.shoulder());
+        m_wrist.setUnwrappedPosition(c.wristAngle(), jv.wrist(), jf.wrist());
+        m_shoulder.setUnwrappedPosition(c.shoulderAngle(), jv.shoulder(), jf.shoulder());
     }
 
     public Command setDisabled(boolean disabled) {

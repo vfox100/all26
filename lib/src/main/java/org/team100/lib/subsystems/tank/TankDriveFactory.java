@@ -35,7 +35,6 @@ public class TankDriveFactory {
         LoggerFactory logL = log.name("left");
         LoggerFactory logR = log.name("right");
 
-        SimpleDynamics ff = new SimpleDynamics(log, 0.00, 0.00);
         Friction friction = new Friction(log, 0.2, 0.2, 0.0, 0.5);
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.005);
 
@@ -44,10 +43,10 @@ public class TankDriveFactory {
 
         BareMotor motorL = getMotor(
                 logL, currentLog, freeSpeedRad_S, canL,
-                MotorPhase.FORWARD, limit, ff, friction, pid);
+                MotorPhase.FORWARD, limit, friction, pid);
         BareMotor motorR = getMotor(
                 logR, currentLog, freeSpeedRad_S, canR,
-                MotorPhase.REVERSE, limit, ff, friction, pid);
+                MotorPhase.REVERSE, limit, friction, pid);
 
         LinearMechanism mechL = new LinearMechanism(
                 logL, motorL, motorL.encoder(),
@@ -81,17 +80,16 @@ public class TankDriveFactory {
             CanId can,
             MotorPhase phase,
             CurrentLimit limit,
-            SimpleDynamics ff,
             Friction friction,
             PIDConstants pid) {
         return switch (Identity.instance) {
             case BLANK -> new SimulatedBareMotor(log, freeSpeedRad_S);
             case DEMO_BOT -> new Neo550CANSparkMotor(
                     log, currentLog, can, NeutralMode100.BRAKE, phase,
-                    limit, ff, friction, pid, 2, 4);
+                    limit, friction, pid, 2, 4);
             default -> new NeoCANSparkMotor(
                     log, currentLog, can, NeutralMode100.BRAKE, phase,
-                    limit, ff, friction, pid, 2, 4);
+                    limit, friction, pid, 2, 4);
         };
     }
 }

@@ -60,7 +60,10 @@ public class FiveBarServo extends SubsystemBase {
     private final ProxyRotaryPositionSensor m_sensorP5;
     private final AngularPositionServo m_servoP5;
 
-    public FiveBarServo(LoggerFactory parent, TotalCurrentLog currentLog, Scenario scenario) {
+    public FiveBarServo(
+        LoggerFactory parent,
+         TotalCurrentLog currentLog, 
+         Scenario scenario) {
         LoggerFactory logger = parent.type(this);
         LoggerFactory loggerP1 = logger.name("p1");
         LoggerFactory loggerP5 = logger.name("p5");
@@ -70,7 +73,6 @@ public class FiveBarServo extends SubsystemBase {
 
         // zeros
         PIDConstants pid = PIDConstants.makePositionPID(logger, 2.0);
-        SimpleDynamics ff = new SimpleDynamics(logger, 0, 0);
         Friction friction = new Friction(logger, 0, 0, 0, 0);
         ProfileR1 profile = new TrapezoidProfileR1(
                 logger, MAX_VELOCITY, MAX_ACCEL, POSITION_TOLERANCE);
@@ -90,7 +92,6 @@ public class FiveBarServo extends SubsystemBase {
                         NeutralMode100.COAST,
                         MotorPhase.REVERSE,
                         new CurrentLimit(STATOR_LIMIT, SUPPLY_LIMIT),
-                        ff,
                         friction,
                         pid);
                 motorP5 = new Falcon500Motor(
@@ -100,7 +101,6 @@ public class FiveBarServo extends SubsystemBase {
                         NeutralMode100.COAST,
                         MotorPhase.REVERSE,
                         new CurrentLimit(STATOR_LIMIT, SUPPLY_LIMIT),
-                        ff,
                         friction,
                         pid);
             }

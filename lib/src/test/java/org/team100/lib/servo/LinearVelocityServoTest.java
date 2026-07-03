@@ -22,9 +22,8 @@ class LinearVelocityServoTest {
 
     @Test
     void testNoReset() {
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor driveMotor = new MockBareMotor(ff, friction);
+        MockBareMotor driveMotor = new MockBareMotor(friction);
         MockIncrementalBareEncoder driveEncoder = new MockIncrementalBareEncoder();
         LinearMechanism mech = new LinearMechanism(logger,
                 driveMotor, driveEncoder, 1, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -39,9 +38,8 @@ class LinearVelocityServoTest {
 
     @Test
     void testSimple() {
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor driveMotor = new MockBareMotor(ff, friction);
+        MockBareMotor driveMotor = new MockBareMotor(friction);
         MockIncrementalBareEncoder driveEncoder = new MockIncrementalBareEncoder();
         LinearMechanism mech = new LinearMechanism(logger,
                 driveMotor, driveEncoder, 1, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);

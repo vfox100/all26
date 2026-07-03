@@ -34,7 +34,7 @@ class AnglePositionServoProfileTest implements Timeless {
     public AnglePositionServoProfileTest() {
         SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        motor = new MockBareMotor(ff, friction);
+        motor = new MockBareMotor(friction);
         sensor = new MockRotaryPositionSensor();
         RotaryMechanism mech = new RotaryMechanism(
                 logger,

@@ -48,7 +48,6 @@ public class Climber2025 extends SubsystemBase {
                 Falcon500Motor motor = new Falcon500Motor(
                         log, currentLog, canID, NeutralMode100.BRAKE, MotorPhase.REVERSE,
                         new CurrentLimit(20, 20),
-                        new SimpleDynamics(log, 0.001, 0.001),
                         new Friction(log, 0.100, 0.065, 0.0, 0.5),
                         PIDConstants.makePositionPID(log, 0.2));
 

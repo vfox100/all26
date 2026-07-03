@@ -75,7 +75,6 @@ public class Shooter extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
 
-                SimpleDynamics ff = new SimpleDynamics(log, 0.000, 0.000);
                 // friction test 3/12/262
                 Friction friction = new Friction(log, 0.3, 0.25, 0.0, 0.5);
                 // tuned 3/12/26
@@ -85,16 +84,16 @@ public class Shooter extends SubsystemBase {
                 int measurementPeriod = 4;
                 m1 = new NeoVortexCANSparkMotor(
                         log1, currentLog, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
-                        CurrentLimits.SHOOTER, ff, friction, pid, averageDepth, measurementPeriod);
+                        CurrentLimits.SHOOTER, friction, pid, averageDepth, measurementPeriod);
                 m2 = new NeoVortexCANSparkMotor(
                         log2, currentLog, CAN_ID_2, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.SHOOTER, ff, friction, pid, averageDepth, measurementPeriod);
+                        CurrentLimits.SHOOTER, friction, pid, averageDepth, measurementPeriod);
                 m3 = new NeoVortexCANSparkMotor(
                         log3, currentLog, CAN_ID_3, NeutralMode100.COAST, MotorPhase.FORWARD,
-                        CurrentLimits.SHOOTER, ff, friction, pid, averageDepth, measurementPeriod);
+                        CurrentLimits.SHOOTER, friction, pid, averageDepth, measurementPeriod);
                 m4 = new NeoVortexCANSparkMotor(
                         log4, currentLog, CAN_ID_4, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.SHOOTER, ff, friction, pid, averageDepth, measurementPeriod);
+                        CurrentLimits.SHOOTER, friction, pid, averageDepth, measurementPeriod);
 
             }
             default -> {

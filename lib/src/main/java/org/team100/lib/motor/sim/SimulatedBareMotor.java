@@ -29,7 +29,6 @@ public class SimulatedBareMotor implements BareMotor {
     private final DoubleLogger m_log_duty;
     private final DoubleLogger m_log_velocityInput;
     private final DoubleLogger m_log_positionInput;
-    private final DoubleLogger m_log_accelInput;
     private final DoubleLogger m_log_torqueInput;
     private final ObjectCache<ModelR1> m_stateCache;
 
@@ -37,7 +36,6 @@ public class SimulatedBareMotor implements BareMotor {
     // nullable; only one (velocity or position) is used at a time.
     private Double m_velocityInput;
     private Double m_positionInput;
-    private Double m_accelInput;
     private Double m_torqueInput;
 
     private ModelR1 m_state = new ModelR1();
@@ -50,7 +48,6 @@ public class SimulatedBareMotor implements BareMotor {
         m_log_duty = m_log.doubleLogger(Level.DEBUG, "duty_cycle");
         m_log_velocityInput = m_log.doubleLogger(Level.DEBUG, "velocity input");
         m_log_positionInput = m_log.doubleLogger(Level.DEBUG, "position input");
-        m_log_accelInput = m_log.doubleLogger(Level.DEBUG, "accel input");
         m_log_torqueInput = m_log.doubleLogger(Level.DEBUG, "torque input");
         m_stateCache = Cache.of(this::update);
     }
@@ -108,18 +105,17 @@ public class SimulatedBareMotor implements BareMotor {
         final double output = MathUtil.clamp(
                 Math100.notNaN(dutyCycle), -1, 1);
         m_log_duty.log(() -> output);
-        setVelocity(output * m_freeSpeedRad_S, 0, 0);
+        setVelocity(output * m_freeSpeedRad_S, 0);
     }
 
     /** ignores accel and torque but logs them */
     @Override
-    public void setVelocity(double velocityRad_S, double accelRad_S2, double torqueNm) {
+    public void setVelocity(double velocityRad_S, double torqueNm) {
         if (DEBUG) {
             System.out.printf("motor %s set velocity %6.3f\n", m_log.getRoot(), velocityRad_S);
         }
         m_velocityInput = MathUtil.clamp(
                 Math100.notNaN(velocityRad_S), -m_freeSpeedRad_S, m_freeSpeedRad_S);
-        m_accelInput = accelRad_S2;
         m_torqueInput = torqueNm;
         // you can't use velocity and position control at the same time
         m_positionInput = null;
@@ -127,14 +123,13 @@ public class SimulatedBareMotor implements BareMotor {
 
     /** ignores velocity and torque */
     @Override
-    public void setUnwrappedPosition(double position, double velocity, double accel, double torque) {
+    public void setUnwrappedPosition(double position, double velocity, double torque) {
         if (DEBUG) {
             System.out.printf("motor %s set position %6.3f\n", m_log.getRoot(), position);
         }
         m_positionInput = Math100.notNaN(position);
         // you can't use velocity and position control at the same time
         m_velocityInput = null;
-        m_accelInput = null;
         m_torqueInput = null;
     }
 
@@ -214,8 +209,6 @@ public class SimulatedBareMotor implements BareMotor {
             m_log_positionInput.log(() -> m_positionInput);
         if (m_velocityInput != null)
             m_log_velocityInput.log(() -> m_velocityInput);
-        if (m_accelInput != null)
-            m_log_accelInput.log(() -> m_accelInput);
         if (m_torqueInput != null)
             m_log_torqueInput.log(() -> m_torqueInput);
 

@@ -51,7 +51,6 @@ public class IntakeExtend extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
 
-                SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
                 // friction test 3/12/26
                 Friction friction = new Friction(log, 0.32, 0.32, 0.0, 0.5);
                 // tuned 3/12/26
@@ -61,12 +60,12 @@ public class IntakeExtend extends SubsystemBase {
                         log1, currentLog, CAN_ID,
                         NeutralMode100.COAST, MotorPhase.REVERSE,
                         CurrentLimits.INTAKE_EXTEND,
-                        ff, friction, pid);
+                        friction, pid);
                 motor2 = new KrakenX44Motor(
                         log2, currentLog, CAN_ID2,
                         NeutralMode100.COAST, MotorPhase.FORWARD,
                         CurrentLimits.INTAKE_EXTEND,
-                        ff, friction, pid);
+                        friction, pid);
             }
             default -> {
                 motor = new SimulatedBareMotor(log1, 600);

@@ -16,9 +16,9 @@ class MotorController100Test {
     void testTurning() {
         MockMotorController mc = new MockMotorController();
         BareMotorController100 m = new BareMotorController100(logger, mc);
-        m.setVelocity(0, 0, 0);
+        m.setVelocity(0, 0);
         assertEquals(0, mc.speed, DELTA);
-        m.setVelocity(1, 0, 0);
+        m.setVelocity(1, 0);
         assertEquals(0.0016, mc.speed, DELTA);
     }
 }

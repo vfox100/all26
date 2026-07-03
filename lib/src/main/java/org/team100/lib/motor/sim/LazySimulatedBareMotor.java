@@ -45,21 +45,21 @@ public class LazySimulatedBareMotor implements BareMotor {
     }
 
     @Override
-    public void setVelocity(double velocityRad_S, double accelRad_S2, double torqueNm) {
+    public void setVelocity(double velocityRad_S, double torqueNm) {
         if (velocityRad_S < 1e-3) {
             m_running = false;
-            m_delegate.setVelocity(velocityRad_S, accelRad_S2, torqueNm);
+            m_delegate.setVelocity(velocityRad_S, torqueNm);
         } else if (m_running) {
             if (getTime() > m_timeout) {
                 m_running = false;
-                m_delegate.setVelocity(0, 0, 0);
+                m_delegate.setVelocity(0, 0);
             } else {
-                m_delegate.setVelocity(velocityRad_S, accelRad_S2, torqueNm);
+                m_delegate.setVelocity(velocityRad_S, torqueNm);
             }
         } else {
             m_running = true;
             resetTimer();
-            m_delegate.setVelocity(velocityRad_S, accelRad_S2, torqueNm);
+            m_delegate.setVelocity(velocityRad_S, torqueNm);
         }
     }
 
@@ -88,8 +88,8 @@ public class LazySimulatedBareMotor implements BareMotor {
     }
 
     @Override
-    public void setUnwrappedPosition(double positionRad, double velocityRad_S, double accelRad_S2, double torqueNm) {
-        m_delegate.setUnwrappedPosition(positionRad, velocityRad_S, accelRad_S2, torqueNm);
+    public void setUnwrappedPosition(double positionRad, double velocityRad_S, double torqueNm) {
+        m_delegate.setUnwrappedPosition(positionRad, velocityRad_S, torqueNm);
     }
 
     @Override

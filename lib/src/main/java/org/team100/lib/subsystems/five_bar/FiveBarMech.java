@@ -142,8 +142,8 @@ public class FiveBarMech extends SubsystemBase {
                 return;
             }
         }
-        m_mechP1.setUnwrappedPosition(p1, 0, 0, 0);
-        m_mechP5.setUnwrappedPosition(p5, 0, 0, 0);
+        m_mechP1.setUnwrappedPosition(p1, 0, 0);
+        m_mechP5.setUnwrappedPosition(p5, 0, 0);
     }
 
     public Optional<JointPositions> getJointPositions() {
@@ -194,8 +194,6 @@ public class FiveBarMech extends SubsystemBase {
         /** Units of positional PID are volts per revolution. */
         PIDConstants pid = PIDConstants.makePositionPID(
                 logger, 2.0);
-        /** We never use feedforward since all our goals are motionless. */
-        SimpleDynamics ff = new SimpleDynamics(logger, 0, 0);
         Friction friction = new Friction(logger, 0, 0, 0, 0);
         return new Falcon500Motor(
                 logger,
@@ -204,7 +202,6 @@ public class FiveBarMech extends SubsystemBase {
                 NeutralMode100.COAST,
                 MotorPhase.REVERSE,
                 new CurrentLimit(STATOR_LIMIT, SUPPLY_LIMIT),
-                ff,
                 friction,
                 pid);
     }

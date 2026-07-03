@@ -51,17 +51,16 @@ public class Intake extends SubsystemBase {
         switch (Identity.instance) {
             case TEST_BOARD_B0, COMP_BOT -> {
 
-                SimpleDynamics ff = new SimpleDynamics(log, 0.0, 0.0);
                 // friction test 3/12/26
                 Friction friction = new Friction(log, 0.5, 0.5, 0.0, 0.5);
                 // tuned 3/12/26
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.08);
                 m1 = new KrakenX44Motor(
                         log1, currentLog, CAN_ID_1, NeutralMode100.COAST, MotorPhase.FORWARD,
-                        CurrentLimits.INTAKE, ff, friction, pid);
+                        CurrentLimits.INTAKE, friction, pid);
                 m2 = new KrakenX44Motor(
                         log2, currentLog, CAN_ID_2, NeutralMode100.COAST, MotorPhase.REVERSE,
-                        CurrentLimits.INTAKE, ff, friction, pid);
+                        CurrentLimits.INTAKE, friction, pid);
             }
             default -> {
                 m1 = new SimulatedBareMotor(log1, 600);

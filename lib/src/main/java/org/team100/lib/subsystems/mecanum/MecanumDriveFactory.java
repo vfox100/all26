@@ -45,7 +45,6 @@ public class MecanumDriveFactory {
         LoggerFactory logRR = log.name("rearRight");
 
         PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.01);
-        SimpleDynamics ff = new SimpleDynamics(log, 0.01, 0.01);
         Friction friction = new Friction(log, 0.5, 0.5, 0.0, 0.5);
 
         Gyro gyro = gyro(log, gyroId);
@@ -53,16 +52,16 @@ public class MecanumDriveFactory {
 
         BareMotor motorFL = getMotor(
                 logFL, currentLog, canFL, MotorPhase.REVERSE,
-                limit, ff, friction, pid);
+                limit, friction, pid);
         BareMotor motorFR = getMotor(
                 logFR, currentLog, canFR, MotorPhase.FORWARD,
-                limit, ff, friction, pid);
+                limit, friction, pid);
         BareMotor motorRL = getMotor(
                 logRL, currentLog, canRL, MotorPhase.REVERSE,
-                limit, ff, friction, pid);
+                limit, friction, pid);
         BareMotor motorRR = getMotor(
                 logRR, currentLog, canRR, MotorPhase.FORWARD,
-                limit, ff, friction, pid);
+                limit, friction, pid);
 
         LinearMechanism mechFL = new LinearMechanism(
                 logFL, motorFL, motorFL.encoder(), gearRatio, wheelDiaM,
@@ -94,12 +93,12 @@ public class MecanumDriveFactory {
      */
     public static BareMotor getMotor(
             LoggerFactory log, TotalCurrentLog currentLog, CanId can, MotorPhase phase,
-            CurrentLimit limit, SimpleDynamics ff, Friction friction, PIDConstants pid) {
+            CurrentLimit limit, Friction friction, PIDConstants pid) {
         return switch (Identity.instance) {
             case BLANK -> new SimulatedBareMotor(log, 600);
             default -> new NeoCANSparkMotor(
                     log, currentLog, can, NeutralMode100.BRAKE, phase,
-                    limit, ff, friction, pid, 2, 4);
+                    limit, friction, pid, 2, 4);
         };
     }
 

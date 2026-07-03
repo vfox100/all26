@@ -24,10 +24,9 @@ public class KrakenX60Motor extends Talon6Motor {
             NeutralMode100 neutral,
             MotorPhase phase,
             CurrentLimit limit,
-            SimpleDynamics ff,
             Friction friction,
             PIDConstants pid) {
-        super(parent, currentLog, canId, neutral, phase, limit, ff, friction, pid);
+        super(parent, currentLog, canId, neutral, phase, limit, friction, pid);
     }
 
     @Override

@@ -43,7 +43,6 @@ public class PivotSubsystem extends SubsystemBase {
                     canId,
                     NeutralMode100.BRAKE,
                     MotorPhase.FORWARD, limit,
-                    new SimpleDynamics(logger, 0, 0),
                     new Friction(logger, 0.07, 0.07, 0.01, 0.5),
                     PIDConstants.zero(logger),
                     0,

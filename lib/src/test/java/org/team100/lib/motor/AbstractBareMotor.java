@@ -17,7 +17,7 @@ public class AbstractBareMotor implements BareMotor {
     }
 
     @Override
-    public void setVelocity(double velocityRad_S, double accelRad_S2, double torqueNm) {
+    public void setVelocity(double velocityRad_S, double torqueNm) {
     }
 
     @Override
@@ -41,7 +41,7 @@ public class AbstractBareMotor implements BareMotor {
 
     @Override
     public void setUnwrappedPosition(
-            double positionRad, double velocityRad_S, double accelRad_S2, double torqueNm) {
+            double positionRad, double velocityRad_S, double torqueNm) {
 
     }
 

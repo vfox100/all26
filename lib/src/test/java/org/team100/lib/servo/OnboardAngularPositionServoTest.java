@@ -29,9 +29,8 @@ public class OnboardAngularPositionServoTest implements Timeless {
     @Test
     void testNoReset() {
         // what happens if you don't reset it?
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        MockBareMotor turningMotor = new MockBareMotor(ff, friction);
+        MockBareMotor turningMotor = new MockBareMotor(friction);
         MockRotaryPositionSensor positionSensor = new MockRotaryPositionSensor();
         RotaryMechanism mech = new RotaryMechanism(
                 logger, turningMotor, positionSensor, 1, Double.NEGATIVE_INFINITY,
@@ -48,9 +47,8 @@ public class OnboardAngularPositionServoTest implements Timeless {
 
     @Test
     void testOnboard() {
-        SimpleDynamics ff = new SimpleDynamics(logger, 0.100, 0.100);
         Friction friction = new Friction(logger, 0.100, 0.100, 0.0, 0.1);
-        final MockBareMotor turningMotor = new MockBareMotor(ff, friction);
+        final MockBareMotor turningMotor = new MockBareMotor(friction);
         final MockRotaryPositionSensor positionSensor = new MockRotaryPositionSensor();
         final RotaryMechanism mech = new RotaryMechanism(
                 logger, turningMotor, positionSensor, 1, Double.NEGATIVE_INFINITY,

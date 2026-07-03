@@ -64,7 +64,7 @@ public class TalonSRXMotor implements BareMotor {
     }
 
     @Override
-    public void setVelocity(double velocityRad_S, double accelRad_S2, double torqueNm) {
+    public void setVelocity(double velocityRad_S, double torqueNm) {
         final double motorDutyCycle = velocityRad_S * FF_DUTY_RAD_S;
         setDutyCycle(motorDutyCycle);
     }
@@ -149,7 +149,7 @@ public class TalonSRXMotor implements BareMotor {
     }
 
     @Override
-    public void setUnwrappedPosition(double positionRad, double velocityRad_S, double accelRad_S2, double torqueNm) {
+    public void setUnwrappedPosition(double positionRad, double velocityRad_S, double torqueNm) {
         throw new UnsupportedOperationException("TalonSRX sensing is not supported.");
     }
 

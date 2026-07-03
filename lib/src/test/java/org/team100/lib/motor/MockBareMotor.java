@@ -10,8 +10,6 @@ public class MockBareMotor implements BareMotor, IncrementalBareEncoder {
     public double position = 0;
     /** rad/s */
     public double velocity = 0;
-    /** rad/s^2 */
-    public double accel = 0;
     /** Nm */
     public double torque = 0;
 
@@ -20,12 +18,9 @@ public class MockBareMotor implements BareMotor, IncrementalBareEncoder {
     public double frictionFFVolts;
     public double backEMFVolts;
     public double torqueFFVolts;
-    public double accelFFVolts;
-    private final SimpleDynamics m_ff;
     private final Friction m_friction;
 
-    public MockBareMotor(SimpleDynamics ff, Friction friction) {
-        m_ff = ff;
+    public MockBareMotor(Friction friction) {
         m_friction = friction;
     }
 
@@ -35,25 +30,22 @@ public class MockBareMotor implements BareMotor, IncrementalBareEncoder {
     }
 
     @Override
-    public void setVelocity(double motorRad_S, double motorRad_S2, double torqueNm) {
+    public void setVelocity(double motorRad_S, double torqueNm) {
         velocity = motorRad_S;
-        accel = motorRad_S2;
         torque = torqueNm;
     }
 
     @Override
     public void setUnwrappedPosition(
-            double motorRad, double motorRad_S, double motorRad_S2, double torqueNm) {
+            double motorRad, double motorRad_S, double torqueNm) {
         position = motorRad;
         velocity = motorRad_S;
-        accel = motorRad_S2;
         torque = torqueNm;
 
         frictionFFVolts = m_friction.frictionFFVolts(motorRad_S);
         backEMFVolts = backEMFVoltage(motorRad_S);
         torqueFFVolts = getTorqueFFVolts(torqueNm);
-        accelFFVolts = m_ff.accelFFVolts(motorRad_S, motorRad_S2);
-        ffVolts = backEMFVolts + frictionFFVolts + torqueFFVolts + accelFFVolts;
+        ffVolts = backEMFVolts + frictionFFVolts + torqueFFVolts;
     }
 
     /** placeholder */

@@ -49,8 +49,6 @@ public class Feeder extends SubsystemBase {
         final BareMotor m2;
         switch (Identity.instance) {
             case TEST_BOARD_B0 -> {
-
-                SimpleDynamics dynamics = new SimpleDynamics(log, 0.00, 0.00);
                 // friction test 3/12/26
                 Friction friction = new Friction(log, 0.9, 0.9, 0.0, 0.5);
                 // tuned 3/12/26
@@ -58,10 +56,10 @@ public class Feeder extends SubsystemBase {
 
                 m1 = new KrakenX44Motor(
                         log1, currentLog, canID1, NeutralMode100.COAST, MotorPhase.FORWARD,
-                        CurrentLimits.FEEDER, dynamics, friction, pid);
+                        CurrentLimits.FEEDER, friction, pid);
                 m2 = new KrakenX44Motor(
                         log2, currentLog, canID2, NeutralMode100.COAST, MotorPhase.FORWARD,
-                        CurrentLimits.FEEDER, dynamics, friction, pid);
+                        CurrentLimits.FEEDER, friction, pid);
             }
             default -> {
                 m1 = new SimulatedBareMotor(log1, 600);

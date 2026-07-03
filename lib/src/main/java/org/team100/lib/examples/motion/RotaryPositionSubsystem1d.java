@@ -94,13 +94,11 @@ public class RotaryPositionSubsystem1d extends SubsystemBase {
                 int statorLimit = 90;
                 double inputOffset = 0.135541;
                 PIDConstants pid = PIDConstants.makeVelocityPID(log, 0.05);
-                // you should make a case in the feedforward class for your constants
-                SimpleDynamics ff = new SimpleDynamics(log, 0.100, 0.100);
                 Friction friction = new Friction(log, 0.100, 0.100, 0.0, 0.1);
                 KrakenX60Motor motor = new KrakenX60Motor(
                         log, currentLog, new CanId(1),
                         NeutralMode100.COAST, MotorPhase.REVERSE,
-                        new CurrentLimit(statorLimit, supplyLimit), ff, friction, pid);
+                        new CurrentLimit(statorLimit, supplyLimit), friction, pid);
                 RotaryPositionSensor sensor = new AS5048RotaryPositionSensor(
                         log, new RoboRioChannel(5), inputOffset, EncoderDrive.DIRECT);
                 RotaryMechanism mech = new RotaryMechanism(
