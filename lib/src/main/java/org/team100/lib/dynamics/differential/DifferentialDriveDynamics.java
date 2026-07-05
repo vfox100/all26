@@ -1,5 +1,7 @@
 package org.team100.lib.dynamics.differential;
 
+import static org.team100.lib.geometry.GeometryUtil.det;
+
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
 import org.team100.lib.geometry.AccelerationSE2;
@@ -21,6 +23,7 @@ public class DifferentialDriveDynamics {
     private static final Vector<N2> N_1 = VecBuilder.fill(1, 0);
     /** Right-side actuation direction */
     private static final Vector<N2> N_2 = VecBuilder.fill(1, 0);
+
     /** Robot dynamics, to obtain the whole-robot wrench. */
     private final SE2Dynamics m_dyn;
     /** Inverse dynamics matrix. */
@@ -38,10 +41,6 @@ public class DifferentialDriveDynamics {
                 N_1.get(1), N_2.get(1), //
                 det(R_1, N_1), det(R_2, N_2));
         m_inv = new Matrix<>(fwd.getStorage().pseudoInverse());
-    }
-
-    private double det(Vector<N2> a, Vector<N2> b) {
-        return a.get(0) * b.get(1) - a.get(1) * b.get(0);
     }
 
     /** Here "torque" is actually linear force in Newtons. */

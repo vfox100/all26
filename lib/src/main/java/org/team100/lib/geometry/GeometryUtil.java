@@ -391,6 +391,11 @@ public class GeometryUtil {
         return a.get(0) * b.get(1) - a.get(1) * b.get(0);
     }
 
+    /** Vector determinant, like the cross product in R2 */
+    public static double det(Vector<N2> a, Vector<N2> b) {
+        return a.get(0) * b.get(1) - a.get(1) * b.get(0);
+    }
+
     /////////////////////////////////////////////////////////////////
     ///
     /// DANGER ZONE

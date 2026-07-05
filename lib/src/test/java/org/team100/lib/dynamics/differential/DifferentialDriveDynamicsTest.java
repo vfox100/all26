@@ -17,6 +17,15 @@ public class DifferentialDriveDynamicsTest {
 
     @Test
     void test1() {
+        DifferentialDriveDynamics d = new DifferentialDriveDynamics(1, 1, 0.5);
+        AccelerationSE2 a = new AccelerationSE2(0, 0, 1);
+        DifferentialDriveEffort t = d.effort(a);
+        assertEquals(-2, t.F1(), 0.001);
+        assertEquals(2, t.F2(), 0.001);
+    }
+
+    @Test
+    void test2() {
         // very wide; radius is 1m
         DifferentialDriveDynamics d = new DifferentialDriveDynamics(1, 1, 2);
         AccelerationSE2 a = new AccelerationSE2(1, 0, 1);
