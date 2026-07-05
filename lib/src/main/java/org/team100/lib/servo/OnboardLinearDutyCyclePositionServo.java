@@ -3,7 +3,7 @@ package org.team100.lib.servo;
 import org.team100.lib.controller.r1.FeedbackR1;
 import org.team100.lib.dynamics.p.PAcceleration;
 import org.team100.lib.dynamics.p.PDynamics;
-import org.team100.lib.dynamics.p.PTorque;
+import org.team100.lib.dynamics.p.PEffort;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -130,7 +130,7 @@ public class OnboardLinearDutyCyclePositionServo implements LinearPositionServo 
         // setpoint must be updated so the profile can see it
         m_setpoint = setpoints.next();
         double accelM_S2 = m_setpoint.a();
-        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
+        PEffort t = m_dynamics.effort(new PAcceleration(accelM_S2));
 
         final double position = getPosition();
         final double velocity = getVelocity();

@@ -3,7 +3,7 @@ package org.team100.frc2025.CalgamesArm;
 import org.team100.lib.dynamics.prr.PRRAcceleration;
 import org.team100.lib.dynamics.prr.PRRConfig;
 import org.team100.lib.dynamics.prr.PRRDynamics;
-import org.team100.lib.dynamics.prr.PRRTorque;
+import org.team100.lib.dynamics.prr.PRREffort;
 import org.team100.lib.dynamics.prr.PRRVelocity;
 import org.team100.lib.subsystems.prr.EAWConfig;
 import org.team100.lib.subsystems.prr.JointAccelerations;
@@ -47,7 +47,7 @@ public class Dynamics {
         PRRConfig q = new PRRConfig(c.shoulderHeight(), c.shoulderAngle(), c.wristAngle());
         PRRVelocity v = new PRRVelocity(jv.elevator(), jv.shoulder(), jv.wrist());
         PRRAcceleration a = new PRRAcceleration(ja.elevator(), ja.shoulder(), ja.wrist());
-        PRRTorque t = m_dynamics.torque(q, v, a);
+        PRREffort t = m_dynamics.effort(q, v, a);
         return new JointForce(t.f1(), t.t2(), t.t3());
     }
 

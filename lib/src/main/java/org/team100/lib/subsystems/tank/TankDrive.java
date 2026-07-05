@@ -1,10 +1,10 @@
 package org.team100.lib.subsystems.tank;
 
 import org.team100.lib.dynamics.differential.DifferentialDriveDynamics;
-import org.team100.lib.dynamics.differential.DifferentialDriveTorque;
-import org.team100.lib.dynamics.p.PTorque;
+import org.team100.lib.dynamics.differential.DifferentialDriveEffort;
+import org.team100.lib.dynamics.p.PEffort;
 import org.team100.lib.dynamics.se2.SE2Dynamics;
-import org.team100.lib.dynamics.se2.SE2Torque;
+import org.team100.lib.dynamics.se2.SE2Effort;
 import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.AccelerationSE2;
 import org.team100.lib.logging.Level;
@@ -91,7 +91,7 @@ public class TankDrive extends SubsystemBase {
         ChassisSpeeds actual = m_kinematics.toChassisSpeeds(wheelSpeeds);
       
         AccelerationSE2 accel = accel(actual);
-        DifferentialDriveTorque t = m_dynamics.torque(accel);
+        DifferentialDriveEffort t = m_dynamics.effort(accel);
 
         double left = wheelSpeeds.leftMetersPerSecond;
         double right = wheelSpeeds.rightMetersPerSecond;

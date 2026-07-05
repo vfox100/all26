@@ -3,6 +3,7 @@ package org.team100.lib.dynamics.se2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.dynamics.r.REffort;
 import org.team100.lib.geometry.AccelerationSE2;
 
 public class SE2DynamicsTest {
@@ -12,7 +13,7 @@ public class SE2DynamicsTest {
     void test0() {
         SE2Dynamics d = new SE2Dynamics(1, 2);
         // +ax
-        SE2Torque t = d.torque(new AccelerationSE2(3, 0, 0));
+        SE2Effort t = d.effort(new AccelerationSE2(3, 0, 0));
         assertEquals(3, t.fx(), DELTA);
         assertEquals(0, t.fy(), DELTA);
         assertEquals(0, t.t(), DELTA);
@@ -22,7 +23,7 @@ public class SE2DynamicsTest {
     void test1() {
         SE2Dynamics d = new SE2Dynamics(1, 2);
         // +ay
-        SE2Torque t = d.torque(new AccelerationSE2(0, 3, 0));
+        SE2Effort t = d.effort(new AccelerationSE2(0, 3, 0));
         assertEquals(0, t.fx(), DELTA);
         assertEquals(3, t.fy(), DELTA);
         assertEquals(0, t.t(), DELTA);
@@ -32,7 +33,7 @@ public class SE2DynamicsTest {
     void test2() {
         SE2Dynamics d = new SE2Dynamics(1, 2);
         // +alpha
-        SE2Torque t = d.torque(new AccelerationSE2(0, 0, 3));
+        SE2Effort t = d.effort(new AccelerationSE2(0, 0, 3));
         assertEquals(0, t.fx(), DELTA);
         assertEquals(0, t.fy(), DELTA);
         assertEquals(6, t.t(), DELTA);

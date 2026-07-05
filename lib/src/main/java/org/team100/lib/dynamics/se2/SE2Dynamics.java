@@ -20,8 +20,8 @@ public class SE2Dynamics {
      * There is no configuration (position) or velocity here because
      * the dynamics do not depend on them.
      */
-    public SE2Torque torque(AccelerationSE2 a) {
-        return new SE2Torque(m * a.x(), m * a.y(), I * a.theta());
+    public SE2Effort effort(AccelerationSE2 a) {
+        return new SE2Effort(m * a.x(), m * a.y(), I * a.theta());
     }
 
 }

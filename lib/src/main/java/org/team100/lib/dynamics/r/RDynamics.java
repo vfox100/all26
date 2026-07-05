@@ -39,12 +39,12 @@ public class RDynamics {
      * Note there is no velocity term here because the dynamics don't
      * depend on velocity.
      */
-    public RTorque torque(RConfig q, RAcceleration a) {
+    public REffort effort(RConfig q, RAcceleration a) {
         double s1 = Math.sin(q.q1());
         double m11 = m1 * lc1 * lc1 + izz1;
         double g1 = -m1 * g * lc1 * s1;
         double t1 = m11 * a.q1ddot() + g1;
-        return new RTorque(t1);
+        return new REffort(t1);
     }
 
 }

@@ -2,7 +2,7 @@ package org.team100.lib.servo;
 
 import org.team100.lib.dynamics.p.PAcceleration;
 import org.team100.lib.dynamics.p.PDynamics;
-import org.team100.lib.dynamics.p.PTorque;
+import org.team100.lib.dynamics.p.PEffort;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -124,7 +124,7 @@ public class OutboardLinearPositionServo implements LinearPositionServo {
         double positionM = m_nextSetpoint.x();
         double velocityM_S = m_nextSetpoint.v();
         double accelM_S2 = m_nextSetpoint.a();
-        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
+        PEffort t = m_dynamics.effort(new PAcceleration(accelM_S2));
         m_mechanism.setPosition(
                 positionM,
                 velocityM_S,

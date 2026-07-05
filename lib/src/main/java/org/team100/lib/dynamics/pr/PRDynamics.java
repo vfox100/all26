@@ -23,7 +23,7 @@ public class PRDynamics {
      * Generalized force (torque or force) to achieve the required
      * velocity and acceleration, and also to oppose gravity.
      */
-    public PRTorque torque(PRConfig q, PRVelocity v, PRAcceleration a) {
+    public PREffort effort(PRConfig q, PRVelocity v, PRAcceleration a) {
         double s2 = Math.sin(q.q2());
         double c2 = Math.cos(q.q2());
         double f1 = (m1 + m2) * a.q1ddot()
@@ -33,7 +33,7 @@ public class PRDynamics {
         double t2 = -m2 * d * s2 * a.q1ddot()
                 + (izz + m2 * d * d) * a.q2ddot()
                 - d * s2 * m2 * g;
-        return new PRTorque(f1, t2);
+        return new PREffort(f1, t2);
     }
 
 }

@@ -30,7 +30,8 @@ public class MecanumKinematics100 {
 
     public MecanumKinematics100(
             LoggerFactory parent, Slip slip,
-            Translation2d fl, Translation2d fr, Translation2d rl, Translation2d rr) {
+            Translation2d fl, Translation2d fr,
+            Translation2d rl, Translation2d rr) {
         m_kinematics = new MecanumDriveKinematics(fl, fr, rl, rr);
         LoggerFactory log = parent.type(this);
         m_kx = new Mutable(log, "Slip kx", slip.kx);

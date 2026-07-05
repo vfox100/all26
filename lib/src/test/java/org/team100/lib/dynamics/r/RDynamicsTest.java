@@ -11,7 +11,7 @@ public class RDynamicsTest {
     void test0() {
         RDynamics d = new RDynamics(1, 0.5, 1);
         // straight up
-        RTorque t = d.torque(
+        REffort t = d.effort(
                 new RConfig(0),
                 new RAcceleration(0));
         // no torque
@@ -22,7 +22,7 @@ public class RDynamicsTest {
     void test1() {
         RDynamics d = new RDynamics(1, 0.5, 1);
         // to the side
-        RTorque t = d.torque(
+        REffort t = d.effort(
                 new RConfig(Math.PI / 2),
                 new RAcceleration(0));
         // 1 kg is 0.5 m away, so 5Nm
@@ -33,7 +33,7 @@ public class RDynamicsTest {
     void test4() {
         RDynamics d = new RDynamics(1, 0.5, 1);
         // accelerating
-        RTorque t = d.torque(
+        REffort t = d.effort(
                 new RConfig(0),
                 new RAcceleration(1));
         // mass torque 0.25 + inertia 1 = 1.25
@@ -45,7 +45,7 @@ public class RDynamicsTest {
     void test5() {
         RDynamics d = new RDynamics(1, 0.5, 1);
         // slowing down
-        RTorque t = d.torque(
+        REffort t = d.effort(
                 new RConfig(0),
                 new RAcceleration(-1));
         // slowing is the same
@@ -57,7 +57,7 @@ public class RDynamicsTest {
         // flywheel is an arm whose center of mass is at the pivot
         RDynamics d = new RDynamics(1, 0, 2);
         // speeding up
-        RTorque t = d.torque(
+        REffort t = d.effort(
                 new RConfig(0), // doesn't matter
                 new RAcceleration(3));
         // t = I alpha

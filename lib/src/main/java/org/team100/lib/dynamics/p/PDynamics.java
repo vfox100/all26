@@ -14,9 +14,9 @@ public class PDynamics {
      * Note there is no config or velocity here because
      * the dynamics don't depend on them.
      */
-    public PTorque torque(PAcceleration a) {
+    public PEffort effort(PAcceleration a) {
         double F = m * a.qddot();
-        return new PTorque(F);
+        return new PEffort(F);
     }
 
     /**

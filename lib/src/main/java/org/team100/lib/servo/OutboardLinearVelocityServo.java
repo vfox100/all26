@@ -3,7 +3,7 @@ package org.team100.lib.servo;
 import org.team100.lib.coherence.Takt;
 import org.team100.lib.dynamics.p.PAcceleration;
 import org.team100.lib.dynamics.p.PDynamics;
-import org.team100.lib.dynamics.p.PTorque;
+import org.team100.lib.dynamics.p.PEffort;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -147,7 +147,7 @@ public class OutboardLinearVelocityServo implements LinearVelocityServo {
         m_nextSetpoint = setpoints;
         double velocityM_S = m_nextSetpoint.v();
         double accelM_S2 = m_nextSetpoint.a();
-        PTorque t = m_dynamics.torque(new PAcceleration(accelM_S2));
+        PEffort t = m_dynamics.effort(new PAcceleration(accelM_S2));
         m_mechanism.setVelocity(velocityM_S, t.f());
         m_log_control.log(() -> m_nextSetpoint);
     }

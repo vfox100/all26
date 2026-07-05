@@ -38,7 +38,7 @@ public class RRDynamics {
      * Generalized force (torque or force) to achieve the required
      * velocity and acceleration, and also to oppose gravity.
      */
-    public RRTorque torque(RRConfig q, RRVelocity v, RRAcceleration a) {
+    public RREffort effort(RRConfig q, RRVelocity v, RRAcceleration a) {
         double s1 = Math.sin(q.q1());
         double s2 = Math.sin(q.q2());
         double c2 = Math.cos(q.q2());
@@ -72,7 +72,7 @@ public class RRDynamics {
                 + c22 * v.q2dot()
                 + g2;
 
-        return new RRTorque(t1, t2);
+        return new RREffort(t1, t2);
     }
 
 }

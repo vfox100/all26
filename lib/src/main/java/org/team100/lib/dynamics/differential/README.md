@@ -2,148 +2,196 @@
 
 The dynamics of a differential drivetrain, aka "Tank Drive."
 
-This system has been studied for a long time.  A good reference is the
-[differential drive notes](https://robotics.caltech.edu/~me72/class/DiffDrive2.pdf)
-from [CalTech ME72](https://me72.caltech.edu), a somewhat-famous
-upper-division lab course.
+<img src="image_differential.png" width="300"/>
 
-## Kinematics
 
-This reference begins with the kinematics, using a slightly different formulation
-than we use.  For example, wheel rotation is measured positive-counterclockwise, 
-looking at the wheel from the outside -- our usual coordinates treat the
-"vehicle forward" direction as positive on both sides.  The kinematics are
-also extrinsic (field-centric) rather than our usual intrinsics.
+Divide the problem into two pieces.
 
-Accounting for these differences, the forward kinematics agrees with
-the WPI formulation, where $r$ is wheel diameter and $W$ is half the track width:
+* Determine the total rigid-body forces and torques for the desired rigid-body accelerations, using $F=ma$ and $\tau=I\alpha$.
+* Find the set of drive forces that sum to the total.
+
+The general way to handle this situation is with the concept
+of a "wrench", which represents both linear and rotational
+forces on the rigid body (like a twist but for force and torque).
+It can be written with generality as the stacked vector:
+
+```math
+\bold{w}
+=
+\begin{bmatrix}
+\bold{f} \\
+\boldsymbol{\tau}
+\end{bmatrix}
+```
+
+where $\bold{f}$ is the total force vector
+and $\boldsymbol{\tau}$ the total torque
+around the center of mass:
+
+
+In SE2 it is three dimensional:
+
+```math
+\bold{w}
+=
+\begin{bmatrix}
+f_x \\
+f_y \\
+\tau
+\end{bmatrix}
+```
+
+Each component actuator (wheel) produces a
+linear force $\bold{f_i}$
+acting at a point $\bold{r_i}$,
+which yields a wrench $\bold{w_i}$:
+
+```math
+\bold{w_i}
+=
+\begin{bmatrix}
+\bold{f_i} \\
+\bold{r_i} \times \bold{f_i}
+\end{bmatrix}
+```
+
+Our problem involves a key constraint, which is that the
+actuation vector directions are fixed by the drive geometry:
+the vectors $\bold{n_i}$ in the diagram above.
+
+So the component wrenches can be written:
+
+```math
+\bold{w_i}
+=
+\begin{bmatrix}
+\bold{n_i} \\
+\bold{r_i} \times \bold{n_i}
+\end{bmatrix}
+f_i
+```
+So the sum can be written:
 
 ```math
 \begin{bmatrix}
-\dot{x} \\
-\dot{y} \\
-\dot{\theta}
+f_x \\
+f_y \\
+\tau
 \end{bmatrix}
 =
-\frac{1}{2}
-r
 \begin{bmatrix}
-\dot{q_1} +\dot{q_2} \\
+\bold{n_1} && \bold{n_2} && \dots && \bold{n_k} \\
+\bold{r_1} \times \bold{n_1} && \bold{r_2} \times \bold{n_2} &&\dots && \bold{r_k} \times \bold{n_k}
+\end{bmatrix}
+\begin{bmatrix}
+f_1 \\
+f_2 \\
+\vdots \\
+f_k
+\end{bmatrix}
+```
+
+Our setup is in two dimensions, so instead of the cross product,
+we use the two-dimensional equivalent, the vector determinant:
+
+```math
+det(a,b) = a_x b_y - a_y b_x
+```
+
+thus:
+
+```math
+\begin{bmatrix}
+f_x \\
+f_y \\
+\tau
+\end{bmatrix}
+=
+\begin{bmatrix}
+n_{1x} && n_{2x}  \\
+n_{y1} && n_{2y}  \\
+r_{1x}n_{1y} - r_{1y}n_{1x} && r_{2x}n_{2y} - r_{2y}n_{2x} 
+\end{bmatrix}
+\begin{bmatrix}
+f_1 \\
+f_2 \\
+\end{bmatrix}
+```
+
+The contacts and normals from the diagram are:
+
+```math
+\bold{r_1}
+=
+\begin{bmatrix}
 0 \\
-(\dot{q_2} - \dot{q_1})/W
+1
 \end{bmatrix}
 ```
 
-## Dynamics
-
-Rewriting equation 45 a bit (massless wheels, coordinates, etc):
-
 ```math
-\ddot{x}
-\approx
-\frac{1}{mr}
-(\tau_1 + \tau_2)
+\bold{r_2}
+=
+\begin{bmatrix}
+0 \\
+-1
+\end{bmatrix}
 ```
 
-We generally represent drive wheels as *linear* forces, to encapsulate
-details about gear ratio and wheel size: $\tau = rF$ or
-So in those terms, it is simply $F=ma$:
-
 ```math
-\ddot{x}
-\approx
-\frac{1}{m}
-(F_1 + F_2)
+\bold{n_1}
+=
+\bold{n_2}
+=
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
 ```
 
-Rewriting equation 49 a bit:
+So the forward dynamics are:
 
-```math
-\ddot{\theta}
-\approx
-\frac{W}{rI}
-(\tau_2 - \tau_1)
-```
-
-With the same force substitution:
-
-```math
-\ddot{\theta}
-\approx
-\frac{W}{I}
-(F_2 - F_1)
-```
-
-or
 
 ```math
 \begin{bmatrix}
-\ddot{x} \\
-\ddot{\theta}
+f_x \\
+f_y \\
+\tau
 \end{bmatrix}
 =
 \begin{bmatrix}
-\frac{1}{m} && \frac{1}{m} \\
-\\
-\frac{-W}{I} && \frac{W}{I}
+1 && 1  \\
+0 && 0  \\
+-1 && 1 
 \end{bmatrix}
 \begin{bmatrix}
-F_1 \\
-F_2
+f_1 \\
+f_2 \\
 \end{bmatrix}
 ```
 
-2x2 matrices are easy to invert, so:
+Using the
+[Moore-Penrose pseudoinverse](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse),
+we obtain the inverse dynamics:
 
 ```math
 \begin{bmatrix}
-F_1 \\
-F_2
+f_1 \\
+f_2 \\
 \end{bmatrix}
+
 =
-\frac{mI}{2W}
 \begin{bmatrix}
-\frac{W}{I} && \frac{-1}{m} \\
-\\
-\frac{W}{I} && \frac{1}{m}
+0.5 && 0 && -0.5  \\
+0.5 && 0 && 0.5  
 \end{bmatrix}
+
 \begin{bmatrix}
-\ddot{x} \\
-\ddot{\theta}
+f_x \\
+f_y \\
+\tau
 \end{bmatrix}
-```
-or
-```math
-\begin{bmatrix}
-F_1 \\
-F_2
-\end{bmatrix}
-=
-\frac{1}{2}
-\begin{bmatrix}
-m && \frac{-I}{W} \\
-\\
-m && \frac{I}{W}
-\end{bmatrix}
-\begin{bmatrix}
-\ddot{x} \\
-\ddot{\theta}
-\end{bmatrix}
+
 ```
 
-Note that these expressions don't depend on
-configuration (i.e. value of $x$ or $\theta$, or
-velocity (i.e. value of $\dot{x}$ or $\dot{\theta}$), so
-there are no "Config" or "Velocity" records.
-
-## An alternative formulation
-
-Another way to express the same thing is to divide the
-problem into two pieces, relying on our simplification
-that the only mass is the rigid-body mass.
-
-* Determine the rigid body (SE2) forces (see ../se2).  This
-  involves $m$ and $I$, and yields components $F_x$ and $\tau$.
-* Project these components into the drive contacts, which have
-  fixed locations and directions.  Since there are two wheels,
-  assign half the force to each, and then sum the components.
+Which is the familiar result.

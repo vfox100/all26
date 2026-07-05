@@ -3,7 +3,7 @@ package org.team100.lib.servo;
 import org.team100.lib.dynamics.r.RAcceleration;
 import org.team100.lib.dynamics.r.RConfig;
 import org.team100.lib.dynamics.r.RDynamics;
-import org.team100.lib.dynamics.r.RTorque;
+import org.team100.lib.dynamics.r.REffort;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ControlR1Logger;
@@ -85,7 +85,7 @@ public class OutboardAngularPositionServo extends AngularPositionServoImpl {
 
         ControlR1 nextUnwrappedSetpoint = unwrappedSetpoint.next();
 
-        RTorque t = m_dynamics.torque(
+        REffort t = m_dynamics.effort(
                 new RConfig(nextUnwrappedSetpoint.x()),
                 new RAcceleration(nextUnwrappedSetpoint.a()));
 
