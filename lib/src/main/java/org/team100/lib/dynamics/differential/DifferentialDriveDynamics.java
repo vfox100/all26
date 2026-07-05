@@ -5,6 +5,7 @@ import static org.team100.lib.geometry.GeometryUtil.det;
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
 import org.team100.lib.geometry.AccelerationSE2;
+import org.team100.lib.geometry.ChassisAcceleration;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
@@ -15,8 +16,9 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 /**
- * Maps desired acceleration in SE2 (in the robot frame)
- * to linear forces produced at each wheel.
+ * Maps desired "chassis acceleration: (i.e. SE2 in the ROBOT FRAME)
+ * to linear forces produced at each wheel.  Ignores centrifugal
+ * acceleration.
  */
 public class DifferentialDriveDynamics {
     /** Left-side actuation direction */
@@ -43,14 +45,21 @@ public class DifferentialDriveDynamics {
         m_inv = new Matrix<>(fwd.getStorage().pseudoInverse());
     }
 
-    /** Here "torque" is actually linear force in Newtons. */
-    public DifferentialDriveEffort effort(AccelerationSE2 a) {
-        SE2Effort se2Effort = m_dyn.effort(a);
-        if (se2Effort.fy() > 1e-6) {
-            // In the robot frame, acceleration in Y comes
-            // only from centrifugal force, which is unmodeled.
-            System.out.printf("ignoring nonzero y %f\n", a.y());
-        }
+    /**
+     * Effort for the supplied acceleration.
+     * 
+     * IMPORTANT: does not correctly handle centrifugal acceleration,
+     * since it's hard to do anything about it.
+     * 
+     * The correct thing would be to add some extra rotation,
+     * to induce a slip-angle on the tires.
+     **/
+    public DifferentialDriveEffort effort(ChassisAcceleration a) {
+        // Treat the intrinsic accel as extrinsic.
+        AccelerationSE2 aa = new AccelerationSE2(a.x(), a.y(), a.theta());
+        // This is just F=ma and T=Ialpha
+        SE2Effort se2Effort = m_dyn.effort(aa);
+        // This wrench may have a y component
         Vector<N3> w = se2Effort.vector();
         Vector<N2> f = new Vector<N2>(m_inv.times(w));
         return DifferentialDriveEffort.fromVector(f);

@@ -26,6 +26,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
  * Do not try to use zero as an initial location; always initialize with the
  * current location.
  * 
+ * Be careful of the context: this specifies control relative to some
+ * coordinate system, often the global (field) one, but not always.
+ * 
  * Note: the metric used here is not the SE(2) geodesic, it treats the XY plane
  * and rotation dimensions independently.
  */

@@ -6,15 +6,21 @@ The dynamics of the Mecanum drivetrain.
 
 Divide the problem into three pieces:
 
-* Determine the total rigid-body forces and torques for the desired rigid-body accelerations, using $F=ma$ and $\tau=I\alpha$.
-* Find the set of drive forces that sum to the total.
+* Determine the total rigid-body forces and torques ("effort")
+  for the desired rigid-body accelerations, using $F=ma$ and $\tau=I\alpha$.
+* Find the set of drive forces (the "grasp") that sum to the total.
 * Project those drive forces into the wheel axes.
 
 See [WRENCH.md](../WRENCH.md) for background.
 
+See [SE2](../se2/README.md) regarding the rigid-body effort.
+
+## Grasp Forces
+
+In the Mecanum drive, the contact points are fixed.  For example:
 
 ```math
-\bold{r_1}
+\mathbf{r_1}
 =
 \begin{bmatrix}
 1 \\
@@ -23,7 +29,7 @@ See [WRENCH.md](../WRENCH.md) for background.
 ```
 
 ```math
-\bold{r_2}
+\mathbf{r_2}
 =
 \begin{bmatrix}
 1 \\
@@ -32,7 +38,7 @@ See [WRENCH.md](../WRENCH.md) for background.
 ```
 
 ```math
-\bold{r_3}
+\mathbf{r_3}
 =
 \begin{bmatrix}
 -1 \\
@@ -41,7 +47,7 @@ See [WRENCH.md](../WRENCH.md) for background.
 ```
 
 ```math
-\bold{r_4}
+\mathbf{r_4}
 =
 \begin{bmatrix}
 -1 \\
@@ -49,10 +55,13 @@ See [WRENCH.md](../WRENCH.md) for background.
 \end{bmatrix}
 ```
 
+The contact directions are also fixed -- parallel to the axis of each
+contacting roller, at 45 degrees.
+
 ```math
-\bold{n_1}
+\mathbf{n_1}
 =
-\bold{n_4}
+\mathbf{n_4}
 =
 \begin{bmatrix}
 0.71 \\
@@ -61,9 +70,9 @@ See [WRENCH.md](../WRENCH.md) for background.
 ```
 
 ```math
-\bold{n_2}
+\mathbf{n_2}
 =
-\bold{n_3}
+\mathbf{n_3}
 =
 \begin{bmatrix}
 0.71 \\
@@ -117,6 +126,7 @@ f_y \\
 \tau
 \end{bmatrix}
 ```
+## Wheel forces
 
 From these point forces, we need to determine the wheel forces,
 which are just projections in 45 degrees:

@@ -1,5 +1,7 @@
 # Wrench
 
+<img src="differential/image_differential.png" width="300" />
+
 Some of the dynamics problems involve multiple contact points
 and forces through them, for example the drivetrains.
 
@@ -7,20 +9,22 @@ This problem is similar to the "grasping" problem in robotics,
 as if the robot were "grasping" the floor.
 
 The general way to handle this situation is with the concept
-of a "wrench", which represents both linear and rotational
-forces on the rigid body (like a twist but for force and torque).
+of a "wrench", which is the generalization of "force" in SE2, i.e.
+it represents both linear and rotational
+forces on the rigid body.
 It can be written with generality as the stacked vector:
 
 ```math
-\bold{w}
+\mathbf{w}
 =
 \begin{bmatrix}
-\bold{f} \\
+\mathbf{f} \\
 \boldsymbol{\tau}
 \end{bmatrix}
+\tag{1}
 ```
 
-where $\bold{f}$ is the total force vector
+where $\mathbf{f}$ is the total force vector
 and $\boldsymbol{\tau}$ the total torque
 around the center of mass:
 
@@ -28,45 +32,55 @@ around the center of mass:
 In SE2 it is three dimensional:
 
 ```math
-\bold{w}
+\mathbf{w}
 =
 \begin{bmatrix}
 f_x \\
 f_y \\
 \tau
 \end{bmatrix}
+\tag{2}
 ```
 
 Each component actuator (wheel) produces a
-linear force $\bold{f_i}$
-acting at a point $\bold{r_i}$,
-which yields a wrench $\bold{w_i}$:
+linear force $\mathbf{f_i}$
+acting at a point $\mathbf{r_i}$,
+which yields a wrench $\mathbf{w_i}$:
 
 ```math
-\bold{w_i}
+\mathbf{w_i}
 =
 \begin{bmatrix}
-\bold{f_i} \\
-\bold{r_i} \times \bold{f_i}
+\mathbf{f_i} \\
+\mathbf{r_i} \times \mathbf{f_i}
 \end{bmatrix}
+\tag{3}
 ```
 
-Our problem involves a key constraint, which is that the
+## Constrained Actuation
+
+One way to simplify the problem is to imagine that the contacts
+(wheels) can only produce force perpendicular to their axes. 
+(This isn't realistic -- it implies the wheels are "omni" wheels --
+see below to remove this constraint.)
+In this version of the problem, the 
 actuation vector directions are fixed by the drive geometry:
-the vectors $\bold{n_i}$ in the diagram above.
+the vectors $\mathbf{n_i}$ in the diagram above.
 
 So the component wrenches can be written:
 
 ```math
-\bold{w_i}
+\mathbf{w_i}
 =
 \begin{bmatrix}
-\bold{n_i} \\
-\bold{r_i} \times \bold{n_i}
+\mathbf{n_i} \\
+\mathbf{r_i} \times \mathbf{n_i}
 \end{bmatrix}
 f_i
+\tag{4}
+
 ```
-So the sum can be written:
+In SE2, the sum can be written:
 
 ```math
 \begin{bmatrix}
@@ -76,8 +90,8 @@ f_y \\
 \end{bmatrix}
 =
 \begin{bmatrix}
-\bold{n_1} && \bold{n_2} && \dots && \bold{n_k} \\
-\bold{r_1} \times \bold{n_1} && \bold{r_2} \times \bold{n_2} &&\dots && \bold{r_k} \times \bold{n_k}
+\mathbf{n_1} && \mathbf{n_2} && \dots && \mathbf{n_k} \\
+\mathbf{r_1} \times \mathbf{n_1} && \mathbf{r_2} \times \mathbf{n_2} &&\dots && \mathbf{r_k} \times \mathbf{n_k}
 \end{bmatrix}
 \begin{bmatrix}
 f_1 \\
@@ -85,6 +99,7 @@ f_2 \\
 \vdots \\
 f_k
 \end{bmatrix}
+\tag{5}
 ```
 
 Our setup is in two dimensions, so instead of the cross product,
@@ -92,6 +107,7 @@ we use the two-dimensional equivalent, the vector determinant:
 
 ```math
 det(a,b) = a_x b_y - a_y b_x
+\tag{6}
 ```
 
 thus:
@@ -112,8 +128,60 @@ r_{1x}n_{1y} - r_{1y}n_{1x} && r_{2x}n_{2y} - r_{2y}n_{2x}
 f_1 \\
 f_2 \\
 \end{bmatrix}
+\tag{7}
 ```
 
+## Free Actuation
+
+If we remove the constraint that the force directions are fixed,
+then we start again with the component wrench definition:
+
+```math
+\mathbf{w_i}
+=
+\begin{bmatrix}
+\mathbf{f_i} \\
+\mathbf{r_i} \times \mathbf{f_i}
+\end{bmatrix}
+\tag{8}
+```
+
+In SE2 this can be written componentwise (dropping the $i$ for now):
+
+```math
+\mathbf{w}
+=
+\begin{bmatrix}
+f_{x} \\
+f_{y} \\
+r_{x}f_{y} - r_{y}f_{x}
+\end{bmatrix}
+\tag{9}
+```
+
+Which can be written in terms of the "grasp" matrix,
+$G$:
+
+```math
+\mathbf{w}
+=
+\begin{bmatrix}
+F_x \\
+F_y \\
+\tau
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 && 0 \\
+0 && 1 \\
+- r_{y} && r_{x} 
+\end{bmatrix}
+\begin{bmatrix}
+f_{x} \\
+f_{y} 
+\end{bmatrix}
+\tag{10}
+```
 
 ## References
 

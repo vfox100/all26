@@ -21,6 +21,9 @@ import edu.wpi.first.math.numbers.N3;
  * 
  * Everything here is in the R3 tangent space to SE(2).
  * 
+ * Be careful of the context: this specifies velocity relative to some
+ * coordinate system, often the global (field) one, but not always.
+ * 
  * See README.md for details.
  */
 public record VelocitySE2(double x, double y, double theta) {

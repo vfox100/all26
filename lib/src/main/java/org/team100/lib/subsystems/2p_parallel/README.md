@@ -141,7 +141,7 @@ q =
 ```
 
 and $q_n$ is any vector from the null space.  The null space
-$\bold{N}(A)$ of $A$ has basis
+$\mathbf{N}(A)$ of $A$ has basis
 
 ```math
 q =

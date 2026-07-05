@@ -2,11 +2,8 @@ package org.team100.lib.subsystems.tank;
 
 import org.team100.lib.dynamics.differential.DifferentialDriveDynamics;
 import org.team100.lib.dynamics.differential.DifferentialDriveEffort;
-import org.team100.lib.dynamics.p.PEffort;
-import org.team100.lib.dynamics.se2.SE2Dynamics;
-import org.team100.lib.dynamics.se2.SE2Effort;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.AccelerationSE2;
+import org.team100.lib.geometry.ChassisAcceleration;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;
@@ -15,7 +12,6 @@ import org.team100.lib.logging.LoggerFactory.DoubleLogger;
 import org.team100.lib.mechanism.LinearMechanism;
 import org.team100.lib.visualization.VizUtil;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -89,8 +85,14 @@ public class TankDrive extends SubsystemBase {
         DifferentialDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(speed);
         wheelSpeeds.desaturate(m_maxSpeedM_S);
         ChassisSpeeds actual = m_kinematics.toChassisSpeeds(wheelSpeeds);
-      
-        AccelerationSE2 accel = accel(actual);
+
+        // accel includes centrifugal force, which includes a "y" component,
+        // which can only be supplied by this drivetrain if there is
+        // a tire slip angle, and that is not supported: the kinematics
+        // assumes zero slip. So here we ignore the centrifugal part.
+        // If you make a *fast* differential drive, you may want to
+        // revisit this simplification.
+        ChassisAcceleration accel = accel(actual);
         DifferentialDriveEffort t = m_dynamics.effort(accel);
 
         double left = wheelSpeeds.leftMetersPerSecond;
@@ -155,12 +157,13 @@ public class TankDrive extends SubsystemBase {
     /**
      * Compute acceleration using backwards finite difference
      * on chassis speed, using a constant DT.
+     * 
+     * This acceleration includes centrifugal force.
      */
-    private AccelerationSE2 accel(ChassisSpeeds speed) {
-        ChassisSpeeds dv = speed.minus(m_speed);
+    private ChassisAcceleration accel(ChassisSpeeds speed) {
+        ChassisAcceleration a = ChassisAcceleration.diff(
+                m_speed, speed, TimedRobot100.LOOP_PERIOD_S);
         m_speed = speed;
-        ChassisSpeeds a = dv.div(TimedRobot100.LOOP_PERIOD_S);
-        return new AccelerationSE2(
-                a.vxMetersPerSecond, a.vyMetersPerSecond, a.omegaRadiansPerSecond);
+        return a;
     }
 }

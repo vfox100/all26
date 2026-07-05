@@ -7,6 +7,7 @@ import org.team100.lib.state.ModelSE2;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N3;
 
@@ -68,7 +69,7 @@ public class AnalyticalJacobian {
         Matrix<N3, N3> J = getJ(q);
         Matrix<N3, N3> Jdot = getJdot(q, qdot);
         return AccelerationSE2.fromVector(
-                Jdot.times(qdot.toVector()).plus(J.times(qddot.toVector())));
+                new Vector<N3>(Jdot.times(qdot.toVector()).plus(J.times(qddot.toVector()))));
     }
 
     /**
