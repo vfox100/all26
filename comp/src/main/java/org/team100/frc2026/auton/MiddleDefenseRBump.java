@@ -115,14 +115,17 @@ public class MiddleDefenseRBump implements AnnotatedCommand {
     }
 
     /** Runs the commands according to the condition, interrupting to transition. */
+    @SuppressWarnings("unused")
     private Command toggle(BooleanSupplier condition, Command whenTrue, Command whenFalse) {
         return repeatingSequence(whenFalse.until(condition), whenTrue.onlyWhile(condition));
     }
 
+    @SuppressWarnings("unused")
     private boolean intakeExtended() {
         return machinery.m_intakeExtend.isOut();
     }
 
+    @SuppressWarnings("unused")
     private boolean inNeutralZone() {
         return FieldConstants2026.isInNeutralZone(machinery.m_drive.getState().translation());
     }
