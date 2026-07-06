@@ -66,9 +66,10 @@ public class TrajectoryReferenceSE2 implements ReferenceSE2 {
 
     @Override
     public ModelSE2 goal() {
-        TrajectorySE2Entry lastPoint = m_trajectory.getLastPoint();
+        TrajectorySE2Entry entry = m_trajectory.getLastPoint();
+        TrajectorySE2Point point = entry.point();
         ModelSE2 goal = ControlSE2.fromMovingPathSE2Point(
-                lastPoint.point().point(), lastPoint.point().velocity(), lastPoint.point().accel()).model();
+                point).model();
         m_log_goal.log(() -> goal);
         return goal;
     }
@@ -84,9 +85,6 @@ public class TrajectoryReferenceSE2 implements ReferenceSE2 {
     private ControlSE2 sample(double t) {
         TrajectorySE2Entry sample = m_trajectory.sample(t);
         TrajectorySE2Point point = sample.point();
-        return ControlSE2.fromMovingPathSE2Point(
-                point.point(),
-                point.velocity(),
-                point.accel());
+        return ControlSE2.fromMovingPathSE2Point(point);
     }
 }

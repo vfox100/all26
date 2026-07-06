@@ -142,6 +142,12 @@ public class ControlSE2 {
         return ControlSE2.fromMovingPathSE2Point(p.point(), p.velocity(), p.accel());
     }
 
+    public static ControlSE2 fromMovingPathSE2Point(
+            TrajectorySE2Point p) {
+        return fromMovingPathSE2Point(
+            p.point(), p.velocity(), p.accel());
+    }
+
     /**
      * Point and pathwise velocity and accel => ControlSE2.
      * Correctly computes centripetal acceleration.

@@ -19,6 +19,7 @@ import org.team100.lib.trajectory.TrajectorySE2Entry;
 import org.team100.lib.trajectory.TrajectorySE2;
 import org.team100.lib.trajectory.TrajectorySE2Factory;
 import org.team100.lib.trajectory.TrajectorySE2Planner;
+import org.team100.lib.trajectory.TrajectorySE2Point;
 import org.team100.lib.trajectory.constraint.ConstantConstraint;
 import org.team100.lib.trajectory.constraint.TimingConstraint;
 import org.team100.lib.trajectory.constraint.YawRateConstraint;
@@ -69,8 +70,8 @@ public class TrajectoryJointTest {
                             "t, x, y, r, vx, vy, vr, ax, ay, ar, q1, q2, q3, q1dot, q2dot, q3dot, q1ddot, q2ddot, q3ddot");
         for (double tt = 0; tt < t.duration(); tt += 0.02) {
             TrajectorySE2Entry sample = t.sample(tt);
-            ControlSE2 m = ControlSE2.fromMovingPathSE2Point(
-                    sample.point().point(), sample.point().velocity(), sample.point().accel());
+            TrajectorySE2Point point = sample.point();
+            ControlSE2 m = ControlSE2.fromMovingPathSE2Point(point);
             Pose2d p = m.pose();
             VelocitySE2 v = m.velocity();
             AccelerationSE2 a = m.acceleration();

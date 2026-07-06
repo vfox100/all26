@@ -55,17 +55,21 @@ public class MecanumDynamics {
     }
 
     /**
-     * Here "torque" is actually linear force in Newtons.
+     * Returns the wheel effort in Newtons, which is
+     * sqrt(2) times the roller force, to account for
+     * the angle of the rollers.
+     * 
+     * Acceleration here is extrinsic/inertial: no centrifugal force.
      */
     public MecanumEffort effort(AccelerationSE2 a) {
         // Compute rigid body wrench.
         SE2Effort se2Effort = m_dyn.effort(a);
         Vector<N3> w = se2Effort.vector();
-        // Find point forces.
-        Vector<N4> f = new Vector<N4>(m_inv.times(w));
+        // Find contact forces.
+        Vector<N4> f = new Vector<>(m_inv.times(w));
         // Project onto wheel axle
         f = f.times(Math.sqrt(2));
-        return MecanumEffort.fromtVector(f);
+        return MecanumEffort.fromVector(f);
     }
 
 }
