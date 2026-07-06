@@ -65,10 +65,16 @@
         "workbench.colorTheme": "Solarized Light",
         "workbench.editor.revealIfOpen": true,
         "workbench.tree.enableStickyScroll": false,
-        "editor.cursorWidth":2,
+        "editor.cursorWidth": 2,
         "editor.multiCursorLimit": 1,
         "java.import.maven.disableTestClasspathFlag": false,
         "java.import.projectSelection": "automatic",
-        "debug.console.maximumLines": 20000
+        "debug.console.maximumLines": 20000,
+        "workbench.colorCustomizations": {
+            "editor.findMatchBackground": "#e6ff00",
+            "terminal.selectionBackground": "#e6ff00",
+            "tab.activeBackground": "#ffffaa",
+            "tab.unfocusedActiveBackground": "#ffffff"
+        }
     }
 }
