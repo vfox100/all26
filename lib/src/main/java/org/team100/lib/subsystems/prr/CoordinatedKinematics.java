@@ -12,7 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
  * The cartesian coordinate orientation is with X vertical.
  */
 public class CoordinatedKinematics {
-    public static record Joints(double height, double angle) {
+    public  record Joints(double height, double angle) {
     }
 
     private final double l;

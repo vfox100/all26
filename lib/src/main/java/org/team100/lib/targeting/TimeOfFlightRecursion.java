@@ -45,7 +45,7 @@ public class TimeOfFlightRecursion implements Solver {
 
     /** This is a separate class to make it easier to test. */
     static class Looper {
-        static record LoopSolution(
+         record LoopSolution(
                 FiringParameters params, Translation2d targetPositionAtTOF) {
         }
 

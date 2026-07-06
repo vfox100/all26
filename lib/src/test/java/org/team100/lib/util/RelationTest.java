@@ -12,7 +12,7 @@ import edu.wpi.first.math.MathUtil;
 public class RelationTest {
     private static final double DELTA = 1e-12;
 
-    public static record Tuple(double x, double y) {
+    public  record Tuple(double x, double y) {
         public static Tuple interpolate(Tuple a, Tuple b, double t) {
             return new Tuple(
                     MathUtil.interpolate(a.x, b.x, t),

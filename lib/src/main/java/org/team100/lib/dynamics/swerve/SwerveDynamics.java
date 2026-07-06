@@ -1,14 +1,20 @@
 package org.team100.lib.dynamics.swerve;
 
+import java.util.Optional;
+
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
+import org.team100.lib.dynamics.swerve.SwerveConfig.ModuleConfig;
 import org.team100.lib.geometry.AccelerationSE2;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
 
@@ -43,17 +49,40 @@ public class SwerveDynamics {
      * 
      * Acceleration here is extrinsic/inertial: no centrifugal force.
      */
-    public SwerveEffort effort(AccelerationSE2 a) {
-        // Compute rigid body wrench.
-        SE2Effort se2Effort = m_dyn.effort(a);
-        Vector<N3> w = se2Effort.vector();
-        // Find contact forces.
-        Vector<N8> f = new Vector<>(m_inv.times(w));
-        return SwerveEffort.fromVector(f);
+    public SwerveEffort effort(SwerveConfig q, AccelerationSE2 a) {
+        // First find the corner forces
+        Corners corners = corners(a);
+
+        // Then decompose each corner into longitudinal and side forces
+        ModuleConfig flc = q.fl();
+        Corner flo = corners.fl();
+        Optional<Rotation2d> fla = flc.angle();
+        if (fla.isPresent()) {
+            // if the angle exists, then there is velocity, thus a defined
+            // longitudinal direction.
+            Rotation2d flr = fla.get();
+            // longitudinal normal
+            Vector<N2> fln = VecBuilder.fill(flr.getCos(), flr.getSin());
+            // total corner force, N
+            Vector<N2> flf = flo.vector();
+            // longitudinal component, N
+            Vector<N2> fll = fln.projection(flf);
+            // side component, N
+            Vector<N2> fls = flf.minus(fll);
+        } else {
+            // if the angle does not exist, then the angle should be determined
+            // by the required force, which is all longitudinal
+        }
+
+        ModuleConfig frc = q.fr();
+        ModuleConfig rlc = q.rl();
+        ModuleConfig rrc = q.rr();
+
+        return null;
     }
 
     /**
-     * Corner efforts for the given rigid body acceleration.
+     * Corner forces for the given rigid body acceleration.
      * 
      * Acceleration here is extrinsic/inertial: no centrifugal force.
      */
@@ -69,10 +98,13 @@ public class SwerveDynamics {
     /**
      * Planar (R2) force in Newtons.
      */
-    static record Corner(double x, double y) {
+    record Corner(double x, double y) {
+        Vector<N2> vector() {
+            return VecBuilder.fill(x, y);
+        }
     }
 
-    static record Corners(Corner fl, Corner fr, Corner rl, Corner rr) {
+    record Corners(Corner fl, Corner fr, Corner rl, Corner rr) {
         /**
          * The argument is (f1x, f1y, f2x, f2y ...)
          * as specified in README.md.

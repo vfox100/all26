@@ -1,18 +1,18 @@
 package org.team100.lib.dynamics.swerve;
 
+import java.util.Optional;
+
 import org.team100.lib.geometry.ForceR2;
 
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N8;
 
 /**
- * Forces at each corner of the swerve drive.
+ * The swerve produces corner forces using two mechanisms:
  * 
- * It is expected that the drive will project these
- * forces into whatever the steering orientation is.
- * 
- * It might be better for the steering projection to
- * be handled here?
+ * * motor torque through the wheel axis to produce longitudinal force
+ * * adjustment of the wheel axis to produce side force
  * 
  * @param fl front left
  * @param fr front right
@@ -20,16 +20,20 @@ import edu.wpi.first.math.numbers.N8;
  * @param rr rear right
  */
 public record SwerveEffort(
-        ForceR2 fl, ForceR2 fr, ForceR2 rl, ForceR2 rr) {
+        ModuleEffort fl, ModuleEffort fr, ModuleEffort rl, ModuleEffort rr) {
+
+
     /**
-     * The argument is (f1x, f1y, f2x, f2y ...)
-     * as specified in README.md.
+     * Analogous to SwerveModuleState, but for force, and the adjusted angle.
+     * 
+     * The angle adjustment is small, so the maximpact on velocity is around
+     * 0.1%, and is ignored.
+     * 
+     * @param f     longitudinal force, Newtons
+     * @param angle corrected angle. Different from module state if there needs to
+     *              be side force. Empty if there is neither velocity nor
+     *              acceleration.
      */
-    public static SwerveEffort fromVector(Vector<N8> v) {
-        return new SwerveEffort(
-                new ForceR2(v.get(0), v.get(1)),
-                new ForceR2(v.get(2), v.get(3)),
-                new ForceR2(v.get(4), v.get(5)),
-                new ForceR2(v.get(6), v.get(7)));
+    public record ModuleEffort(double f, Optional<Rotation2d> angle) {
     }
 }
