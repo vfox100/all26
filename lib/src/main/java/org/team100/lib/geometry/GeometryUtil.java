@@ -382,6 +382,10 @@ public class GeometryUtil {
         return VecBuilder.fill(t.getX(), t.getY());
     }
 
+    public static Rotation2d fromVec(Vector<N2> v) {
+        return new Rotation2d(v.get(0), v.get(1));
+    }
+
     /** 3-vector for translation */
     public static Vector<N3> toVec3(Translation2d t) {
         return VecBuilder.fill(t.getX(), t.getY(), 0);

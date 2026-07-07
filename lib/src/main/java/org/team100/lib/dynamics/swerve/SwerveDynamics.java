@@ -4,8 +4,11 @@ import java.util.Optional;
 
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
-import org.team100.lib.dynamics.swerve.SwerveConfig.ModuleConfig;
+import org.team100.lib.dynamics.swerve.SwerveEffort.ModuleEffort;
 import org.team100.lib.geometry.AccelerationSE2;
+import org.team100.lib.geometry.GeometryUtil;
+import org.team100.lib.subsystems.swerve.module.state.SwerveModuleState100;
+import org.team100.lib.subsystems.swerve.module.state.SwerveModuleStates;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
@@ -24,18 +27,31 @@ import edu.wpi.first.math.numbers.N8;
  * implement it that way?
  */
 public class SwerveDynamics {
+    private static final boolean DEBUG = true;
     // This is unconstrained actuation so there are no
     // normal vectors here.
     /** Robot dynamics, to obtain the whole-robot wrench. */
     private final SE2Dynamics m_dyn;
+    /** Tire slip angle model. */
+    private final Tire m_tire;
     /** Inverse dynamics matrix. */
     private final Matrix<N8, N3> m_inv;
 
+    /**
+     * @param m  mass kg
+     * @param I  inertia kg m^2
+     * @param fl front-left contact
+     * @param fr front-right contact
+     * @param rl rear-left contact
+     * @param rr rear-right contact
+     */
     public SwerveDynamics(
             double m, double I,
+            Tire tire,
             Translation2d fl, Translation2d fr,
             Translation2d rl, Translation2d rr) {
         m_dyn = new SE2Dynamics(m, I);
+        m_tire = tire;
         Matrix<N3, N8> fwd = MatBuilder.fill(Nat.N3(), Nat.N8(),
                 1, 0, 1, 0, 1, 0, 1, 0, //
                 0, 1, 0, 1, 0, 1, 0, 1, //
@@ -49,36 +65,61 @@ public class SwerveDynamics {
      * 
      * Acceleration here is extrinsic/inertial: no centrifugal force.
      */
-    public SwerveEffort effort(SwerveConfig q, AccelerationSE2 a) {
-        // First find the corner forces
-        Corners corners = corners(a);
+    public SwerveEffort effort(
+            SwerveModuleStates states, AccelerationSE2 accel) {
+        CornerForces cornerForces = cornerForces(accel);
+        return new SwerveEffort(
+                cornerEffort(states.frontLeft(), cornerForces.fl()),
+                cornerEffort(states.frontRight(), cornerForces.fr()),
+                cornerEffort(states.rearLeft(), cornerForces.rl()),
+                cornerEffort(states.rearRight(), cornerForces.rr()));
+    }
 
-        // Then decompose each corner into longitudinal and side forces
-        ModuleConfig flc = q.fl();
-        Corner flo = corners.fl();
-        Optional<Rotation2d> fla = flc.angle();
-        if (fla.isPresent()) {
-            // if the angle exists, then there is velocity, thus a defined
-            // longitudinal direction.
-            Rotation2d flr = fla.get();
-            // longitudinal normal
-            Vector<N2> fln = VecBuilder.fill(flr.getCos(), flr.getSin());
-            // total corner force, N
-            Vector<N2> flf = flo.vector();
-            // longitudinal component, N
-            Vector<N2> fll = fln.projection(flf);
-            // side component, N
-            Vector<N2> fls = flf.minus(fll);
-        } else {
-            // if the angle does not exist, then the angle should be determined
-            // by the required force, which is all longitudinal
+    /** Effort for a single corner. */
+    ModuleEffort cornerEffort(
+            SwerveModuleState100 state,
+            CornerForce cornerForce) {
+        // Total corner force, N
+        Vector<N2> cornerForceVec = cornerForce.vector();
+        Optional<Rotation2d> steeringAngle = state.angle();
+        if (cornerForceVec.norm() < 1e-6) {
+            if (DEBUG)
+                System.out.println("no corner force => no effect");
+            // There is no force to apply, so the effort is zero, with the
+            // input angle.
+            return new ModuleEffort(0, steeringAngle);
+        }
+        if (steeringAngle.isEmpty()) {
+            if (DEBUG)
+                System.out.println("no steering angle => all longitudinal");
+            // If the angle does not exist, then the desired velocity is zero.
+            // In that case, the actual steering angle should be determined
+            // by the required force, which is all longitudinal.
+            Rotation2d correctedAngle = GeometryUtil.fromVec(cornerForceVec);
+            return new ModuleEffort(
+                    cornerForceVec.norm(),
+                    Optional.of(correctedAngle));
         }
 
-        ModuleConfig frc = q.fr();
-        ModuleConfig rlc = q.rl();
-        ModuleConfig rrc = q.rr();
+        // The angle exists, so the velocity is nonzero.
+        // There is a defined longitudinal direction, so we decompose
+        // the required force into longitudinal and lateral parts.
+        Rotation2d steering = steeringAngle.get();
+        // Which way the wheel is turning.
+        double direction = Math.signum(state.speed());
+        // Longitudinal normal (with correction for wheel direction).
+        Vector<N2> longitudinalUnit = VecBuilder.fill(steering.getCos(), steering.getSin()).times(direction);
+        // Longitudinal component, N
+        Vector<N2> longitudinal = cornerForceVec.projection(longitudinalUnit);
+        // Lateral component, N
+        Vector<N2> lateral = cornerForceVec.minus(longitudinal);
+        // Should the slip be to the left (+) or right (-)?
+        // The determinant tells you.
+        double slipDirection = Math.signum(GeometryUtil.det(longitudinalUnit, lateral));
+        double slipAngle = m_tire.angle(lateral.norm()) * slipDirection;
+        Rotation2d correctedAngle = steering.plus(new Rotation2d(slipAngle));
+        return new ModuleEffort(longitudinal.norm(), Optional.of(correctedAngle));
 
-        return null;
     }
 
     /**
@@ -86,35 +127,35 @@ public class SwerveDynamics {
      * 
      * Acceleration here is extrinsic/inertial: no centrifugal force.
      */
-    public Corners corners(AccelerationSE2 a) {
+    public CornerForces cornerForces(AccelerationSE2 accel) {
         // Compute rigid body wrench.
-        SE2Effort se2Effort = m_dyn.effort(a);
+        SE2Effort se2Effort = m_dyn.effort(accel);
         Vector<N3> w = se2Effort.vector();
         // Find contact forces.
         Vector<N8> f = new Vector<>(m_inv.times(w));
-        return Corners.fromVector(f);
+        return CornerForces.fromVector(f);
     }
 
     /**
      * Planar (R2) force in Newtons.
      */
-    record Corner(double x, double y) {
+    record CornerForce(double x, double y) {
         Vector<N2> vector() {
             return VecBuilder.fill(x, y);
         }
     }
 
-    record Corners(Corner fl, Corner fr, Corner rl, Corner rr) {
+    record CornerForces(CornerForce fl, CornerForce fr, CornerForce rl, CornerForce rr) {
         /**
          * The argument is (f1x, f1y, f2x, f2y ...)
          * as specified in README.md.
          */
-        public static Corners fromVector(Vector<N8> v) {
-            return new Corners(
-                    new Corner(v.get(0), v.get(1)),
-                    new Corner(v.get(2), v.get(3)),
-                    new Corner(v.get(4), v.get(5)),
-                    new Corner(v.get(6), v.get(7)));
+        public static CornerForces fromVector(Vector<N8> v) {
+            return new CornerForces(
+                    new CornerForce(v.get(0), v.get(1)),
+                    new CornerForce(v.get(2), v.get(3)),
+                    new CornerForce(v.get(4), v.get(5)),
+                    new CornerForce(v.get(6), v.get(7)));
         }
     }
 }

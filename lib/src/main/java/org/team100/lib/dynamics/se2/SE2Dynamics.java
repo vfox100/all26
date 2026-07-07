@@ -15,7 +15,7 @@ public class SE2Dynamics {
 
     /**
      * Generalized force (torque or force) to achieve the required
-     * acceleration.
+     * acceleration: F=ma and t=Ialpha.
      * 
      * There is no configuration (position) or velocity here because
      * the dynamics do not depend on them.

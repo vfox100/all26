@@ -32,14 +32,18 @@ public class Tire {
      */
     private final double m_saturationRad;
 
+    /**
+     * @param normalN       corner weight, try 200 N
+     * @param saturationRad max useful slip angle, try 0.05 rad
+     */
     public Tire(double normalN, double saturationRad) {
         m_normalN = normalN;
         m_saturationRad = saturationRad;
     }
 
     /**
-     * @param fN desired force, Newtons
-     * @return angle required
+     * @param fN desired side force, Newtons (a positive number)
+     * @return angle required (also positive)
      */
     public double angle(double fN) {
         if (fN < 0)
