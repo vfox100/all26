@@ -29,6 +29,8 @@ public class MecanumDriveFactory {
             CanId canFR,
             CanId canRL,
             CanId canRR,
+            double m,
+            double I,
             double trackWidthM,
             double wheelbaseM,
             Slip slip,
@@ -73,7 +75,7 @@ public class MecanumDriveFactory {
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
         return new MecanumDrive100(
-                log, fieldLogger, gyro, trackWidthM, wheelbaseM, slip,
+                log, fieldLogger, m, I, gyro, trackWidthM, wheelbaseM, slip,
                 mechFL, mechFR, mechRL, mechRR);
     }
 

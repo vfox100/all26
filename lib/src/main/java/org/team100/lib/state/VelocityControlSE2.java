@@ -1,5 +1,6 @@
 package org.team100.lib.state;
 
+import org.team100.lib.geometry.AccelerationSE2;
 import org.team100.lib.geometry.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 
@@ -38,6 +39,12 @@ public class VelocityControlSE2 {
         this(v.x(), v.y(), v.theta());
     }
 
+    public VelocityControlSE2(VelocitySE2 v, AccelerationSE2 a) {
+        this(new VelocityControlR1(v.x(), a.x()),
+                new VelocityControlR1(v.y(), a.y()),
+                new VelocityControlR1(v.theta(), a.theta()));
+    }
+
     public VelocityControlR1 x() {
         return m_x;
     }
@@ -52,6 +59,10 @@ public class VelocityControlSE2 {
 
     public VelocitySE2 velocity() {
         return new VelocitySE2(m_x.v(), m_y.v(), m_theta.v());
+    }
+
+    public AccelerationSE2 acceleration() {
+        return new AccelerationSE2(m_x.a(), m_y.a(), m_theta.a());
     }
 
     public VelocityControlSE2 plus(VelocityControlSE2 other) {
@@ -85,15 +96,15 @@ public class VelocityControlSE2 {
      * 
      * TODO: add support for acceleration via backwards finite difference.
      * 
-     * @param twist    [-1,1]
+     * @param v        [-1,1]
      * @param maxSpeed meters per second
      * @param maxRot   radians per second
      * @return meters and rad per second as specified by speed limits
      */
-    public static VelocityControlSE2 scale(Velocity twist, double maxSpeed, double maxRot) {
+    public static VelocityControlSE2 scale(Velocity v, double maxSpeed, double maxRot) {
         return new VelocityControlSE2(
-                maxSpeed * MathUtil.clamp(twist.x(), -1, 1),
-                maxSpeed * MathUtil.clamp(twist.y(), -1, 1),
-                maxRot * MathUtil.clamp(twist.theta(), -1, 1));
+                maxSpeed * MathUtil.clamp(v.x(), -1, 1),
+                maxSpeed * MathUtil.clamp(v.y(), -1, 1),
+                maxRot * MathUtil.clamp(v.theta(), -1, 1));
     }
 }

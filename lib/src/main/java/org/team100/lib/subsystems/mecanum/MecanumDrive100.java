@@ -1,5 +1,7 @@
 package org.team100.lib.subsystems.mecanum;
 
+import org.team100.lib.dynamics.mecanum.MecanumDynamics;
+import org.team100.lib.dynamics.mecanum.MecanumEffort;
 import org.team100.lib.geometry.VelocitySE2;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
@@ -26,8 +28,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
  * Mecanum drive with optional gyro.
- * 
- * TODO: implement dynamics.
  */
 public class MecanumDrive100 extends SubsystemBase implements VelocitySubsystemSE2 {
 
@@ -42,6 +42,7 @@ public class MecanumDrive100 extends SubsystemBase implements VelocitySubsystemS
     private final LinearMechanism m_rearLeft;
     private final LinearMechanism m_rearRight;
     private final MecanumKinematics100 m_kinematics;
+    private final MecanumDynamics m_dynamics;
 
     private MecanumDriveWheelPositions m_positions;
     private VelocitySE2 m_input;
@@ -54,6 +55,8 @@ public class MecanumDrive100 extends SubsystemBase implements VelocitySubsystemS
     public MecanumDrive100(
             LoggerFactory parent,
             LoggerFactory fieldLogger,
+            double m,
+            double I,
             Gyro gyro,
             double trackWidthM,
             double wheelbaseM,
@@ -78,8 +81,9 @@ public class MecanumDrive100 extends SubsystemBase implements VelocitySubsystemS
         Translation2d rr = new Translation2d(-m_wheelbaseM / 2, -m_trackWidthM / 2);
         m_kinematics = new MecanumKinematics100(
                 log, slip, fl, fr, rl, rr);
+        m_dynamics = new MecanumDynamics(m, I, fl, fr, rl, rr);
         m_positions = new MecanumDriveWheelPositions();
-        m_input = new VelocitySE2(0, 0, 0);
+        m_input = VelocitySE2.ZERO;
         m_pose = new Pose2d();
         m_gyroOffset = new Rotation2d();
     }
@@ -101,13 +105,11 @@ public class MecanumDrive100 extends SubsystemBase implements VelocitySubsystemS
         ChassisSpeeds speed = SwerveKinodynamics.toInstantaneousChassisSpeeds(
                 nextV.velocity(), yaw);
         MecanumDriveWheelSpeeds mSpeed = m_kinematics.toWheelSpeeds(speed);
-        //
-        // TODO: implement dynamics.
-        //
-        m_frontLeft.setVelocity(mSpeed.frontLeftMetersPerSecond, 0);
-        m_frontRight.setVelocity(mSpeed.frontRightMetersPerSecond, 0);
-        m_rearLeft.setVelocity(mSpeed.rearLeftMetersPerSecond, 0);
-        m_rearRight.setVelocity(mSpeed.rearRightMetersPerSecond, 0);
+        MecanumEffort effort = m_dynamics.effort(nextV.acceleration());
+        m_frontLeft.setVelocity(mSpeed.frontLeftMetersPerSecond, effort.fl());
+        m_frontRight.setVelocity(mSpeed.frontRightMetersPerSecond, effort.fr());
+        m_rearLeft.setVelocity(mSpeed.rearLeftMetersPerSecond, effort.rl());
+        m_rearRight.setVelocity(mSpeed.rearRightMetersPerSecond, effort.rr());
         m_log_input.log(() -> nextV);
     }
 
