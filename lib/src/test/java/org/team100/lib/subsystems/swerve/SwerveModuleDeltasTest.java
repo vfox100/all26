@@ -23,22 +23,22 @@ public class SwerveModuleDeltasTest {
         {
             // straight diagonal path
             Twist2d t = new Twist2d(1, 1, 0);
-            SwerveModuleDeltas p = m_kinematics.toSwerveModuleDelta(t);
-            Twist2d t2 = m_kinematics.toTwist2d(p);
+            SwerveModuleDeltas p = m_kinematics.inverse(t);
+            Twist2d t2 = m_kinematics.forward(p);
             assertEquals(t, t2);
         }
         {
             // turning and moving
             Twist2d t = new Twist2d(1, 1, 1);
-            SwerveModuleDeltas p = m_kinematics.toSwerveModuleDelta(t);
-            Twist2d t2 = m_kinematics.toTwist2d(p);
+            SwerveModuleDeltas p = m_kinematics.inverse(t);
+            Twist2d t2 = m_kinematics.forward(p);
             assertEquals(t, t2);
         }
         {
             // turning and moving really fast
             Twist2d t = new Twist2d(10, 10, 10);
-            SwerveModuleDeltas p = m_kinematics.toSwerveModuleDelta(t);
-            Twist2d t2 = m_kinematics.toTwist2d(p);
+            SwerveModuleDeltas p = m_kinematics.inverse(t);
+            Twist2d t2 = m_kinematics.forward(p);
             assertEquals(t, t2);
         }
         Random random = new Random(0);
@@ -48,8 +48,8 @@ public class SwerveModuleDeltasTest {
                     random.nextDouble(),
                     random.nextDouble(),
                     random.nextDouble());
-            SwerveModuleDeltas p = m_kinematics.toSwerveModuleDelta(t);
-            Twist2d t2 = m_kinematics.toTwist2d(p);
+            SwerveModuleDeltas p = m_kinematics.inverse(t);
+            Twist2d t2 = m_kinematics.forward(p);
             assertEquals(t, t2);
         }
     }

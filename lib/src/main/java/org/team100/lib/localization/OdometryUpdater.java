@@ -213,7 +213,7 @@ public class OdometryUpdater {
             System.out.printf("modulePositionDelta %s\n", modulePositionDelta);
         }
 
-        Twist2d twist = m_kinodynamics.getKinematics().toTwist2d(modulePositionDelta);
+        Twist2d twist = m_kinodynamics.getKinematics().forward(modulePositionDelta);
         // add noise
         twist = m_noise.apply(twist);
         if (DEBUG) {

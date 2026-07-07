@@ -168,10 +168,10 @@ class SwerveKinodynamicsTest implements Timeless {
             ChassisSpeeds s = new ChassisSpeeds(0, 0, -9.38);
             // now discretizes.
             SwerveModuleStates ms = limits.toSwerveModuleStates(s);
-            assertEquals(3.316, ms.frontLeft().speedMetersPerSecond(), DELTA);
-            assertEquals(3.316, ms.frontRight().speedMetersPerSecond(), DELTA);
-            assertEquals(3.316, ms.rearLeft().speedMetersPerSecond(), DELTA);
-            assertEquals(3.316, ms.rearRight().speedMetersPerSecond(), DELTA);
+            assertEquals(3.316, ms.frontLeft().speed(), DELTA);
+            assertEquals(3.316, ms.frontRight().speed(), DELTA);
+            assertEquals(3.316, ms.rearLeft().speed(), DELTA);
+            assertEquals(3.316, ms.rearRight().speed(), DELTA);
         }
         {
             // with an extra ~2m/s, it's too fast
@@ -179,10 +179,10 @@ class SwerveKinodynamicsTest implements Timeless {
             SwerveModuleStates ms = limits.toSwerveModuleStates(s);
             // we no longer desaturate at this level: use the setpoint generator if you want
             // that.
-            assertEquals(5.035, ms.frontLeft().speedMetersPerSecond(), DELTA);
-            assertEquals(4.735, ms.frontRight().speedMetersPerSecond(), DELTA);
-            assertEquals(2.689, ms.rearLeft().speedMetersPerSecond(), DELTA);
-            assertEquals(2.074, ms.rearRight().speedMetersPerSecond(), DELTA);
+            assertEquals(5.035, ms.frontLeft().speed(), DELTA);
+            assertEquals(4.735, ms.frontRight().speed(), DELTA);
+            assertEquals(2.689, ms.rearLeft().speed(), DELTA);
+            assertEquals(2.074, ms.rearRight().speed(), DELTA);
 
             ChassisSpeeds i = limits.toChassisSpeedsWithDiscretization(ms, 0.02);
             // we get back what we put in

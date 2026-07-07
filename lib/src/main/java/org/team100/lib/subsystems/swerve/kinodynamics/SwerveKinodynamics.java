@@ -230,7 +230,7 @@ public class SwerveKinodynamics {
                 angle);
         // discretization does not affect omega
         DiscreteSpeed descretized = discretize(chassisSpeeds, dt);
-        SwerveModuleStates states = m_kinematics.toSwerveModuleStates(descretized);
+        SwerveModuleStates states = m_kinematics.inverse(descretized);
         return states;
     }
 
@@ -260,11 +260,8 @@ public class SwerveKinodynamics {
     public ChassisSpeeds toChassisSpeedsWithDiscretization(
             SwerveModuleStates moduleStates,
             double dt) {
-        ChassisSpeeds discreteSpeeds = m_kinematics.toChassisSpeeds(moduleStates);
-        Twist2d twist = new Twist2d(
-                discreteSpeeds.vxMetersPerSecond * dt,
-                discreteSpeeds.vyMetersPerSecond * dt,
-                discreteSpeeds.omegaRadiansPerSecond * dt);
+        DiscreteSpeed discreteSpeeds = m_kinematics.forward(moduleStates, dt);
+        Twist2d twist = discreteSpeeds.twist();
 
         Pose2d deltaPose = GeometryUtil.sexp(twist);
         ChassisSpeeds continuousSpeeds = new ChassisSpeeds(
@@ -272,7 +269,7 @@ public class SwerveKinodynamics {
                 deltaPose.getY(),
                 deltaPose.getRotation().getRadians()).div(dt);
 
-        double omega = discreteSpeeds.omegaRadiansPerSecond;
+        double omega = twist.dtheta / dt;
         // This is the opposite direction
         Rotation2d angle = new Rotation2d(VeeringCorrection.correctionRad(omega));
         return ChassisSpeeds.fromFieldRelativeSpeeds(

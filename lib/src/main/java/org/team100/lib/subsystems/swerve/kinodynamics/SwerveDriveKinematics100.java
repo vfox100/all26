@@ -1,61 +1,68 @@
 package org.team100.lib.subsystems.swerve.kinodynamics;
 
-import java.util.Arrays;
-
-import org.ejml.simple.SimpleMatrix;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleDelta;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleDeltas;
-import org.team100.lib.subsystems.swerve.module.state.SwerveModulePositions;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleState100;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleStates;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
 
 /**
- * Helper class that converts between chassis state and module state.
+ * The Jacobians of the swerve kinematics, relating velocities of the
+ * wheels (qdot) to velocity of the whole robot (xdot).
+ * 
+ * We also use the Jacobian to relate small *differences* in wheels (dq), a
+ * "delta", to *differences* in robot pose (dx), a "twist." For these cases,
+ * we assume the wheel steering is constant across the difference, always using
+ * the "end state" as the steering value.
+ * 
+ * So the definitions are:
+ * 
+ * speeds:
+ * 
+ * xdot: [vx; vy; omega]
+ * qdot: [vx0; vy0; vx1; vy1; vx2; vy2; vx3; vy3]
+ * 
+ * differences:
+ * 
+ * dx: [dx; dy; dtheta]
+ * dq: [dx0; dy0; dx1; dy1; dx2; dy2; dx3; dy3]
+ * 
+ * Don't mix these up!
+ * 
+ * For the swerve drive, it is easier to start with the inverse Jacobian
+ * (robot -> wheels) and invert it to get the forward Jacobian.
+ * 
+ * Note: the Jacobians are relative to the robot reference frame, not the
+ * field reference frame.
  * 
  * Note: forward kinematics is never more accurate than the gyro and we
  * absolutely cannot operate without a functional gyro, so we should use the
  * gyro instead. see https://github.com/Team100/all24/issues/350
  */
 public class SwerveDriveKinematics100 {
-    private final int m_numModules;
-    private final Translation2d[] m_moduleLocations;
 
     /**
-     * this (2n x 3) matrix looks something like
+     * Because the kinematics covered here are in terms of velocities, the
+     * "forward kinematics matrix" is *the Jacobian*:
      * 
-     * <pre>
-     * 1   0  -y1
-     * 0   1   x1
-     * 1   0  -y2
-     * 0   1   x2
-     * ...
-     * </pre>
+     * xdot = J qdot
      * 
-     * the chassis speed vector is something like
+     * where qdot is the velocity of the actuators (i.e. wheels), and xdot is
+     * the velocity of the end-effector (i.e. center of the robot).
      * 
-     * <pre>
-     * vx  vy  omega
-     * </pre>
+     * Because there are 8 degrees of freedom in the wheels, and three degrees
+     * of freedom in the robot, this matrix is 3x8.
      * 
-     * when these are multiplied, the result is
-     * 
-     * <pre>
-     * vx - y1 omega = vx1
-     * vy + x1 omega = vy1
-     * vx - y2 omega = vx2
-     * vy + x2 omega = xy2
-     * ...
-     * </pre>
-     */
-
-    final SimpleMatrix m_inverseKinematics;
-    /**
-     * like this:
-     * this (3 x 2n) matrix is the pseudo-inverse of above, which ends up something
+     * It ends up something like:
      * 
      * <pre>
      *  0.25 0.00 0.25 0.00 ...
@@ -65,17 +72,7 @@ public class SwerveDriveKinematics100 {
      * 
      * the last row depends on the drive dimensions.
      * 
-     * the module state vector is something like
-     * 
-     * <pre>
-     * vx1
-     * vy1
-     * vx2
-     * vy2
-     * ...
-     * </pre>
-     * 
-     * so when multiplied, the result is
+     * so when multiplied by qdot, the result is xdot:
      * 
      * <pre>
      * mean(vx)
@@ -83,223 +80,156 @@ public class SwerveDriveKinematics100 {
      * some combination depending on dimensions
      * </pre>
      */
-    final SimpleMatrix m_forwardKinematics;
+    final Matrix<N3, N8> m_J;
 
     /**
-     * array order:
+     * Because the kinematics covered here are in terms of velocities, the
+     * "reverse kinematics matrix" is *the inverse Jacobian*:
      * 
-     * frontLeft
-     * frontRight
-     * rearLeft
-     * rearRight
+     * qdot = Jinv xdot
      * 
-     * @param moduleTranslationsM relative to the center of rotation
+     * where xdot is the velocity of the end-effector (i.e. center of the robot),
+     * and qdot is the velocity of the actuators (i.e. wheels).
+     * 
+     * Because there are 8 degrees of freedom in the wheels, and three degrees
+     * of freedom in the robot, this matrix is 3x8.
+     * 
+     * It ends up something like:
+     * 
+     * <pre>
+     * 1   0  -y0
+     * 0   1   x0
+     * 1   0  -y1
+     * 0   1   x1
+     * ...
+     * </pre>
+     * 
+     * when multiplied by xdot, the result is qdot:
+     * 
+     * <pre>
+     * vx - y0 * omega
+     * vy + x0 * omega
+     * vx - y1 * omega
+     * vy + x1 * omega
+     * ...
+     * </pre>
+     * 
+     * This vector is tranformed into the module states (or deltas)
+     * 
+     * Note: the states may include empty angles for motionless wheels
+     * Note: the state speeds are always positive.
      */
-    public SwerveDriveKinematics100(Translation2d... moduleTranslationsM) {
-        checkModuleCount(moduleTranslationsM);
-        m_numModules = moduleTranslationsM.length;
-        m_moduleLocations = Arrays.copyOf(moduleTranslationsM, m_numModules);
-        m_inverseKinematics = inverseMatrix(m_moduleLocations);
-        m_forwardKinematics = m_inverseKinematics.pseudoInverse();
+    final Matrix<N8, N3> m_Jinv;
+
+    /**
+     * Translations are relative to the center (i.e. usually half the wheelbase).
+     */
+    public SwerveDriveKinematics100(
+            Translation2d frontLeft,
+            Translation2d frontRight,
+            Translation2d rearLeft,
+            Translation2d rearRight) {
+        m_Jinv = Jinv(frontLeft, frontRight, rearLeft, rearRight);
+        m_J = new Matrix<>(m_Jinv.getStorage().pseudoInverse());
     }
 
-    /**
-     * INVERSE: chassis speeds -> module states
-     * 
-     * The resulting module state speeds are always positive.
-     * 
-     * States may include empty angles for motionless wheels.
-     * 
-     * Angles are otherwise always within [-pi, pi].
-     */
-    public SwerveModuleStates toSwerveModuleStates(DiscreteSpeed speed) {
-        // [vx; vy; omega] (3 x 1)
-        SimpleMatrix chassisSpeedsVector = chassisSpeeds2Vector(speed);
-        // [v cos; v sin; ...] (2n x 1)
-        return statesFromVector(chassisSpeedsVector);
+    public DiscreteSpeed forward(SwerveModuleStates states, double dt) {
+        return speed(new Vector<>(m_J.times(qdot(states))), dt);
     }
 
-    /**
-     * INVERSE: twist -> module position deltas
-     * 
-     * This assumes the wheel paths are geodesics; steering does not change.
-     * 
-     * Only used in tests for now.
-     * 
-     * States may include empty angles for motionless wheels.
-     */
-    public SwerveModuleDeltas toSwerveModuleDelta(Twist2d twist) {
-        // [dx; dy; dtheta] (3 x 1)
-        SimpleMatrix twistVector = twist2Vector(twist);
-        // [d cos; d sin; ...] (2n x 1)
-        SimpleMatrix deltaVector = m_inverseKinematics.mult(twistVector);
-        return deltasFromVector(deltaVector);
+    public Twist2d forward(SwerveModuleDeltas deltas) {
+        return twist(new Vector<>(m_J.times(dq(deltas))));
     }
 
-    /**
-     * Find the module deltas and apply them to the given initial positions.
-     */
-    public SwerveModulePositions toSwerveModulePositions(
-            SwerveModulePositions initial,
-            Twist2d twist) {
-        SwerveModuleDeltas deltas = toSwerveModuleDelta(twist);
-        return SwerveModulePositions.modulePositionFromDelta(initial, deltas);
+    public SwerveModuleStates inverse(DiscreteSpeed speed) {
+        return states(new Vector<>(m_Jinv.times(xdot(speed))));
     }
 
-    /**
-     * FORWARD: module states -> chassis speeds
-     */
-    public ChassisSpeeds toChassisSpeeds(SwerveModuleStates states) {
-        // checkLength(states);
-        // [v cos; v sin; ...] (2n x 1)
-        SimpleMatrix statesVector = states2Vector(states);
-        // [vx; vy; omega]
-        SimpleMatrix chassisSpeedsVector = m_forwardKinematics.mult(statesVector);
-        return vector2ChassisSpeeds(chassisSpeedsVector);
-    }
-
-    /**
-     * FORWARD: module deltas -> twist.
-     * 
-     * assumes the module deltas represent straight lines.
-     * 
-     * NOTE: do not use the returned dtheta, use the gyro instead.
-     * 
-     * NOTE: this twist represents the "discrete" motion of the robot; don't use it
-     * as if it were the instantaneous speed.
-     */
-    public Twist2d toTwist2d(SwerveModuleDeltas deltas) {
-        // [d cos; d sin; ...] (2n x 1)
-        SimpleMatrix deltaVector = deltas2Vector(deltas);
-        // [dx ;dy; dtheta]
-        SimpleMatrix twistVector = m_forwardKinematics.mult(deltaVector);
-        return vector2Twist(twistVector);
+    public SwerveModuleDeltas inverse(Twist2d twist) {
+        return deltas(new Vector<>(m_Jinv.times(dx(twist))));
     }
 
     ///////////////////////////////////////
 
-    /** states -> [v cos; v sin; ... v cos; v sin] (2n x 1) */
-    private SimpleMatrix states2Vector(SwerveModuleStates moduleStates) {
-        SwerveModuleState100[] moduleStatesAll = moduleStates.all();
-        SimpleMatrix moduleStatesMatrix = new SimpleMatrix(m_numModules * 2, 1);
-        for (int i = 0; i < m_numModules; i++) {
-            SwerveModuleState100 module = moduleStatesAll[i];
-            if (Math.abs(module.speedMetersPerSecond()) < 1e-6 || module.angle().isEmpty()) {
-                // wheel is stopped, or angle is invalid so pretend it's stopped.
-                moduleStatesMatrix.set(i * 2, 0, 0);
-                moduleStatesMatrix.set(i * 2 + 1, 0, 0);
-            } else {
-                moduleStatesMatrix.set(i * 2, 0, module.speedMetersPerSecond() * module.angle().get().getCos());
-                moduleStatesMatrix.set(i * 2 + 1, 0, module.speedMetersPerSecond() * module.angle().get().getSin());
-
-            }
-        }
-        return moduleStatesMatrix;
+    private static Vector<N8> qdot(SwerveModuleStates states) {
+        return VecBuilder.fill(
+                states.frontLeft().vx(),
+                states.frontLeft().vy(),
+                states.frontRight().vx(),
+                states.frontRight().vy(),
+                states.rearLeft().vx(),
+                states.rearLeft().vy(),
+                states.rearRight().vx(),
+                states.rearRight().vy());
     }
 
-    /**
-     * produces a vector of corner dx and dy, assuming the module deltas represent
-     * straight line paths.
-     * 
-     * @param moduleDeltas [d cos; d sin; ... ] (2n x 1)
-     */
-    private SimpleMatrix deltas2Vector(SwerveModuleDeltas moduleDeltas) {
-        SwerveModuleDelta[] deltas = moduleDeltas.all();
-        SimpleMatrix moduleDeltaMatrix = new SimpleMatrix(m_numModules * 2, 1);
-        for (int i = 0; i < m_numModules; i++) {
-            SwerveModuleDelta module = deltas[i];
-            if (Math.abs(module.distanceMeters()) < 1e-6 || module.wrappedAngle().isEmpty()) {
-                moduleDeltaMatrix.set(i * 2, 0, 0);
-                moduleDeltaMatrix.set(i * 2 + 1, 0, 0);
-            } else {
-                moduleDeltaMatrix.set(i * 2, 0, module.distanceMeters() * module.wrappedAngle().get().getCos());
-                moduleDeltaMatrix.set(i * 2 + 1, 0, module.distanceMeters() * module.wrappedAngle().get().getSin());
-            }
-        }
-        return moduleDeltaMatrix;
+    private Vector<N8> dq(SwerveModuleDeltas deltas) {
+        return VecBuilder.fill(
+                deltas.frontLeft().dx(),
+                deltas.frontLeft().dy(),
+                deltas.frontRight().dx(),
+                deltas.frontRight().dy(),
+                deltas.rearLeft().dx(),
+                deltas.rearLeft().dy(),
+                deltas.rearRight().dx(),
+                deltas.rearRight().dy());
     }
 
-    /** ChassisSpeeds -> [vx; vy; omega] (3 x 1) */
-    private SimpleMatrix chassisSpeeds2Vector(DiscreteSpeed speed) {
-        SimpleMatrix chassisSpeedsVector = new SimpleMatrix(3, 1);
-        chassisSpeedsVector.setColumn(
-                0,
-                0,
+    private static Vector<N3> xdot(DiscreteSpeed speed) {
+        return VecBuilder.fill(
                 speed.twist().dx / speed.dt(),
                 speed.twist().dy / speed.dt(),
                 speed.twist().dtheta / speed.dt());
-        return chassisSpeedsVector;
     }
 
-    /** Twist as a 3x1 column vector: [dx; dy; dtheta] */
-    private static SimpleMatrix twist2Vector(Twist2d twist) {
-        return new SimpleMatrix(new double[] {
-                twist.dx,
-                twist.dy,
-                twist.dtheta });
+    private static Vector<N3> dx(Twist2d twist) {
+        return VecBuilder.fill(twist.dx, twist.dy, twist.dtheta);
     }
 
-    /** [vx; vy; omega] (3 x 1) -> ChassisSpeeds */
-    private static ChassisSpeeds vector2ChassisSpeeds(SimpleMatrix v) {
-        return new ChassisSpeeds(v.get(0, 0), v.get(1, 0), v.get(2, 0));
-    }
-
-    /** [dx; dy; dtheta] (3 x 1) -> Twist2d */
-    private static Twist2d vector2Twist(SimpleMatrix v) {
-        return new Twist2d(v.get(0, 0), v.get(1, 0), v.get(2, 0));
-    }
-
-    /**
-     * [v cos; v sin; ... ] (2n x 1) -> states[]
-     * 
-     * Speed is always non-negative.
-     * 
-     * Angle can be empty if speed is about zero.
-     * Otherwise angle is always within [-pi, pi].
-     * 
-     * @param chassisSpeedsVector [vx0; vy0; vx1; ...]
-     */
-    SwerveModuleStates statesFromVector(SimpleMatrix chassisSpeedsVector) {
-        SimpleMatrix m = m_inverseKinematics.mult(chassisSpeedsVector);
+    private SwerveModuleStates states(Vector<N8> qdot) {
         return new SwerveModuleStates(
-                SwerveModuleState100.fromSpeed(m.get(0, 0), m.get(1, 0)),
-                SwerveModuleState100.fromSpeed(m.get(2, 0), m.get(3, 0)),
-                SwerveModuleState100.fromSpeed(m.get(4, 0), m.get(5, 0)),
-                SwerveModuleState100.fromSpeed(m.get(6, 0), m.get(7, 0)));
+                SwerveModuleState100.fromSpeed(qdot.get(0), qdot.get(1)),
+                SwerveModuleState100.fromSpeed(qdot.get(2), qdot.get(3)),
+                SwerveModuleState100.fromSpeed(qdot.get(4), qdot.get(5)),
+                SwerveModuleState100.fromSpeed(qdot.get(6), qdot.get(7)));
     }
 
-    public Translation2d[] getModuleLocations() {
-        return m_moduleLocations;
+    private SwerveModuleDeltas deltas(Vector<N8> dq) {
+        return new SwerveModuleDeltas(
+                new SwerveModuleDelta(dq.get(0), dq.get(1)),
+                new SwerveModuleDelta(dq.get(2), dq.get(3)),
+                new SwerveModuleDelta(dq.get(4), dq.get(5)),
+                new SwerveModuleDelta(dq.get(6), dq.get(7)));
+    }
+
+    private DiscreteSpeed speed(Vector<N3> xdot, double dt) {
+        return new DiscreteSpeed(new Twist2d(
+                xdot.get(0) * dt,
+                xdot.get(1) * dt,
+                xdot.get(2) * dt), dt);
+    }
+
+    private Twist2d twist(Vector<N3> dx) {
+        return new Twist2d(dx.get(0), dx.get(1), dx.get(2));
     }
 
     /**
-     * The resulting distance is always positive.
-     * 
-     * @param moduleDeltaVector [d cos; d sin; ...] (2n x 1),
-     *                          equivalently [dx0; dy0; dx1; ...]
+     * Inverse Jacobian, 8x3, given module translations relative to the tool center
+     * point (robot center).
      */
-    private SwerveModuleDeltas deltasFromVector(SimpleMatrix moduleDeltaVector) {
-        return new SwerveModuleDeltas(
-                new SwerveModuleDelta(moduleDeltaVector.get(0, 0), moduleDeltaVector.get(1, 0)),
-                new SwerveModuleDelta(moduleDeltaVector.get(2, 0), moduleDeltaVector.get(3, 0)),
-                new SwerveModuleDelta(moduleDeltaVector.get(4, 0), moduleDeltaVector.get(5, 0)),
-                new SwerveModuleDelta(moduleDeltaVector.get(6, 0), moduleDeltaVector.get(7, 0)));
-    }
-
-    /** module locations -> inverse kinematics matrix (2n x 3) */
-    private static SimpleMatrix inverseMatrix(Translation2d[] moduleLocations) {
-        int numModules = moduleLocations.length;
-        SimpleMatrix inverseKinematics = new SimpleMatrix(numModules * 2, 3);
-        for (int i = 0; i < numModules; i++) {
-            inverseKinematics.setRow(i * 2 + 0, 0, 1, 0, -moduleLocations[i].getY());
-            inverseKinematics.setRow(i * 2 + 1, 0, 0, 1, +moduleLocations[i].getX());
-        }
-        return inverseKinematics;
-    }
-
-    private void checkModuleCount(Translation2d... moduleTranslationsM) {
-        if (moduleTranslationsM.length < 2) {
-            throw new IllegalArgumentException("Swerve requires at least two modules");
-        }
+    private static Matrix<N8, N3> Jinv(
+            Translation2d frontLeft,
+            Translation2d frontRight,
+            Translation2d rearLeft,
+            Translation2d rearRight) {
+        return MatBuilder.fill(Nat.N8(), Nat.N3(),
+                1, 0, -1.0 * frontLeft.getY(),
+                0, 1, frontLeft.getX(),
+                1, 0, -1.0 * frontRight.getY(),
+                0, 1, frontRight.getX(),
+                1, 0, -1.0 * rearLeft.getY(),
+                0, 1, rearLeft.getX(),
+                1, 0, -1.0 * rearRight.getY(),
+                0, 1, rearRight.getX());
     }
 }

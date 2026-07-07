@@ -51,7 +51,7 @@ public class SwerveStateInterpolator implements Interpolator<SwerveState> {
         // sensor inputs.
         SwerveModuleDeltas delta = SwerveModuleDeltas.modulePositionDelta(
                 startValue.positions(), wheelLerp);
-        Twist2d twist = m_kinematics.toTwist2d(delta);
+        Twist2d twist = m_kinematics.forward(delta);
         Pose2d pose = startValue.state().pose().exp(twist);
 
         // These lerps are wrong but maybe close enough

@@ -113,16 +113,16 @@ public class SimulatedDrivingTest implements Timeless {
         double dt = 0.02;
         SwerveModulePositions endPositions = new SwerveModulePositions(
                 new SwerveModulePosition100(
-                        states.frontLeft().speedMetersPerSecond() * dt,
+                        states.frontLeft().speed() * dt,
                         states.frontLeft().angle()),
                 new SwerveModulePosition100(
-                        states.frontRight().speedMetersPerSecond() * dt,
+                        states.frontRight().speed() * dt,
                         states.frontRight().angle()),
                 new SwerveModulePosition100(
-                        states.rearLeft().speedMetersPerSecond() * dt,
+                        states.rearLeft().speed() * dt,
                         states.rearLeft().angle()),
                 new SwerveModulePosition100(
-                        states.rearRight().speedMetersPerSecond() * dt,
+                        states.rearRight().speed() * dt,
                         states.rearRight().angle()));
 
         SwerveModuleDeltas modulePositionDelta = SwerveModuleDeltas.modulePositionDelta(
@@ -131,7 +131,7 @@ public class SimulatedDrivingTest implements Timeless {
         if (DEBUG)
             System.out.printf("%s\n", modulePositionDelta);
 
-        Twist2d twist = swerveKinodynamics.getKinematics().toTwist2d(modulePositionDelta);
+        Twist2d twist = swerveKinodynamics.getKinematics().forward(modulePositionDelta);
 
         Pose2d deltaPose = GeometryUtil.sexp(twist);
         ChassisSpeeds continuousSpeeds = new ChassisSpeeds(

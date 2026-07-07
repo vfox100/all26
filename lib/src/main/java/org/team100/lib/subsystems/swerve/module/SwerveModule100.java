@@ -199,7 +199,7 @@ public abstract class SwerveModule100 implements Player {
 
         // Adjust the drive speed to compensate for steering movement.
         double nextSpeed = correctSpeedForSteering(
-                nextWrapped.speedMetersPerSecond(),
+                nextWrapped.speed(),
                 nextOmega,
                 dt);
         m_log_speed.log(() -> nextSpeed);
@@ -303,7 +303,7 @@ public abstract class SwerveModule100 implements Player {
     private SwerveModuleState100 usePreviousAngleIfEmpty(SwerveModuleState100 desired) {
         if (desired.angle().isEmpty()) {
             return new SwerveModuleState100(
-                    desired.speedMetersPerSecond(),
+                    desired.speed(),
                     Optional.of(m_previousDesiredWrappedAngle));
         }
         return desired;

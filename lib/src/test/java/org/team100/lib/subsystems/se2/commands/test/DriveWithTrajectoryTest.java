@@ -206,7 +206,7 @@ public class DriveWithTrajectoryTest implements Timeless {
                 swerveLocal);
 
         // initially at rest
-        assertEquals(0, collection.states().frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(0, collection.states().frontLeft().speed(), DELTA);
         assertEquals(0, collection.states().frontLeft().angle().get().getRadians(), DELTA);
 
         DriveWithTrajectory command = new DriveWithTrajectory(
@@ -216,20 +216,20 @@ public class DriveWithTrajectoryTest implements Timeless {
 
         command.execute();
         // but that output is not available until after takt.
-        assertEquals(0, collection.states().frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(0, collection.states().frontLeft().speed(), DELTA);
         assertEquals(0, collection.states().frontLeft().angle().get().getRadians(), DELTA);
 
         // drive normally more
         stepTime();
         command.execute();
         // this is the output from the previous takt
-        assertEquals(0.033, collection.states().frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(0.033, collection.states().frontLeft().speed(), DELTA);
         assertEquals(0, collection.states().frontLeft().angle().get().getRadians(), DELTA);
 
         // etc
         stepTime();
         command.execute();
-        assertEquals(0.064, collection.states().frontLeft().speedMetersPerSecond(), DELTA);
+        assertEquals(0.064, collection.states().frontLeft().speed(), DELTA);
         assertEquals(0, collection.states().frontLeft().angle().get().getRadians(), DELTA);
     }
 
