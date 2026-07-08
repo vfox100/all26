@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * duty cycle input.
  */
 public class DiscusBare extends SubsystemBase {
-    private static final double SCALE = 0.01;
+    private static final double SCALE = 0.05;
     private static final double SUPPLY_LIMIT = 5;
     private static final double STATOR_LIMIT = 5;
     private final BareMotor m_motor;
