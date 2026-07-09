@@ -1,0 +1,47 @@
+plugins {
+    // https://docs.gradle.org/current/userguide/distribution_plugin.html
+    id 'distribution'
+    // https://gradle-ssh-plugin.github.io/docs/
+    id 'org.hidetake.ssh' version '2.12.0'
+}
+
+// Make the zip file.
+//
+// To run this task, choose "Tasks >> distribution >> distZip" from the vscode
+// gradle menu, or type ""./gradlew distZip" at the command line.
+distributions {
+    main {
+        distributionBaseName = 'app'
+        contents {
+            from ('app') {
+                into('/app')
+            }
+            exclude '**/__pycache__'
+        }
+    }
+}
+
+// Camera remotes.
+remotes {
+    camera30 { host = '10.1.0.30'; user = 'pi'; password = 'raspberry' }
+    camera31 { host = '10.1.0.31'; user = 'pi'; password = 'raspberry' }
+    camera32 { host = '10.1.0.32'; user = 'pi'; password = 'raspberry' }
+    camera33 { host = '10.1.0.33'; user = 'pi'; password = 'raspberry' }
+}
+
+// Deploy to all cameras.
+task deployAll {
+    dependsOn distZip
+    doLast {
+        ssh.run {
+            settings { inParallel = true } 
+            session(remotes) {
+                // TODO: where should it go?
+                put from: 'runapp.py', into: '/tmp'
+                put from: distZip.archiveFile.get().asFile, into: '/tmp'
+                // TODO: how does supervisor know about it?
+                execute 'supervisorctl restart python-app'
+            }
+        }
+    }
+}
