@@ -35,9 +35,9 @@ public class DiscusServo extends SubsystemBase {
     private static final double POSITION_TOLERANCE = 0.05;
     private static final double VELOCITY_TOLERANCE = 0.05;
     /** Low current limits */
-    private static final double SUPPLY_LIMIT = 20;
-    private static final double STATOR_LIMIT = 20;
-    private static final double MAX_VELOCITY = 20; // rad/s
+    private static final double SUPPLY_LIMIT = 100;
+    private static final double STATOR_LIMIT = 100;
+    private static final double MAX_VELOCITY = 10; // rad/s
     private static final double MAX_ACCEL = 20; // rad/s/s
 
     private final ProxyRotaryPositionSensor m_sensorP1;
@@ -48,7 +48,7 @@ public class DiscusServo extends SubsystemBase {
         LoggerFactory loggerP1 = logger.name("p1");
 
         // zeros
-        PIDConstants pid = PIDConstants.makePositionPID(logger, 5.0, 0, 0.12); // d = 0.12 was experimentally found
+        PIDConstants pid = PIDConstants.makePositionPID(logger, 1.0, 0, 0.05); // d = 0.12 was experimentally found
         SimpleDynamics ff = new SimpleDynamics(logger, 0, 0);
         Friction friction = new Friction(logger, 0, 0, 0, 0);
         ProfileR1 profile = new TrapezoidProfileR1(
@@ -92,7 +92,8 @@ public class DiscusServo extends SubsystemBase {
     }
 
     public void setPosition(double p1) {
-        m_servoP1.setPositionProfiled(p1, 0);
+        // m_servoP1.setPositionProfiled(p1, 0);
+        m_servoP1.actuateWithProfile(p1, 0);
     }
 
     public double getPosition() {
