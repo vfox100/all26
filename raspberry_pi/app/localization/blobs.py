@@ -87,11 +87,11 @@ class Blobs(ColorAnalysis):
             cX: int = int(mmnts["m10"] / mmnts["m00"])
             cY: int = int(mmnts["m01"] / mmnts["m00"])
 
-            if mmnts["m00"] < 500 or mmnts["m00"] > (
-                (30000) * ((self._height / 2) / (self._height - cY + 1))
-            ):  # Minimum contour area
+            # Calculates how big the object is based on how far (high in the image) it is.
+            min_area = 100
+            max_area = (300000) * ((self._height / 2) / (self._height - cY + 1))
+            if mmnts["m00"] < min_area or mmnts["m00"] > max_area:
                 continue
-                # calculates how big the object is based on how far it is.
 
             points_to_undistort.append([cX, cY])
             contour_info.append((contour, cX, cY))

@@ -16,7 +16,7 @@ from app.util.timestamps import Timestamps
 
 
 class CombinedDetector(DetectorBase):
-    """A combined detector for AprilTags and colored objects."""
+    """A detector for both color and monochrome analysis."""
 
     def __init__(
         self,
@@ -65,36 +65,44 @@ class CombinedDetector(DetectorBase):
 
             decoder: Decoder = req.decoder()
 
+            # Images for analysis, do not modify.
             img_bgr = None
             img_mono = None
+            # Image for display, ok to modify.
+            img_display = None
 
-            # Image for analysis, do not modify.
-            img_bgr = decoder.color(buffer)
-            if img_bgr is None:
-                return
+            if self._analyzer_color:
+                img_bgr = decoder.color(buffer)
+                if img_bgr is None:
+                    return
+            if self._analyzer_mono:
+                if img_bgr is not None:
+                    # Convert BGR to grayscale.
+                    img_mono = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+                    img_mono = np.ascontiguousarray(img_mono)
+                else:
+                    # Decode to mono.
+                    img_mono = decoder.mono(buffer)
+                    if img_mono is None:
+                        return
+
+            if img_bgr is not None:
+                img_display = img_bgr.copy()
+            else:
+                img_display = img_mono.copy()
 
             if self._network.calibrate():
                 # Save the raw image for calibration if requested
-                self.write_calibration_image(img_bgr)
+                self.write_calibration_image(img_display)
 
             if self._network.undistort_view():
                 # Show the undistorted image only if requested.
-                self._display2.put(cv2.undistort(img_bgr, self._mtx, self._dist))
+                self._display2.put(cv2.undistort(img_display, self._mtx, self._dist))
 
-            # Convert BGR to grayscale for tag detection.
-            img_mono = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-            img_mono = np.ascontiguousarray(img_mono)
-
-            # Image for display, with annotations.
-            # prefer the color one if it exists, otherwise use the mono one.
-            img_display = (img_bgr or img_mono).copy()
-
-            # tag detection uses the mono image.
-            if self._analyzer_mono:
+            if img_mono is not None:
                 self._analyzer_mono.analyze_mono(img_mono, img_display, servertime)
 
-            # object detection uses the color image.
-            if self._analyzer_color:
+            if img_bgr is not None:
                 self._analyzer_color.analyze_color(img_bgr, img_display, servertime)
 
             # Send camera FPS to network.

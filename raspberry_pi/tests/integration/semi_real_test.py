@@ -50,13 +50,14 @@ class SemiRealTest(unittest.TestCase):
         display2: Display = LinuxDisplay("display2", 1100, 620)
         network: Network = RealNetwork(identity, done)
         timestamps = Timestamps(network)
-        interpreter: Interpreter = TagDetector(
+        interpreter: Interpreter = CombinedDetector(
             camera,
             display1,
             display2,
             network,
             timestamps,
             AprilTags(identity, camera, network),
+            None,
         )
         camera_loop: CameraLoop = CameraLoop(camera, interpreter, done)
         thread: Thread = Thread(target=camera_loop.run)
@@ -93,12 +94,13 @@ class SemiRealTest(unittest.TestCase):
 
         object_lower = np.array((0, 50, 100))
         object_higher = np.array((30, 255, 255))
-        interpreter: Interpreter = TargetDetector(
+        interpreter: Interpreter = CombinedDetector(
             camera,
             display1,
             display2,
             network,
             timestamps,
+            None,
             Blobs(camera, network, object_lower, object_higher),
         )
         camera_loop: CameraLoop = CameraLoop(camera, interpreter, done)
