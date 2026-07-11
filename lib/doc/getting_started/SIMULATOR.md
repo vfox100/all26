@@ -32,6 +32,3 @@ Use the WPI extensions to kick off the Simulator. Good overall instructions are 
     ![Alt text](readme_img/ugly_traj.png)
     1. Click the Hamburger Menu in the top-right of the field window, select Trajectory, and turn off the Arrows. You should get a nicer one like this:
     ![Alt text](readme_img/nice_traj.png)
-
-# Next Steps
-Congrats, you now know how to work with the Simulator. Let's take on our first real Comp project changes in the [Teleop Readme](README_6_TELEOP.md).
