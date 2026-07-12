@@ -2,7 +2,7 @@
 
 from threading import Event
 
-from typing_extensions import override
+from typing import override
 
 from app.camera.camera_protocol import Camera
 from app.interpreter.interpreter_protocol import Interpreter

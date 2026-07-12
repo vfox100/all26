@@ -2,7 +2,7 @@
 
 from queue import Queue
 from threading import Event, Thread
-from typing_extensions import override
+from typing import override
 
 import ntcore
 from app.config.identity import Identity

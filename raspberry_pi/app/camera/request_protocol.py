@@ -2,7 +2,7 @@
 
 from typing import Protocol
 from contextlib import AbstractContextManager
-from typing_extensions import Buffer
+from collections.abc import Buffer
 from app.decoder.decoder_protocol import Decoder
 
 

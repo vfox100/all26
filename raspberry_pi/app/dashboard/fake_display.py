@@ -1,5 +1,5 @@
 from cv2.typing import MatLike
-from typing_extensions import override
+from typing import override
 from app.dashboard.display_protocol import Display
 
 

@@ -50,7 +50,7 @@ class AprilTags(MonoAnalysis):
     def analyze_mono(
         self,
         img: MatLike,
-        img_display: MatLike,
+        img_display: MatLike | None,
         servertime: int,
     ) -> None:
         """Detect from img, show on img_display, undistort, extract pose,
@@ -92,7 +92,8 @@ class AprilTags(MonoAnalysis):
             blips_with_corners.append(
                 BlipWithCorners.make(servertime, tag.getId(), raw_corners, pose)
             )
-            DisplayUtil.tag(img_display, tag, pose)
+            if img_display is not None:
+                DisplayUtil.tag(img_display, tag, pose)
 
         self._blips.send(blips)
         self._blips_with_corners.send(blips_with_corners)

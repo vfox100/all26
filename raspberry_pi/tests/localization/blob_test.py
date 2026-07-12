@@ -1,25 +1,17 @@
-# pylint: disable=E1101
+# pylint: disable=E1101,W0212
+
 import unittest
-
 import numpy as np
-import cv2
-
-from numpy.typing import NDArray
-
 from app.camera.fake_camera import FakeCamera
-from app.dashboard.fake_display import FakeDisplay
 from app.localization.blobs import Blobs
-from app.localization.target_detector import TargetDetector
 from app.network.structs import Target
 from app.network.fake_network import FakeNetwork
-from app.util.timestamps import Timestamps
 
 
-class TargetDetectorTest(unittest.TestCase):
+class BlobTest(unittest.TestCase):
 
     def test_one_note_found(self) -> None:
         network = FakeNetwork()
-        timestamps = Timestamps(network)
         # this has a blob that matches the
         # HSV range in the note detector
         # the blob is in the lower right quadrant, so the result
@@ -29,24 +21,13 @@ class TargetDetectorTest(unittest.TestCase):
         # GREEN PRACTICE TARGET
         # no distortion
         camera = FakeCamera("images/green_blob.jpg")
-        display1 = FakeDisplay()
-        display2 = FakeDisplay()
 
         # GREEN TARGET VALUES
         object_lower = np.array((40, 50, 100))
         object_higher = np.array((70, 255, 255))
-        note_detector = TargetDetector(
-            camera,
-            display1,
-            display2,
-            network,
-            timestamps,
-            Blobs(camera, network, object_lower, object_higher),
-        )
-        request = camera.capture_request()
-        note_detector.interpret(request)
 
-        self.assertEqual(1, display1.frame_count)
+        blobs = Blobs(camera, network, object_lower, object_higher)
+        blobs.analyze_color(camera._img, None, 0)  # type: ignore
 
         rots: list[Target] = network.targets
         self.assertEqual(1, len(rots))
@@ -66,56 +47,16 @@ class TargetDetectorTest(unittest.TestCase):
         self.assertAlmostEqual(-0.052, q.Z(), delta=0.001)
         self.assertAlmostEqual(0.997, q.W(), delta=0.001)
 
-    def test_inverse(self) -> None:
-        # 3d model of the green blob
-        points = np.array([[[98, 114, 935]]], dtype=np.float32)
-        rvec = np.zeros((3, 1), np.float32)
-        tvec: NDArray[np.float32] = np.zeros((3, 1), np.float32)
-
-        mtx: NDArray[np.float32] = np.array(
-            [
-                [935, 0, 400],
-                [0, 935, 300],
-                [0, 0, 1],
-            ],
-            dtype=np.float32,
-        )
-        # undistorted camera duplicates the points above
-        dst = np.array([0, 0, 0, 0], dtype=np.float32)
-        uv, _ = cv2.projectPoints(points, rvec, tvec, mtx, dst)
-        p = uv[0][0]
-        self.assertEqual(498, p[0])
-        self.assertEqual(414, p[1])
-
-        # now with the distorted camera
-        dst = np.array([-7, 0, 0, 0], dtype=np.float32)
-        uv, _ = cv2.projectPoints(points, rvec, tvec, mtx, dst)
-        p = uv[0][0]
-        self.assertAlmostEqual(480.3, p[0], 1)
-        self.assertAlmostEqual(393.4, p[1], 1)
-
     def test_target_undistort(self) -> None:
         # "barrel" to keep the blob in the frame
         camera = FakeCamera("images/green_blob.jpg", None, -0.1)
-        display1 = FakeDisplay()
-        display2 = FakeDisplay()
         network = FakeNetwork()
-        timestamps = Timestamps(network)
 
         object_lower = np.array((40, 50, 100))
         object_higher = np.array((70, 255, 255))
-        note_detector = TargetDetector(
-            camera,
-            display1,
-            display2,
-            network,
-            timestamps,
-            Blobs(camera, network, object_lower, object_higher),
-        )
-        request = camera.capture_request()
-        note_detector.interpret(request)
 
-        self.assertEqual(1, display1.frame_count)
+        blobs = Blobs(camera, network, object_lower, object_higher)
+        blobs.analyze_color(camera._img, None, 0)  # type: ignore
 
         # the extracted rotation should be undistorted.
         rots: list[Target] = network.targets
@@ -139,28 +80,16 @@ class TargetDetectorTest(unittest.TestCase):
 
     def test_zero_notes_found(self) -> None:
         network = FakeNetwork()
-        timestamps = Timestamps(network)
 
         # nothing in this image
         camera = FakeCamera("images/white_square.jpg")
-        display1 = FakeDisplay()
-        display2 = FakeDisplay()
 
         # GREEN TARGET VALUES
         object_lower = np.array((40, 50, 100))
         object_higher = np.array((70, 255, 255))
-        note_detector = TargetDetector(
-            camera,
-            display1,
-            display2,
-            network,
-            timestamps,
-            Blobs(camera, network, object_lower, object_higher),
-        )
-        request = camera.capture_request()
-        note_detector.interpret(request)
 
-        self.assertEqual(1, display1.frame_count)
+        blobs = Blobs(camera, network, object_lower, object_higher)
+        blobs.analyze_color(camera._img, None, 0)  # type: ignore
 
         ## always publish even if empty
 

@@ -43,7 +43,7 @@ class Blobs(ColorAnalysis):
     def analyze_color(
         self,
         img: MatLike,
-        img_display: MatLike,
+        img_display: MatLike | None,
         servertime: int,
     ) -> None:
         """Find things in img_bgr
@@ -117,7 +117,8 @@ class Blobs(ColorAnalysis):
                 rotation = Rotation3d(initial=initial, final=final)
 
                 targets.append(Target(servertime, rotation))
-                DisplayUtil.note(img_display, c, orig_cX, orig_cY)
+                if img_display is not None:
+                    DisplayUtil.note(img_display, c, orig_cX, orig_cY)
 
             # only send if there's anything to say
             self._targets.send(targets)

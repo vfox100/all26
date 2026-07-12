@@ -1,10 +1,13 @@
 # pylint: disable=C0103,E0611,E1101,E1121,R0902,R0903,R0913,R0914,R0917,W0212,W0612
 
+from typing import override
+
 import cv2
 import numpy as np
 
+from cv2.typing import MatLike
 from numpy.typing import NDArray
-from typing_extensions import override
+
 from app.camera.camera_protocol import Camera, Request
 from app.dashboard.display_protocol import Display
 from app.dashboard.display_util import DisplayUtil
@@ -118,3 +121,12 @@ class CombinedDetector(DetectorBase):
             DisplayUtil.text(img_display, f"FPS {fps:2.0f}", (5, 5), 0)
             DisplayUtil.text(img_display, f"delay (ms) {delay_us/1000:2.0f}", (5, 5), 1)
             self._display1.put(img_display)
+
+    def _images(self) -> tuple[MatLike | None, MatLike | None, MatLike | None]:
+        # Images for analysis, do not modify.
+        img_bgr = None
+        img_mono = None
+        # Image for display, ok to modify.
+        img_display = None
+
+        return (img_bgr, img_mono, img_display)

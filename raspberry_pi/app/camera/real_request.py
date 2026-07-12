@@ -1,7 +1,7 @@
 # pylint: disable=E0401,R0913,R0917
-from typing import Any
+from typing import Any, override
 from contextlib import AbstractContextManager
-from typing_extensions import Buffer, override
+from collections.abc import Buffer
 from picamera2 import CompletedRequest  # type: ignore
 from picamera2.request import _MappedBuffer  # type: ignore
 from app.camera.capture_timestamp import CaptureTimestamp

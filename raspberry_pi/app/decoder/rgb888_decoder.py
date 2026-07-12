@@ -1,11 +1,10 @@
 # pylint: disable=E1101
-
-from numpy.typing import NDArray
-from cv2.typing import MatLike
-
-from typing_extensions import override, Buffer
+from typing import override
+from collections.abc import Buffer
 import cv2
 import numpy as np
+from numpy.typing import NDArray
+from cv2.typing import MatLike
 from app.camera.size import Size
 from app.decoder.decoder_protocol import Decoder
 

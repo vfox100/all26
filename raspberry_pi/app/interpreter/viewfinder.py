@@ -1,6 +1,7 @@
 # pylint: disable=C0103,E1101,R0903
+from typing import  override
+from collections.abc import Buffer
 from cv2.typing import MatLike
-from typing_extensions import Buffer, override
 from app.camera.camera_protocol import Request
 from app.dashboard.display_protocol import Display
 from app.dashboard.display_util import DisplayUtil

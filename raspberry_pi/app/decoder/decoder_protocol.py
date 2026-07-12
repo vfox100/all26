@@ -1,7 +1,8 @@
 # pylint: disable=R0903,W2301
 
 from typing import Protocol
-from typing_extensions import Buffer
+from collections.abc import Buffer
+
 from cv2.typing import MatLike
 
 

@@ -3,7 +3,7 @@
 import time
 from queue import Queue, Full
 from threading import Event
-from typing_extensions import override
+from typing import override
 
 import ntcore
 from app.config.identity import Identity

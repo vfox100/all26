@@ -7,7 +7,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from picamera2 import CompletedRequest, Picamera2  # type: ignore
-from typing_extensions import override
+from typing import override
 
 from app.camera.camera_protocol import Camera, Request
 from app.camera.capture_timestamp import CaptureTimestamp

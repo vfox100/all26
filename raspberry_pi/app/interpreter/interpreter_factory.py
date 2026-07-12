@@ -10,8 +10,6 @@ from app.interpreter.viewfinder import Viewfinder
 from app.localization.apriltags import AprilTags
 from app.localization.blobs import Blobs
 from app.localization.combined_detector import CombinedDetector
-from app.localization.tag_detector import TagDetector
-from app.localization.target_detector import TargetDetector
 from app.network.network_protocol import Network
 from app.util.timestamps import Timestamps
 
@@ -43,21 +41,23 @@ class InterpreterFactory:
 
         match identity:
             case Identity.FUNNEL:
-                return TagDetector(
+                return CombinedDetector(
                     cam,
                     display1,
                     display2,
                     network,
                     timestamps,
                     AprilTags(identity, cam, network),
+                    None
                 )
             case Identity.GAME_PIECE:
-                return TargetDetector(
+                return CombinedDetector(
                     cam,
                     display1,
                     display2,
                     network,
                     timestamps,
+                    None,
                     Blobs(cam, network, object_lower, object_higher),
                 )
             case (
@@ -74,13 +74,14 @@ class InterpreterFactory:
                 | Identity.SWERVE_RIGHT
                 | Identity.SWERVE_LEFT
             ):
-                return TagDetector(
+                return CombinedDetector(
                     cam,
                     display1,
                     display2,
                     network,
                     timestamps,
                     AprilTags(identity, cam, network),
+                    None
                 )
             case Identity.DEV2:
                 return CombinedDetector(
@@ -93,11 +94,12 @@ class InterpreterFactory:
                     Blobs(cam, network, object_lower, object_higher),
                 )
             case _:
-                return TagDetector(
+                return CombinedDetector(
                     cam,
                     display1,
                     display2,
                     network,
                     timestamps,
                     AprilTags(identity, cam, network),
+                    None
                 )

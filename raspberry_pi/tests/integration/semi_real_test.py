@@ -14,8 +14,6 @@ from app.interpreter.interpreter_protocol import Interpreter
 from app.localization.apriltags import AprilTags
 from app.localization.blobs import Blobs
 from app.localization.combined_detector import CombinedDetector
-from app.localization.tag_detector import TagDetector
-from app.localization.target_detector import TargetDetector
 from app.network.network_protocol import Network
 from app.network.real_network import RealNetwork
 from app.util.timestamps import Timestamps

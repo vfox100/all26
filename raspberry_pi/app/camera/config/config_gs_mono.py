@@ -1,7 +1,7 @@
 # pylint: disable=E0401
 
 from typing import Any
-from typing_extensions import override
+from typing import override
 
 from app.camera.config.config_protocol import Config
 from app.camera.size import Size

@@ -1,12 +1,11 @@
 # pylint: disable=E1101,R0903,R1732
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, override
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 from numpy.typing import NDArray
-from typing_extensions import override
 from app.camera.camera_protocol import Camera
 from app.camera.fake_request import FakeRequest
 from app.camera.size import Size
@@ -34,17 +33,19 @@ class FakeCamera(Camera):
         if file is None:
             raise ValueError("no file: " + pathstr)
         # img is 3 channel BGR
-        self.img: MatLike = file
+        self._img: MatLike = file
         if size is not None:
-            self.img = cv2.resize(self.img, size)
-        self.h: int = self.img.shape[0]
-        self.w: int = self.img.shape[1]
-        self.c: int = self.img.shape[2]
+            self._img = cv2.resize(self._img, size)
+        self.h: int = self._img.shape[0]
+        self.w: int = self._img.shape[1]
+        self.c: int = self._img.shape[2]
         self.frame_time = Timer.time_ns()
         self.k1 = k1
 
         # Here we want to *distort* the image, so the the "undistort" below inverts the distortion.
-        self.img: MatLike = self.redistort(self.img)
+        self._img: MatLike = self.redistort(self._img)
+        self._mono: MatLike = cv2.cvtColor(self._img, cv2.COLOR_RGB2GRAY)
+        """mono img for testing"""
 
         # uncomment to see the distorted thing
         # cv2.imwrite("debug.jpg", self.img)
@@ -101,7 +102,7 @@ class FakeCamera(Camera):
         total_time_ms = (capture_start - self.frame_time) / 1000000
         self.frame_time = capture_start
         fps = 1000 / total_time_ms
-        return FakeRequest(self.img, fps)
+        return FakeRequest(self._img, fps)
 
     @override
     def stop(self) -> None:

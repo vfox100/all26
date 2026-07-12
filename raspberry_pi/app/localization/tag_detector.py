@@ -1,11 +1,11 @@
 # pylint: disable=E0611,E1101,R0902,R0903,R0913,R0914,R0917,W0212,W0611
 
+from typing import override
+from collections.abc import Buffer
 import cv2
-from cv2.typing import MatLike
-
 import numpy as np
+from cv2.typing import MatLike
 from numpy.typing import NDArray
-from typing_extensions import override, Buffer
 from app.camera.camera_protocol import Camera, Request
 from app.dashboard.display_protocol import Display
 from app.dashboard.display_util import DisplayUtil

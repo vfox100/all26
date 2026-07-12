@@ -1,7 +1,8 @@
 # pylint: disable=E1101,R0903,R1732
 
 from contextlib import AbstractContextManager, nullcontext
-from typing_extensions import Buffer, override
+from typing import  override
+from collections.abc import Buffer
 from cv2.typing import MatLike
 from app.camera.request_protocol import Request
 from app.decoder.mat_decoder import MatDecoder
