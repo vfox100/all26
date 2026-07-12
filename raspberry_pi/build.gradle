@@ -11,6 +11,7 @@ distributions {
                 into('/app')
             }
             exclude '**/__pycache__'
+            exclude '**/images/**'
         }
     }
 }
