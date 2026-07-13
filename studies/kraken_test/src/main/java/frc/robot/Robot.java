@@ -20,8 +20,8 @@ public class Robot extends TimedRobot {
     final Logging logging = Logging.instance();
     final LoggerFactory logger = logging.rootLogger;
     TotalCurrentLog currentLog = new TotalCurrentLog(logger);
-    PIDConstants pid = PIDConstants.makePositionPID(logger, 2.0);
-    Friction friction = new Friction(logger, 0, 0, 0, 0);
+    PIDConstants pid = PIDConstants.makePositionPID(2.0);
+    Friction friction = new Friction(0, 0, 0, 0);
     KrakenX60Motor motor1;
     KrakenX60Motor motor2;
 
