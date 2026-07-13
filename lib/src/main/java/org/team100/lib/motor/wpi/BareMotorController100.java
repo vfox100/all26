@@ -37,6 +37,11 @@ public class BareMotorController100 implements BareMotor {
         m_log_duty.log(() -> output);
     }
 
+    @Override
+    public void setVoltage(double volts) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Open-loop velocity control using velocity feedforward only.
      */

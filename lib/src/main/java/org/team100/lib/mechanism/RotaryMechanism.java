@@ -96,6 +96,11 @@ public class RotaryMechanism implements Player {
         m_motor.setDutyCycle(output);
     }
 
+    /** For tuning friction. */
+    public void setVoltage(double volts) {
+        m_motor.setVoltage(volts);
+    }
+
     public void setTorqueLimit(double torqueNm) {
         m_motor.setTorqueLimit(torqueNm / m_gearRatio);
     }

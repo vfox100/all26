@@ -45,6 +45,11 @@ public class LazySimulatedBareMotor implements BareMotor {
     }
 
     @Override
+    public void setVoltage(double volts) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setVelocity(double velocityRad_S, double torqueNm) {
         if (velocityRad_S < 1e-3) {
             m_running = false;

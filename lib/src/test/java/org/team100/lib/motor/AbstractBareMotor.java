@@ -17,6 +17,10 @@ public class AbstractBareMotor implements BareMotor {
     }
 
     @Override
+    public void setVoltage(double volts) {
+    }
+
+    @Override
     public void setVelocity(double velocityRad_S, double torqueNm) {
     }
 

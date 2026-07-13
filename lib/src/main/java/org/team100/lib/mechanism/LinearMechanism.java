@@ -73,6 +73,11 @@ public class LinearMechanism implements Player {
         m_motor.setDutyCycle(output);
     }
 
+    /** For tuning friction. */
+    public void setVoltage(double volts) {
+        m_motor.setVoltage(volts);
+    }
+
     public void setForceLimit(double forceN) {
         m_motor.setTorqueLimit(forceN * m_wheelRadiusM / m_gearRatio);
     }

@@ -81,6 +81,7 @@ public abstract class CANSparkMotor implements BareMotor {
     private final DoubleLogger m_log_torque_FF;
     /** duty cycle */
     private final DoubleLogger m_log_output;
+    private final DoubleLogger m_log_volts;
     /** rad */
     private final DoubleLogger m_log_position;
     /** rad/s */
@@ -146,6 +147,7 @@ public abstract class CANSparkMotor implements BareMotor {
         m_log_velocity_FF = m_log.doubleLogger(Level.TRACE, "velocity feedforward (V)");
         m_log_torque_FF = m_log.doubleLogger(Level.TRACE, "torque feedforward (V)");
         m_log_output = m_log.doubleLogger(Level.DEBUG, "output [-1,1]");
+        m_log_volts = m_log.doubleLogger(Level.DEBUG, "volts (V)");
         m_log_position = m_log.doubleLogger(Level.DEBUG, "position (rad)");
         m_log_velocity = m_log.doubleLogger(Level.DEBUG, "velocity (rad_s)");
         m_log_stator_current = m_log.doubleLogger(Level.DEBUG, "stator current (A)");
@@ -157,6 +159,12 @@ public abstract class CANSparkMotor implements BareMotor {
     public void setDutyCycle(double output) {
         m_motor.set(output);
         m_log_output.log(() -> output);
+    }
+
+    @Override
+    public void setVoltage(double volts) {
+        m_motor.setVoltage(volts);
+        m_log_volts.log(() -> volts);
     }
 
     public boolean getForwardLimitSwitch() {

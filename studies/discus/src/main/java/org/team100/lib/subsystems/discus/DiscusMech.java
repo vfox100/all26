@@ -150,4 +150,9 @@ public class DiscusMech extends SubsystemBase {
     public Command velocity(DoubleSupplier v) {
         return run(() -> setVelocity(v.getAsDouble()));
     }
+
+    /** Voltage should be something like 0.1. */
+    public Command friction(DoubleSupplier v) {
+        return run(() -> m_mechP1.setVoltage(v.getAsDouble()));
+    }
 }

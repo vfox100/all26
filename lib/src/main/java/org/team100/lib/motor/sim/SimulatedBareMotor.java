@@ -108,6 +108,11 @@ public class SimulatedBareMotor implements BareMotor {
         setVelocity(output * m_freeSpeedRad_S, 0);
     }
 
+    @Override
+    public void setVoltage(double volts) {
+        setVelocity(volts * m_freeSpeedRad_S / 12, 0);
+    }
+
     /** ignores accel and torque but logs them */
     @Override
     public void setVelocity(double velocityRad_S, double torqueNm) {
