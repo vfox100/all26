@@ -32,9 +32,9 @@ public class SetupMech implements Runnable {
         // button 1, "z" in the sim
         new Trigger(controller::getAButton).whileTrue(m_discus.home());
         // button 2, "x" in the sim
-        new Trigger(controller::getBButton).onTrue(m_discus.zero());
-        new Trigger(controller::getXButton).onTrue(m_discus.position(() -> 2));
-        new Trigger(controller::getYButton).onTrue(m_discus.position(() -> -2));
+        new Trigger(controller::getBButton).whileTrue(m_discus.zero());
+        new Trigger(controller::getXButton).whileTrue(m_discus.position(() -> 2));
+        new Trigger(controller::getYButton).whileTrue(m_discus.position(() -> -2));
     }
 
     @Override
