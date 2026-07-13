@@ -3,7 +3,7 @@ package org.team100.lib.dynamics.differential;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 
 public class DifferentialDriveDynamicsTest {
     /** Accel in +x, both wheels push fwd. */

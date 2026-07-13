@@ -1,6 +1,7 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.subsystems.prr.EAWConfig;
+
+import org.team100.lib.geometry.prr.PRRConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -22,7 +23,7 @@ public class CalgamesViz implements Runnable {
         m_mech = mech;
         m_view = new Mechanism2d(SCALE, SCALE);
         m_root = m_view.getRoot("root", ORIGIN.getX(), ORIGIN.getY());
-        EAWConfig q = m_mech.getConfig();
+        PRRConfig q = m_mech.getConfig();
         m_elevator = new MechanismLigament2d(
                 "elevator",
                 shoulderHeight(q),
@@ -43,7 +44,7 @@ public class CalgamesViz implements Runnable {
 
     @Override
     public void run() {
-        EAWConfig q = m_mech.getConfig();
+        PRRConfig q = m_mech.getConfig();
         m_elevator.setLength(shoulderHeight(q));
         m_arm.setAngle(shoulderAngle(q));
         m_hand.setAngle(wristAngle(q));
@@ -55,23 +56,23 @@ public class CalgamesViz implements Runnable {
      * config is in meters, viz wants pixels.
      * elevator zero is the floor
      */
-    private static double shoulderHeight(EAWConfig q) {
-        return SCALE * q.shoulderHeight();
+    private static double shoulderHeight(PRRConfig q) {
+        return SCALE * q.q1();
     }
 
     /**
      * config is in radians, viz wants degrees.
      * shoulder zero is parallel to the elevator
      */
-    private static double shoulderAngle(EAWConfig q) {
-        return Math.toDegrees(q.shoulderAngle());
+    private static double shoulderAngle(PRRConfig q) {
+        return Math.toDegrees(q.q2());
     }
 
     /**
      * config is in radians, viz wants degrees.
      * wrist zero is parallel to the arm.
      */
-    private static double wristAngle(EAWConfig q) {
-        return Math.toDegrees(q.wristAngle());
+    private static double wristAngle(PRRConfig q) {
+        return Math.toDegrees(q.q3());
     }
 }

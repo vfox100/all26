@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;

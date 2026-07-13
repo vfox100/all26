@@ -3,7 +3,7 @@ package org.team100.lib.trajectory;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.trajectory.path.PathSE2Point;
 
 import edu.wpi.first.math.geometry.Pose2d;

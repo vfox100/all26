@@ -2,12 +2,12 @@ package org.team100.lib.subsystems.prr.commands;
 
 import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.framework.TimedRobot100;
+import org.team100.lib.geometry.prr.PRRAcceleration;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.geometry.prr.PRRVelocity;
 import org.team100.lib.profile.r1.ProfileR1;
 import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.ModelR1;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.JointAccelerations;
-import org.team100.lib.subsystems.prr.JointVelocities;
 import org.team100.lib.subsystems.prr.SubsystemPRR;
 
 import edu.wpi.first.math.MathUtil;
@@ -33,15 +33,15 @@ public class FollowJointProfiles extends MoveAndHold {
 
     public FollowJointProfiles(
             SubsystemPRR subsystem,
-            EAWConfig goal,
+            PRRConfig goal,
             ProfileR1 p1,
             ProfileR1 p2,
             ProfileR1 p3) {
         m_subsystem = subsystem;
         // Joint goals are motionless
-        m_g1 = new ModelR1(goal.shoulderHeight(), 0);
-        m_g2 = new ModelR1(goal.shoulderAngle(), 0);
-        m_g3 = new ModelR1(goal.wristAngle(), 0);
+        m_g1 = new ModelR1(goal.q1(), 0);
+        m_g2 = new ModelR1(goal.q2(), 0);
+        m_g3 = new ModelR1(goal.q3(), 0);
         m_p1 = p1;
         m_p2 = p2;
         m_p3 = p3;
@@ -51,12 +51,12 @@ public class FollowJointProfiles extends MoveAndHold {
     @Override
     public void initialize() {
         // initial position is current position
-        EAWConfig c = m_subsystem.getConfig();
+        PRRConfig c = m_subsystem.getConfig();
         // initial velocity is current velocity
-        JointVelocities jv = m_subsystem.getJointVelocity();
-        m_c1 = new ControlR1(c.shoulderHeight(), jv.elevator());
-        m_c2 = new ControlR1(c.shoulderAngle(), jv.shoulder());
-        m_c3 = new ControlR1(c.wristAngle(), jv.wrist());
+        PRRVelocity jv = m_subsystem.getJointVelocity();
+        m_c1 = new ControlR1(c.q1(), jv.q1dot());
+        m_c2 = new ControlR1(c.q2(), jv.q2dot());
+        m_c3 = new ControlR1(c.q3(), jv.q3dot());
     }
 
     @Override
@@ -64,9 +64,9 @@ public class FollowJointProfiles extends MoveAndHold {
         m_c1 = m_p1.calculate(DT, m_c1, m_g1);
         m_c2 = m_p2.calculate(DT, m_c2, m_g2);
         m_c3 = m_p3.calculate(DT, m_c3, m_g3);
-        EAWConfig c = new EAWConfig(m_c1.x(), m_c2.x(), m_c3.x());
-        JointVelocities jv = new JointVelocities(m_c1.v(), m_c2.v(), m_c3.v());
-        JointAccelerations ja = new JointAccelerations(m_c1.v(), m_c2.v(), m_c3.v());
+        PRRConfig c = new PRRConfig(m_c1.x(), m_c2.x(), m_c3.x());
+        PRRVelocity jv = new PRRVelocity(m_c1.v(), m_c2.v(), m_c3.v());
+        PRRAcceleration ja = new PRRAcceleration(m_c1.v(), m_c2.v(), m_c3.v());
         m_subsystem.set(c, jv, ja);
     }
 
@@ -93,14 +93,14 @@ public class FollowJointProfiles extends MoveAndHold {
 
     /** The measurement has reached the goal. */
     private boolean atReference() {
-        EAWConfig c = m_subsystem.getConfig();
-        JointVelocities jv = m_subsystem.getJointVelocity();
-        return MathUtil.isNear(m_g1.x(), c.shoulderHeight(), 0.01)
-                && MathUtil.isNear(m_g2.x(), c.shoulderAngle(), 0.02)
-                && MathUtil.isNear(m_g3.x(), c.wristAngle(), 0.02)
-                && Math.abs(jv.elevator()) < 0.01
-                && Math.abs(jv.shoulder()) < 0.02
-                && Math.abs(jv.wrist()) < 0.02;
+        PRRConfig c = m_subsystem.getConfig();
+        PRRVelocity jv = m_subsystem.getJointVelocity();
+        return MathUtil.isNear(m_g1.x(), c.q1(), 0.01)
+                && MathUtil.isNear(m_g2.x(), c.q2(), 0.02)
+                && MathUtil.isNear(m_g3.x(), c.q3(), 0.02)
+                && Math.abs(jv.q1dot()) < 0.01
+                && Math.abs(jv.q2dot()) < 0.02
+                && Math.abs(jv.q3dot()) < 0.02;
     }
 
 }

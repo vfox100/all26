@@ -1,5 +1,7 @@
 package org.team100.lib.subsystems.lynxmotion_arm;
 
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveCommandTwoDof;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Commands;

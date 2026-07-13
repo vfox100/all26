@@ -1,7 +1,7 @@
 package org.team100.lib.dynamics.se2;
 
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 
 public class SE2Dynamics {
     /** Mass. */

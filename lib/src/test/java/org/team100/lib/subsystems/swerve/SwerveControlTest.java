@@ -3,8 +3,8 @@ package org.team100.lib.subsystems.swerve;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.geometry.VelocitySE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.state.ControlSE2;
 import org.team100.lib.trajectory.TrajectorySE2Point;
 import org.team100.lib.trajectory.path.PathSE2Point;

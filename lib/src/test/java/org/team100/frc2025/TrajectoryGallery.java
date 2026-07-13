@@ -13,12 +13,12 @@ import org.team100.frc2025.field.FieldConstants2025;
 import org.team100.frc2025.field.FieldConstants2025.CoralStation;
 import org.team100.frc2025.field.FieldConstants2025.ReefPoint;
 import org.team100.lib.config.ElevatorUtil.ScoringLevel;
-import org.team100.lib.geometry.DirectionSE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.DirectionSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
+import org.team100.lib.kinematics.prr.PRRKinematics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
-import org.team100.lib.subsystems.prr.ElevatorArmWristKinematics;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamicsFactory;
 import org.team100.lib.trajectory.TrajectorySE2;
@@ -102,7 +102,7 @@ public class TrajectoryGallery {
         PathSE2Factory pathFactory = new PathSE2Factory(0.05, 0.01, 0.1);
         TrajectorySE2Planner m_planner = new TrajectorySE2Planner(pathFactory, trajectoryFactory);
 
-        ElevatorArmWristKinematics m_kinematics = new ElevatorArmWristKinematics(0.5, 0.343);
+        PRRKinematics m_kinematics = new PRRKinematics(0.5, 0.343);
         Pose2d m_home = m_kinematics.forward(CalgamesMech.HOME);
         WaypointSE2 start = new WaypointSE2(m_home, m_course, 1);
         TrajectorySE2 m_trajectory = m_planner.restToRest(List.of(start, m_goal));

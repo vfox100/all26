@@ -2,10 +2,10 @@ package org.team100.lib.subsystems.prr.commands;
 
 import java.util.function.Supplier;
 
+import org.team100.lib.geometry.prr.PRRAcceleration;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.geometry.prr.PRRVelocity;
 import org.team100.lib.hid.Velocity;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.JointAccelerations;
-import org.team100.lib.subsystems.prr.JointVelocities;
 import org.team100.lib.subsystems.prr.SubsystemPRR;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,8 +16,8 @@ public class ManualConfig extends Command {
     private final Supplier<Velocity> m_input;
     private final SubsystemPRR m_subsystem;
 
-    private EAWConfig m_config;
-    private JointVelocities m_prev;
+    private PRRConfig m_config;
+    private PRRVelocity m_prev;
 
     public ManualConfig(
             Supplier<Velocity> input,
@@ -30,7 +30,7 @@ public class ManualConfig extends Command {
     @Override
     public void initialize() {
         m_config = m_subsystem.getConfig();
-        m_prev = new JointVelocities(0, 0, 0);
+        m_prev = new PRRVelocity(0, 0, 0);
     }
 
     @Override
@@ -41,26 +41,26 @@ public class ManualConfig extends Command {
         // control is velocity.
         // velocity in m/s and rad/s
         // we want full scale to be about 0.5 m/s and 0.5 rad/s
-        JointVelocities jv = new JointVelocities(
+        PRRVelocity jv = new PRRVelocity(
                 input.x() * 1.5,
                 input.y() * 3,
                 input.theta() * 3);
-        EAWConfig newC = m_config.integrate(jv, dt);
+        PRRConfig newC = m_config.integrate(jv, dt);
 
         // impose limits; see CalgamesMech for more limits.
-        if (newC.shoulderHeight() < 0 || newC.shoulderHeight() > 1.7) {
-            newC = new EAWConfig(m_config.shoulderHeight(), newC.shoulderAngle(), newC.wristAngle());
+        if (newC.q1() < 0 || newC.q1() > 1.7) {
+            newC = new PRRConfig(m_config.q1(), newC.q2(), newC.q3());
         }
-        if (newC.shoulderAngle() < -2 || newC.shoulderAngle() > 2) {
-            newC = new EAWConfig(newC.shoulderHeight(), m_config.shoulderAngle(), newC.wristAngle());
+        if (newC.q2() < -2 || newC.q2() > 2) {
+            newC = new PRRConfig(newC.q1(), m_config.q2(), newC.q3());
         }
-        if (newC.wristAngle() < -1.5 || newC.wristAngle() > 2.1) {
-            newC = new EAWConfig(newC.shoulderHeight(), newC.shoulderAngle(), m_config.wristAngle());
+        if (newC.q3() < -1.5 || newC.q3() > 2.1) {
+            newC = new PRRConfig(newC.q1(), newC.q2(), m_config.q3());
         }
 
         // recompute velocity and accel
-        JointVelocities newJv = newC.diff(m_config, dt);
-        JointAccelerations ja = newJv.diff(m_prev, dt);
+        PRRVelocity newJv = newC.diff(m_config, dt);
+        PRRAcceleration ja = newJv.diff(m_prev, dt);
 
         // m_subsystem.set(newC, newJv, ja);
         m_subsystem.set(newC, newJv, ja);

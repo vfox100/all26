@@ -3,6 +3,9 @@ package org.team100.lib.dynamics.rr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.rr.RRAcceleration;
+import org.team100.lib.geometry.rr.RRConfig;
+import org.team100.lib.geometry.rr.RRVelocity;
 
 public class RRDynamicsTest {
     private static final double DELTA = 1e-3;

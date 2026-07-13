@@ -3,20 +3,20 @@ package org.team100.frc2025.CalgamesArm;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.VelocitySE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.prr.PRRAcceleration;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.geometry.prr.PRRVelocity;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
+import org.team100.lib.kinematics.prr.AnalyticalPRRJacobian;
+import org.team100.lib.kinematics.prr.PRRKinematics;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.TestLoggerFactory;
 import org.team100.lib.logging.primitive.TestPrimitiveLogger;
 import org.team100.lib.state.ControlSE2;
-import org.team100.lib.subsystems.prr.AnalyticalJacobian;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.ElevatorArmWristKinematics;
-import org.team100.lib.subsystems.prr.JointAccelerations;
-import org.team100.lib.subsystems.prr.JointVelocities;
-import org.team100.lib.trajectory.TrajectorySE2Entry;
 import org.team100.lib.trajectory.TrajectorySE2;
+import org.team100.lib.trajectory.TrajectorySE2Entry;
 import org.team100.lib.trajectory.TrajectorySE2Factory;
 import org.team100.lib.trajectory.TrajectorySE2Planner;
 import org.team100.lib.trajectory.TrajectorySE2Point;
@@ -61,9 +61,9 @@ public class TrajectoryJointTest {
                 WaypointSE2.irrotational(
                         new Pose2d(1.9, 0.5, new Rotation2d(2.5)), 2, 1.2)));
 
-        ElevatorArmWristKinematics k = new ElevatorArmWristKinematics(
+        PRRKinematics k = new PRRKinematics(
                 0.5, 0.3);
-        AnalyticalJacobian J = new AnalyticalJacobian(k);
+        AnalyticalPRRJacobian J = new AnalyticalPRRJacobian(k);
         if (DEBUG)
             System.out
                     .println(
@@ -75,16 +75,17 @@ public class TrajectoryJointTest {
             Pose2d p = m.pose();
             VelocitySE2 v = m.velocity();
             AccelerationSE2 a = m.acceleration();
-            EAWConfig q = k.inverse(p);
-            JointVelocities jv = J.inverse(m.model());
-            JointAccelerations ja = J.inverseA(m);
+            PRRConfig q = k.inverse(p);
+            PRRVelocity jv = J.inverse(m.model());
+            PRRAcceleration ja = J.inverseA(m);
             if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
                         tt, p.getX(), p.getY(), p.getRotation().getRadians(), v.x(), v.y(), v.theta(), a.x(),
-                        a.y(), a.theta(), q.shoulderHeight(), q.shoulderAngle(), q.wristAngle(), jv.elevator(),
-                        jv.shoulder(), jv.wrist(),
-                        ja.elevator(), ja.shoulder(), ja.wrist());
+                        a.y(), a.theta(),
+                        q.q1(), q.q2(), q.q3(),
+                        jv.q1dot(), jv.q2dot(), jv.q3dot(),
+                        ja.q1ddot(), ja.q2ddot(), ja.q3ddot());
             }
         }
     }

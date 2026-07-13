@@ -3,7 +3,7 @@ package org.team100.lib.targeting;
 import java.util.List;
 import java.util.Optional;
 
-import org.team100.lib.geometry.GlobalVelocityR2;
+import org.team100.lib.geometry.r2.GlobalVelocityR2;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;

@@ -1,7 +1,7 @@
 package org.team100.lib.state;
 
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 
 import edu.wpi.first.math.MathUtil;

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.team100.lib.dynamics.swerve.SwerveEffort;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;

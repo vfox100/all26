@@ -3,6 +3,7 @@ package org.team100.lib.geometry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 

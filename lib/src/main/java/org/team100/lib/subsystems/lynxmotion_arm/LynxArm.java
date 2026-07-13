@@ -2,6 +2,19 @@ package org.team100.lib.subsystems.lynxmotion_arm;
 
 import java.util.function.DoubleSupplier;
 
+import org.team100.lib.geometry.lynx_arm.LynxArmConfig;
+import org.team100.lib.geometry.lynx_arm.LynxArmPose;
+import org.team100.lib.kinematics.lynx_arm.LynxArmKinematics;
+import org.team100.lib.motor.servo.CalibratedServo;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveCommand;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveGrip;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveManually;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveXY;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveZ;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.ToggleGrip;
+import org.team100.lib.subsystems.lynxmotion_arm.commands.ToggleHeight;
+import org.team100.lib.util.AffineFunction;
+import org.team100.lib.util.Clamp;
 import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -280,7 +293,7 @@ public class LynxArm extends SubsystemBase implements AutoCloseable {
 
     /////////////////////////////////////////////
 
-    LynxArmConfig getInverse(Pose3d p) {
+    public LynxArmConfig getInverse(Pose3d p) {
         if (DEBUG)
             System.out.println("getInverse()");
         LynxArmConfig q0 = getMeasuredConfig();
@@ -289,7 +302,7 @@ public class LynxArm extends SubsystemBase implements AutoCloseable {
         return m_kinematics.inverse(q0, p);
     }
 
-    LynxArmConfig getMeasuredConfig() {
+    public LynxArmConfig getMeasuredConfig() {
         if (DEBUG)
             System.out.println("getMeasuredConfig()");
         LynxArmConfig q = new LynxArmConfig(

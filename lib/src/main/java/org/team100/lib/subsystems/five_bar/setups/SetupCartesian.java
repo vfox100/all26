@@ -2,11 +2,11 @@ package org.team100.lib.subsystems.five_bar.setups;
 
 import static edu.wpi.first.wpilibj2.command.Commands.print;
 
+import org.team100.lib.kinematics.five_bar.Scenario;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.Logging;
 import org.team100.lib.logging.TotalCurrentLog;
 import org.team100.lib.subsystems.five_bar.FiveBarCartesian;
-import org.team100.lib.subsystems.five_bar.kinematics.Scenario;
 import org.team100.lib.visualization.FiveBarVisualization;
 
 import edu.wpi.first.math.geometry.Translation2d;

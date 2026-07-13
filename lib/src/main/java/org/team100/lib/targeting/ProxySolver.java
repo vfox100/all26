@@ -3,7 +3,7 @@ package org.team100.lib.targeting;
 import java.util.Optional;
 import java.util.function.DoubleFunction;
 
-import org.team100.lib.geometry.StateR2;
+import org.team100.lib.geometry.r2.StateR2;
 import org.team100.lib.state.ModelSE2;
 import org.team100.lib.util.NamedChooser;
 

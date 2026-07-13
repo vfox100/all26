@@ -3,6 +3,7 @@ package org.team100.lib.subsystems.lynxmotion_arm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.util.AffineFunction;
 
 /**
  * https://docs.google.com/spreadsheets/d/1XCtQGnJABVWTuCkx0t6u_xJjezelqyBE2Rz7eqmoyh4

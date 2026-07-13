@@ -1,6 +1,6 @@
 package org.team100.lib.subsystems.swerve.commands.test;
 
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.subsystems.swerve.SwerveDriveSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;

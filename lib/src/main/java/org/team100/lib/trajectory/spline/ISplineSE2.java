@@ -1,6 +1,6 @@
 package org.team100.lib.trajectory.spline;
 
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.trajectory.path.PathSE2Entry;
 
 import edu.wpi.first.math.Vector;

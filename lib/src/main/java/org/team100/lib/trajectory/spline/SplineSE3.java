@@ -1,7 +1,7 @@
 package org.team100.lib.trajectory.spline;
 
-import org.team100.lib.geometry.DirectionSE3;
-import org.team100.lib.geometry.WaypointSE3;
+import org.team100.lib.geometry.se3.DirectionSE3;
+import org.team100.lib.geometry.se3.WaypointSE3;
 import org.team100.lib.trajectory.path.PathSE3Entry;
 import org.team100.lib.trajectory.path.PathSE3Parameter;
 import org.team100.lib.trajectory.path.PathSE3Point;

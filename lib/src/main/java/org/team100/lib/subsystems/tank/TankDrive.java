@@ -2,7 +2,7 @@ package org.team100.lib.subsystems.tank;
 
 import org.team100.lib.dynamics.differential.DifferentialDriveDynamics;
 import org.team100.lib.dynamics.differential.DifferentialDriveEffort;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;

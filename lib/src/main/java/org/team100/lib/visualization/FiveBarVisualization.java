@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.team100.lib.subsystems.five_bar.kinematics.JointPositions;
-import org.team100.lib.subsystems.five_bar.kinematics.Point;
-import org.team100.lib.subsystems.five_bar.kinematics.Scenario;
+import org.team100.lib.kinematics.five_bar.JointPositions;
+import org.team100.lib.kinematics.five_bar.Point;
+import org.team100.lib.kinematics.five_bar.Scenario;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;

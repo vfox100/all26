@@ -2,7 +2,7 @@ package org.team100.lib.visualization;
 
 import java.util.List;
 
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.trajectory.TrajectorySE2;
 import org.team100.lib.trajectory.TrajectorySE2Entry;
 

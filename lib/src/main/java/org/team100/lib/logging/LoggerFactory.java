@@ -7,11 +7,15 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.DeltaSE2;
-import org.team100.lib.geometry.GlobalVelocityR2;
-import org.team100.lib.geometry.VelocitySE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.dynamics.prr.PRREffort;
+import org.team100.lib.geometry.prr.PRRAcceleration;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.geometry.prr.PRRVelocity;
+import org.team100.lib.geometry.r2.GlobalVelocityR2;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.DeltaSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.localization.Blip;
 import org.team100.lib.localization.SwerveState;
 import org.team100.lib.logging.primitive.PrimitiveLogger;
@@ -22,10 +26,6 @@ import org.team100.lib.state.ModelR1;
 import org.team100.lib.state.ModelSE2;
 import org.team100.lib.state.VelocityControlR1;
 import org.team100.lib.state.VelocityControlSE2;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.JointAccelerations;
-import org.team100.lib.subsystems.prr.JointForce;
-import org.team100.lib.subsystems.prr.JointVelocities;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModulePosition100;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModulePositions;
 import org.team100.lib.trajectory.TrajectorySE2Entry;
@@ -997,13 +997,13 @@ public class LoggerFactory {
             m_wrist = doubleLogger(level, join(leaf, "wrist"));
         }
 
-        public void log(Supplier<EAWConfig> vals) {
+        public void log(Supplier<PRRConfig> vals) {
             if (!allow(m_level))
                 return;
-            EAWConfig val = vals.get();
-            m_elevator.log(val::shoulderHeight);
-            m_shoulder.log(val::shoulderAngle);
-            m_wrist.log(val::wristAngle);
+            PRRConfig val = vals.get();
+            m_elevator.log(val::q1);
+            m_shoulder.log(val::q2);
+            m_wrist.log(val::q3);
         }
     }
 
@@ -1011,85 +1011,85 @@ public class LoggerFactory {
         return new ConfigLogger(level, leaf);
     }
 
-    public class JointVelocitiesLogger {
+    public class PRRVelocityLogger {
         private final Level m_level;
         private final DoubleLogger m_elevator;
         private final DoubleLogger m_shoulder;
         private final DoubleLogger m_wrist;
 
-        JointVelocitiesLogger(Level level, String leaf) {
+        PRRVelocityLogger(Level level, String leaf) {
             m_level = level;
             m_elevator = doubleLogger(level, join(leaf, "elevator"));
             m_shoulder = doubleLogger(level, join(leaf, "shoulder"));
             m_wrist = doubleLogger(level, join(leaf, "wrist"));
         }
 
-        public void log(Supplier<JointVelocities> vals) {
+        public void log(Supplier<PRRVelocity> vals) {
             if (!allow(m_level))
                 return;
-            JointVelocities val = vals.get();
-            m_elevator.log(val::elevator);
-            m_shoulder.log(val::shoulder);
-            m_wrist.log(val::wrist);
+            PRRVelocity val = vals.get();
+            m_elevator.log(val::q1dot);
+            m_shoulder.log(val::q2dot);
+            m_wrist.log(val::q3dot);
         }
     }
 
-    public JointVelocitiesLogger logJointVelocities(Level level, String leaf) {
-        return new JointVelocitiesLogger(level, leaf);
+    public PRRVelocityLogger logPRRVelocity(Level level, String leaf) {
+        return new PRRVelocityLogger(level, leaf);
     }
 
-    public class JointAccelerationsLogger {
+    public class PRRAccelerationLogger {
         private final Level m_level;
         private final DoubleLogger m_elevator;
         private final DoubleLogger m_shoulder;
         private final DoubleLogger m_wrist;
 
-        JointAccelerationsLogger(Level level, String leaf) {
+        PRRAccelerationLogger(Level level, String leaf) {
             m_level = level;
             m_elevator = doubleLogger(level, join(leaf, "elevator"));
             m_shoulder = doubleLogger(level, join(leaf, "shoulder"));
             m_wrist = doubleLogger(level, join(leaf, "wrist"));
         }
 
-        public void log(Supplier<JointAccelerations> vals) {
+        public void log(Supplier<PRRAcceleration> vals) {
             if (!allow(m_level))
                 return;
-            JointAccelerations val = vals.get();
-            m_elevator.log(val::elevator);
-            m_shoulder.log(val::shoulder);
-            m_wrist.log(val::wrist);
+            PRRAcceleration val = vals.get();
+            m_elevator.log(val::q1ddot);
+            m_shoulder.log(val::q2ddot);
+            m_wrist.log(val::q3ddot);
         }
     }
 
-    public JointAccelerationsLogger logJointAccelerations(Level level, String leaf) {
-        return new JointAccelerationsLogger(level, leaf);
+    public PRRAccelerationLogger logPRRAcceleration(Level level, String leaf) {
+        return new PRRAccelerationLogger(level, leaf);
     }
 
-    public class JointForceLogger {
+    public class PRREffortLogger {
         private final Level m_level;
         private final DoubleLogger m_elevator;
         private final DoubleLogger m_shoulder;
         private final DoubleLogger m_wrist;
 
-        JointForceLogger(Level level, String leaf) {
+        PRREffortLogger(Level level, String leaf) {
             m_level = level;
             m_elevator = doubleLogger(level, join(leaf, "elevator"));
             m_shoulder = doubleLogger(level, join(leaf, "shoulder"));
             m_wrist = doubleLogger(level, join(leaf, "wrist"));
         }
 
-        public void log(Supplier<JointForce> vals) {
+        public void log(Supplier<PRREffort> vals) {
             if (!allow(m_level))
                 return;
-            JointForce val = vals.get();
-            m_elevator.log(val::elevator);
-            m_shoulder.log(val::shoulder);
-            m_wrist.log(val::wrist);
+            PRREffort val = vals.get();
+            m_elevator.log(val::f1);
+            m_shoulder.log(val::t2);
+            m_wrist.log(val::t3);
         }
     }
 
-    public JointForceLogger logJointForce(Level level, String leaf) {
-        return new JointForceLogger(level, leaf);
+    public PRREffortLogger logPRREffort(Level level, String leaf) {
+        return new PRREffortLogger(level, leaf);
     }
 
     public class VariableR1Logger {

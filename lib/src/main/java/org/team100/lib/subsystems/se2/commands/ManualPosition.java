@@ -2,7 +2,7 @@ package org.team100.lib.subsystems.se2.commands;
 
 import java.util.function.Supplier;
 
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.hid.Velocity;
 import org.team100.lib.state.ControlSE2;
 import org.team100.lib.subsystems.se2.PositionSubsystemSE2;

@@ -1,12 +1,12 @@
 package org.team100.frc2025.CalgamesArm;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.kinematics.prr.PRRKinematics;
 import org.team100.lib.profile.r1.ProfileR1;
 import org.team100.lib.profile.r1.TrapezoidProfileR1;
 import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.ModelR1;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.ElevatorArmWristKinematics;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,23 +28,23 @@ public class ProfiledTest {
     @Test
     void homeToPick() {
 
-        ElevatorArmWristKinematics k = new ElevatorArmWristKinematics(0.5, 0.343);
+        PRRKinematics k = new PRRKinematics(0.5, 0.343);
 
         // home position
-        EAWConfig start = new EAWConfig(0, 0, 0);
+        PRRConfig start = new PRRConfig(0, 0, 0);
         // floor pick position
-        EAWConfig goal = new EAWConfig(0, -3 * Math.PI / 4, Math.PI / 4);
+        PRRConfig goal = new PRRConfig(0, -3 * Math.PI / 4, Math.PI / 4);
 
-        ModelR1 g1 = new ModelR1(goal.shoulderHeight(), 0);
-        ModelR1 g2 = new ModelR1(goal.shoulderAngle(), 0);
-        ModelR1 g3 = new ModelR1(goal.wristAngle(), 0);
+        ModelR1 g1 = new ModelR1(goal.q1(), 0);
+        ModelR1 g2 = new ModelR1(goal.q2(), 0);
+        ModelR1 g3 = new ModelR1(goal.q3(), 0);
         ProfileR1 p1 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p2 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p3 = new TrapezoidProfileR1(1, 1, 0.05);
 
-        ControlR1 i1 = new ControlR1(start.shoulderHeight(), 0);
-        ControlR1 i2 = new ControlR1(start.shoulderAngle(), 0);
-        ControlR1 i3 = new ControlR1(start.wristAngle(), 0);
+        ControlR1 i1 = new ControlR1(start.q1(), 0);
+        ControlR1 i2 = new ControlR1(start.q2(), 0);
+        ControlR1 i3 = new ControlR1(start.q3(), 0);
 
         double eta1 = p1.simulateForETA(DT, i1, g1);
         double eta2 = p1.simulateForETA(DT, i2, g2);
@@ -58,14 +58,14 @@ public class ProfiledTest {
             i1 = p1.calculate(DT, i1, g1);
             i2 = p2.calculate(DT, i2, g2);
             i3 = p3.calculate(DT, i3, g3);
-            EAWConfig c = new EAWConfig(i1.x(), i2.x(), i3.x());
+            PRRConfig c = new PRRConfig(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
             if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(),
-                        c.shoulderAngle(), c.wristAngle(), i1.v(),
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.q1(),
+                        c.q2(), c.q3(), i1.v(),
                         i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
             }
         }
@@ -84,25 +84,25 @@ public class ProfiledTest {
     @Test
     void homeToL4() {
 
-        ElevatorArmWristKinematics k = new ElevatorArmWristKinematics(0.5, 0.343);
+        PRRKinematics k = new PRRKinematics(0.5, 0.343);
 
         // home position
-        EAWConfig start = new EAWConfig(0, 0, 0);
+        PRRConfig start = new PRRConfig(0, 0, 0);
 
         Pose2d pL4 = new Pose2d(1.9, 0.5, new Rotation2d(150));
         // floor pick position
-        EAWConfig goal = k.inverse(pL4);
+        PRRConfig goal = k.inverse(pL4);
 
-        ModelR1 g1 = new ModelR1(goal.shoulderHeight(), 0);
-        ModelR1 g2 = new ModelR1(goal.shoulderAngle(), 0);
-        ModelR1 g3 = new ModelR1(goal.wristAngle(), 0);
+        ModelR1 g1 = new ModelR1(goal.q1(), 0);
+        ModelR1 g2 = new ModelR1(goal.q2(), 0);
+        ModelR1 g3 = new ModelR1(goal.q3(), 0);
         ProfileR1 p1 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p2 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p3 = new TrapezoidProfileR1(1, 1, 0.05);
 
-        ControlR1 i1 = new ControlR1(start.shoulderHeight(), 0);
-        ControlR1 i2 = new ControlR1(start.shoulderAngle(), 0);
-        ControlR1 i3 = new ControlR1(start.wristAngle(), 0);
+        ControlR1 i1 = new ControlR1(start.q1(), 0);
+        ControlR1 i2 = new ControlR1(start.q2(), 0);
+        ControlR1 i3 = new ControlR1(start.q3(), 0);
 
         double eta1 = p1.simulateForETA(DT, i1, g1);
         double eta2 = p1.simulateForETA(DT, i2, g2);
@@ -116,14 +116,14 @@ public class ProfiledTest {
             i1 = p1.calculate(DT, i1, g1);
             i2 = p2.calculate(DT, i2, g2);
             i3 = p3.calculate(DT, i3, g3);
-            EAWConfig c = new EAWConfig(i1.x(), i2.x(), i3.x());
+            PRRConfig c = new PRRConfig(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
             if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(),
-                        c.shoulderAngle(), c.wristAngle(), i1.v(),
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.q1(),
+                        c.q2(), c.q3(), i1.v(),
                         i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
             }
         }
@@ -135,25 +135,25 @@ public class ProfiledTest {
     @Test
     void l4ToHome() {
 
-        ElevatorArmWristKinematics k = new ElevatorArmWristKinematics(0.5, 0.343);
+        PRRKinematics k = new PRRKinematics(0.5, 0.343);
         Pose2d pL4 = new Pose2d(1.9, 0.5, new Rotation2d(150));
 
         // home position
-        EAWConfig start = k.inverse(pL4);
+        PRRConfig start = k.inverse(pL4);
 
         // floor pick position
-        EAWConfig goal = new EAWConfig(0, 0, 0);
+        PRRConfig goal = new PRRConfig(0, 0, 0);
 
-        ModelR1 g1 = new ModelR1(goal.shoulderHeight(), 0);
-        ModelR1 g2 = new ModelR1(goal.shoulderAngle(), 0);
-        ModelR1 g3 = new ModelR1(goal.wristAngle(), 0);
+        ModelR1 g1 = new ModelR1(goal.q1(), 0);
+        ModelR1 g2 = new ModelR1(goal.q2(), 0);
+        ModelR1 g3 = new ModelR1(goal.q3(), 0);
         ProfileR1 p1 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p2 = new TrapezoidProfileR1(1, 1, 0.05);
         ProfileR1 p3 = new TrapezoidProfileR1(1, 1, 0.05);
 
-        ControlR1 i1 = new ControlR1(start.shoulderHeight(), 0);
-        ControlR1 i2 = new ControlR1(start.shoulderAngle(), 0);
-        ControlR1 i3 = new ControlR1(start.wristAngle(), 0);
+        ControlR1 i1 = new ControlR1(start.q1(), 0);
+        ControlR1 i2 = new ControlR1(start.q2(), 0);
+        ControlR1 i3 = new ControlR1(start.q3(), 0);
 
         double eta1 = p1.simulateForETA(DT, i1, g1);
         double eta2 = p1.simulateForETA(DT, i2, g2);
@@ -167,14 +167,14 @@ public class ProfiledTest {
             i1 = p1.calculate(DT, i1, g1);
             i2 = p2.calculate(DT, i2, g2);
             i3 = p3.calculate(DT, i3, g3);
-            EAWConfig c = new EAWConfig(i1.x(), i2.x(), i3.x());
+            PRRConfig c = new PRRConfig(i1.x(), i2.x(), i3.x());
             Pose2d p = k.forward(c);
 
             if (DEBUG) {
                 System.out.printf(
                         "%6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f, %6.3f\n",
-                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.shoulderHeight(), c.shoulderAngle(),
-                        c.wristAngle(), i1.v(),
+                        tt, p.getX(), p.getY(), p.getRotation().getRadians(), c.q1(), c.q2(),
+                        c.q3(), i1.v(),
                         i2.v(), i3.v(), i1.a(), i2.a(), i3.a());
             }
         }

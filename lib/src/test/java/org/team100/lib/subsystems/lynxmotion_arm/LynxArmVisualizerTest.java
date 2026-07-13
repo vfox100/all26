@@ -5,6 +5,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.team100.lib.kinematics.lynx_arm.AnalyticLynxArmKinematics;
+import org.team100.lib.kinematics.lynx_arm.LynxArmKinematics;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;

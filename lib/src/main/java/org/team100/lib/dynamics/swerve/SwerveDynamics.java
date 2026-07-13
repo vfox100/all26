@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
 import org.team100.lib.dynamics.swerve.SwerveEffort.ModuleEffort;
-import org.team100.lib.geometry.ChassisAcceleration;
 import org.team100.lib.geometry.GeometryUtil;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleState100;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleStates;
 

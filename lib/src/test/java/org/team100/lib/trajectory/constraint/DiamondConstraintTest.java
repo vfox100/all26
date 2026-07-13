@@ -3,7 +3,7 @@ package org.team100.lib.trajectory.constraint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.testing.Timeless;
 import org.team100.lib.trajectory.path.PathSE2Point;
 

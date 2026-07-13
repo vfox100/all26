@@ -6,8 +6,8 @@ import java.util.function.Function;
 
 import org.team100.frc2025.field.FieldConstants2025;
 import org.team100.frc2025.field.FieldConstants2025.CoralStation;
-import org.team100.lib.geometry.DirectionSE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.DirectionSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.trajectory.TrajectorySE2;
 import org.team100.lib.trajectory.TrajectorySE2Factory;

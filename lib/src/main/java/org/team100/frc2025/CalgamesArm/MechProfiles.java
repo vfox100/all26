@@ -1,15 +1,15 @@
 package org.team100.frc2025.CalgamesArm;
 
+import org.team100.lib.geometry.prr.PRRConfig;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.profile.r1.CompleteProfileR1;
 import org.team100.lib.profile.r1.DualProfileR1;
-import org.team100.lib.subsystems.prr.EAWConfig;
 import org.team100.lib.subsystems.prr.commands.FollowJointProfiles;
 
 public class MechProfiles {
 
     public static FollowJointProfiles WithCurrentLimitedExponentialProfile(
-            CalgamesMech subsystem, EAWConfig goal) {
+            CalgamesMech subsystem, PRRConfig goal) {
         return new FollowJointProfiles(
                 subsystem,
                 goal,
@@ -24,7 +24,7 @@ public class MechProfiles {
      * This is for paths that start with lots of gravity torque and end
      * without very much gravity torque, e.g. from "pick" to "home".
      */
-    public static FollowJointProfiles slowFast(LoggerFactory parent, CalgamesMech subsystem, EAWConfig goal) {
+    public static FollowJointProfiles slowFast(LoggerFactory parent, CalgamesMech subsystem, PRRConfig goal) {
         LoggerFactory log = parent.name("slowFast");
         return new FollowJointProfiles(
                 subsystem,
@@ -41,7 +41,7 @@ public class MechProfiles {
      * gravity torque, e.g. from "home" to "pick".
      */
 
-    public static FollowJointProfiles fastSlow(LoggerFactory parent, CalgamesMech subsystem, EAWConfig goal) {
+    public static FollowJointProfiles fastSlow(LoggerFactory parent, CalgamesMech subsystem, PRRConfig goal) {
         LoggerFactory log = parent.name("fastSlow");
         return new FollowJointProfiles(
                 subsystem,
@@ -51,7 +51,7 @@ public class MechProfiles {
                 new CompleteProfileR1(log.name("wrist"), 8, 12, 4, 16, 50, 50, 0.001)); // wrist
     }
 
-    public static FollowJointProfiles algae(LoggerFactory parent, CalgamesMech subsystem, EAWConfig goal) {
+    public static FollowJointProfiles algae(LoggerFactory parent, CalgamesMech subsystem, PRRConfig goal) {
         LoggerFactory log = parent.name("algae");
         return new FollowJointProfiles(
                 subsystem,
@@ -61,7 +61,7 @@ public class MechProfiles {
                 new CompleteProfileR1(log.name("wrist"), 8, 12, 4, 16, 50, 50, 0.001)); // wrist
     }
 
-    public static FollowJointProfiles gentle(LoggerFactory parent, CalgamesMech subsystem, EAWConfig goal) {
+    public static FollowJointProfiles gentle(LoggerFactory parent, CalgamesMech subsystem, PRRConfig goal) {
         LoggerFactory log = parent.name("gentle");
         return new FollowJointProfiles(
                 subsystem,
@@ -71,7 +71,7 @@ public class MechProfiles {
                 new CompleteProfileR1(log.name("wrist"), 8, 12, 4, 16, 50, 50, 0.001)); // wrist
     }
 
-    public static FollowJointProfiles algaeUp(LoggerFactory parent, CalgamesMech subsystem, EAWConfig goal) {
+    public static FollowJointProfiles algaeUp(LoggerFactory parent, CalgamesMech subsystem, PRRConfig goal) {
         LoggerFactory log = parent.name("algaeUp");
         return new FollowJointProfiles(
                 subsystem,

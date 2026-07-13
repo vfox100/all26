@@ -4,8 +4,8 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import org.team100.frc2026.field.FieldConstants2026;
-import org.team100.lib.geometry.GlobalVelocityR2;
-import org.team100.lib.geometry.StateR2;
+import org.team100.lib.geometry.r2.GlobalVelocityR2;
+import org.team100.lib.geometry.r2.StateR2;
 import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.ControlSE2;
 import org.team100.lib.state.ModelR1;

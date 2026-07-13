@@ -1,5 +1,9 @@
 package org.team100.lib.dynamics.pr;
 
+import org.team100.lib.geometry.pr.PRAcceleration;
+import org.team100.lib.geometry.pr.PRConfig;
+import org.team100.lib.geometry.pr.PRVelocity;
+
 public class PRDynamics {
     /** Gravity */
     private static final double g = 9.8;

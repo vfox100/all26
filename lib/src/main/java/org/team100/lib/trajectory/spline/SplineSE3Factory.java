@@ -3,7 +3,7 @@ package org.team100.lib.trajectory.spline;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.team100.lib.geometry.WaypointSE3;
+import org.team100.lib.geometry.se3.WaypointSE3;
 
 public class SplineSE3Factory {
 

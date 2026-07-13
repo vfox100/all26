@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.team100.lib.coherence.Takt;
-import org.team100.lib.geometry.DirectionSE2;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.DirectionSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.logging.Logging;
 import org.team100.lib.state.VelocityControlSE2;
 import org.team100.lib.trajectory.TrajectorySE2Factory;

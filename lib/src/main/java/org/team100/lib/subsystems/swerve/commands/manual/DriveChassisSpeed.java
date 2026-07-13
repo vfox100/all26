@@ -4,7 +4,7 @@ package org.team100.lib.subsystems.swerve.commands.manual;
 import java.util.function.Supplier;
 
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.hid.Velocity;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;

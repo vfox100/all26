@@ -3,7 +3,7 @@ package org.team100.lib.subsystems.tank.commands;
 import java.util.function.DoubleSupplier;
 
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;

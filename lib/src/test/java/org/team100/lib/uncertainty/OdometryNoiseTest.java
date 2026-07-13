@@ -3,7 +3,7 @@ package org.team100.lib.uncertainty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.team100.lib.geometry.DeltaSE2;
+import org.team100.lib.geometry.se2.DeltaSE2;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

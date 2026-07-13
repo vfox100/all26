@@ -1,6 +1,6 @@
 package org.team100.lib.trajectory.constraint;
 
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.trajectory.path.PathSE2Point;
 
 import edu.wpi.first.math.geometry.Rotation2d;

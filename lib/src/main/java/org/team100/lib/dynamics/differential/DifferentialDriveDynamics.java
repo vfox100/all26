@@ -4,7 +4,7 @@ import static org.team100.lib.geometry.GeometryUtil.det;
 
 import org.team100.lib.dynamics.se2.SE2Dynamics;
 import org.team100.lib.dynamics.se2.SE2Effort;
-import org.team100.lib.geometry.ChassisAcceleration;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;

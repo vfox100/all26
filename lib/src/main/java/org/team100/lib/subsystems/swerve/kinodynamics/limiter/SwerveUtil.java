@@ -1,8 +1,8 @@
 package org.team100.lib.subsystems.swerve.kinodynamics.limiter;
 
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.AccelerationSE2;
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.AccelerationSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.subsystems.swerve.kinodynamics.SwerveKinodynamics;
 import org.team100.lib.util.Math100;
 

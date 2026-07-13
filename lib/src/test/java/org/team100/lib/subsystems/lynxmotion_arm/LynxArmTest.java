@@ -4,6 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import org.team100.lib.geometry.GeometryUtil;
+import org.team100.lib.geometry.lynx_arm.LynxArmConfig;
+import org.team100.lib.geometry.lynx_arm.LynxArmPose;
+import org.team100.lib.kinematics.lynx_arm.AnalyticLynxArmKinematics;
+import org.team100.lib.kinematics.lynx_arm.LynxArmKinematics;
+import org.team100.lib.kinematics.lynx_arm.NumericLynxArmKinematics;
 import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose3d;

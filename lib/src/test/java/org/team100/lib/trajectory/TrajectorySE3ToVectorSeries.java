@@ -2,7 +2,7 @@ package org.team100.lib.trajectory;
 
 import org.jfree.chart3d.data.xyz.XYZDataset;
 import org.jfree.chart3d.data.xyz.XYZSeriesCollection;
-import org.team100.lib.geometry.WaypointSE3;
+import org.team100.lib.geometry.se3.WaypointSE3;
 import org.team100.lib.util.ChartUtil3d;
 
 import edu.wpi.first.math.geometry.Rotation3d;

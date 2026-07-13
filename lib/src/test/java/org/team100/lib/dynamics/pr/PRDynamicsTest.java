@@ -3,6 +3,9 @@ package org.team100.lib.dynamics.pr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.team100.lib.geometry.pr.PRAcceleration;
+import org.team100.lib.geometry.pr.PRConfig;
+import org.team100.lib.geometry.pr.PRVelocity;
 
 public class PRDynamicsTest {
     private static final double DELTA = 1e-3;

@@ -2,6 +2,9 @@ package org.team100.lib.geometry;
 
 import java.util.Optional;
 
+import org.team100.lib.geometry.se2.DirectionSE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.state.VelocityControlSE2;
 
 import edu.wpi.first.math.MathUtil;

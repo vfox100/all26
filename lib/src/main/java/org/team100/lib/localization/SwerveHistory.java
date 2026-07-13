@@ -4,7 +4,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.DoubleFunction;
 
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;

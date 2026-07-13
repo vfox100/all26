@@ -2,7 +2,7 @@ package org.team100.lib.subsystems.swerve.kinodynamics.limiter;
 
 import java.util.function.DoubleSupplier;
 
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;

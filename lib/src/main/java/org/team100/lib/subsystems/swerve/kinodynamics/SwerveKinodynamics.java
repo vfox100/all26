@@ -4,9 +4,9 @@ import org.team100.lib.dynamics.swerve.SwerveDynamics;
 import org.team100.lib.dynamics.swerve.SwerveEffort;
 import org.team100.lib.dynamics.swerve.Tire;
 import org.team100.lib.framework.TimedRobot100;
-import org.team100.lib.geometry.ChassisAcceleration;
 import org.team100.lib.geometry.GeometryUtil;
-import org.team100.lib.geometry.VelocitySE2;
+import org.team100.lib.geometry.se2.ChassisAcceleration;
+import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.subsystems.swerve.VeeringCorrection;
 import org.team100.lib.subsystems.swerve.module.state.SwerveModuleStates;
 

@@ -1,14 +1,10 @@
 package org.team100.frc2025.CalgamesArm;
 
-import org.team100.lib.dynamics.prr.PRRAcceleration;
-import org.team100.lib.dynamics.prr.PRRConfig;
 import org.team100.lib.dynamics.prr.PRRDynamics;
 import org.team100.lib.dynamics.prr.PRREffort;
-import org.team100.lib.dynamics.prr.PRRVelocity;
-import org.team100.lib.subsystems.prr.EAWConfig;
-import org.team100.lib.subsystems.prr.JointAccelerations;
-import org.team100.lib.subsystems.prr.JointForce;
-import org.team100.lib.subsystems.prr.JointVelocities;
+import org.team100.lib.geometry.prr.PRRAcceleration;
+import org.team100.lib.geometry.prr.PRRConfig;
+import org.team100.lib.geometry.prr.PRRVelocity;
 
 /**
  * Dynamics for 2025 Calgames arm. Units are meters, kilograms, Newton-meters,
@@ -43,12 +39,12 @@ public class Dynamics {
                 HAND_INERTIA);
     }
 
-    public JointForce forward(EAWConfig c, JointVelocities jv, JointAccelerations ja) {
-        PRRConfig q = new PRRConfig(c.shoulderHeight(), c.shoulderAngle(), c.wristAngle());
-        PRRVelocity v = new PRRVelocity(jv.elevator(), jv.shoulder(), jv.wrist());
-        PRRAcceleration a = new PRRAcceleration(ja.elevator(), ja.shoulder(), ja.wrist());
+    public PRREffort forward(PRRConfig c, PRRVelocity jv, PRRAcceleration ja) {
+        PRRConfig q = new PRRConfig(c.q1(), c.q2(), c.q3());
+        PRRVelocity v = new PRRVelocity(jv.q1dot(), jv.q2dot(), jv.q3dot());
+        PRRAcceleration a = new PRRAcceleration(ja.q1ddot(), ja.q2ddot(), ja.q3ddot());
         PRREffort t = m_dynamics.effort(q, v, a);
-        return new JointForce(t.f1(), t.t2(), t.t3());
+        return new PRREffort(t.f1(), t.t2(), t.t3());
     }
 
 }

@@ -2,7 +2,7 @@ package org.team100.lib.targeting;
 
 import java.util.Optional;
 
-import org.team100.lib.geometry.StateR2;
+import org.team100.lib.geometry.r2.StateR2;
 import org.team100.lib.state.ModelSE2;
 
 /** Interface for shooting solvers, for moving robot and/or target */

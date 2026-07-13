@@ -1,5 +1,9 @@
 package org.team100.lib.dynamics.rr;
 
+import org.team100.lib.geometry.rr.RRAcceleration;
+import org.team100.lib.geometry.rr.RRConfig;
+import org.team100.lib.geometry.rr.RRVelocity;
+
 public class RRDynamics {
     /** Gravity */
     private static final double g = 9.8;

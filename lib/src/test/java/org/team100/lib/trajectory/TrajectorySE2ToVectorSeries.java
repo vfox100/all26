@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jfree.data.xy.VectorSeries;
 import org.jfree.data.xy.XYSeries;
-import org.team100.lib.geometry.WaypointSE2;
+import org.team100.lib.geometry.se2.WaypointSE2;
 import org.team100.lib.state.ControlSE2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
