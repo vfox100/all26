@@ -1,5 +1,6 @@
 package org.team100.lib.mechanism;
 
+import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -13,6 +14,9 @@ import org.team100.lib.sensor.position.incremental.IncrementalBareEncoder;
  * 
  * The limits used to be enforced by a proxy, but now they're here: it seems
  * simpler that way.
+ * 
+ * Computes a noisy estimate of actual acceleration using backwards finite
+ * difference.
  */
 public class LinearMechanism implements Player {
     private static final boolean DEBUG = false;
@@ -23,8 +27,12 @@ public class LinearMechanism implements Player {
     private final double m_wheelRadiusM;
     private final double m_minPositionM;
     private final double m_maxPositionM;
+    private final DoubleLogger m_log_accel;
     private final DoubleLogger m_log_velocity;
     private final DoubleLogger m_log_position;
+
+    /** For computing acceleration. */
+    private double m_velocity;
 
     public LinearMechanism(
             LoggerFactory parent,
@@ -41,6 +49,7 @@ public class LinearMechanism implements Player {
         m_minPositionM = minPositionM;
         m_maxPositionM = maxPositionM;
         LoggerFactory log = parent.type(this);
+        m_log_accel = log.doubleLogger(Level.DEBUG, "accel (m_s2)");
         m_log_velocity = log.doubleLogger(Level.DEBUG, "velocity (m_s)");
         m_log_position = log.doubleLogger(Level.DEBUG, "position (m)");
     }
@@ -62,6 +71,11 @@ public class LinearMechanism implements Player {
             return;
         }
         m_motor.setDutyCycle(output);
+    }
+
+    /** For tuning friction. */
+    public void setVoltage(double volts) {
+        m_motor.setVoltage(volts);
     }
 
     public void setForceLimit(double forceN) {
@@ -168,7 +182,11 @@ public class LinearMechanism implements Player {
         m_motor.periodic();
         m_encoder.periodic();
         m_log_position.log(this::getPositionM);
-        m_log_velocity.log(this::getVelocityM_S);
+        final double velocity = getVelocityM_S();
+        m_log_velocity.log(() -> velocity);
+        double accel = (velocity - m_velocity) / TimedRobot100.LOOP_PERIOD_S;
+        m_velocity = velocity;
+        m_log_accel.log(() -> accel);
     }
 
     @Override

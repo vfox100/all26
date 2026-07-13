@@ -28,6 +28,11 @@ public class BareMotorGroup implements BareMotor {
     }
 
     @Override
+    public void setVoltage(double volts) {
+        apply((m) -> m.setVoltage(volts));
+    }
+
+    @Override
     public void setVelocity(double velocityRad_S, double torqueNm) {
         apply((m) -> m.setVelocity(velocityRad_S, torqueNm));
     }

@@ -143,12 +143,16 @@ public class DiscusMech extends SubsystemBase {
         return runOnce(this::setHomePosition);
     }
 
-    /** Update position by adding. */
     public Command position(DoubleSupplier p1) {
-        return run(() -> add(p1.getAsDouble()));
+        return run(() -> setPosition(p1.getAsDouble()));
     }
 
     public Command velocity(DoubleSupplier v) {
         return run(() -> setVelocity(v.getAsDouble()));
+    }
+
+    /** Voltage should be something like 0.1. */
+    public Command friction(DoubleSupplier v) {
+        return run(() -> m_mechP1.setVoltage(v.getAsDouble()));
     }
 }

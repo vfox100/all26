@@ -29,6 +29,11 @@ public class MockBareMotor implements BareMotor, IncrementalBareEncoder {
     }
 
     @Override
+    public void setVoltage(double volts) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setVelocity(double motorRad_S, double torqueNm) {
         velocity = motorRad_S;
         torque = torqueNm;

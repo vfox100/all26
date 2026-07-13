@@ -1,5 +1,6 @@
 package org.team100.lib.mechanism;
 
+import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.DoubleLogger;
@@ -20,6 +21,9 @@ import edu.wpi.first.math.MathUtil;
  * 
  * The position limits used to be enforced by a proxy, but now they're here: it
  * seems simpler that way.
+ * 
+ * Computes a noisy estimate of actual acceleration using backwards finite
+ * difference.
  */
 public class RotaryMechanism implements Player {
     private final BareMotor m_motor;
@@ -27,9 +31,13 @@ public class RotaryMechanism implements Player {
     private final double m_gearRatio;
     private final double m_minPositionRad;
     private final double m_maxPositionRad;
+    private final DoubleLogger m_log_accel;
     private final DoubleLogger m_log_velocity;
     private final DoubleLogger m_log_position;
     private final DoubleLogger m_log_desired_position;
+
+    /** For computing acceleration. */
+    private double m_velocity;
 
     /**
      * The provided sensor encapsulates the motor sensor and/or the external
@@ -49,6 +57,7 @@ public class RotaryMechanism implements Player {
         m_gearRatio = gearRatio;
         m_minPositionRad = minPositionRad;
         m_maxPositionRad = maxPositionRad;
+        m_log_accel = log.doubleLogger(Level.DEBUG, "accel (rad_s2)");
         m_log_velocity = log.doubleLogger(Level.DEBUG, "velocity (rad_s)");
         m_log_position = log.doubleLogger(Level.DEBUG, "position (rad)");
         m_log_desired_position = log.doubleLogger(Level.DEBUG, "desired position (rad)");
@@ -85,6 +94,11 @@ public class RotaryMechanism implements Player {
             return;
         }
         m_motor.setDutyCycle(output);
+    }
+
+    /** For tuning friction. */
+    public void setVoltage(double volts) {
+        m_motor.setVoltage(volts);
     }
 
     public void setTorqueLimit(double torqueNm) {
@@ -131,8 +145,8 @@ public class RotaryMechanism implements Player {
     /**
      * Choose a nearby unwrapped position.
      * 
-     * Does not implement "spotting".  If the nearest unwrapped
-     * position is outside the bounds, it does nothing.  If you
+     * Does not implement "spotting". If the nearest unwrapped
+     * position is outside the bounds, it does nothing. If you
      * want spotting, use an AngularPositionServo.
      */
     public void setWrappedPosition(
@@ -143,10 +157,10 @@ public class RotaryMechanism implements Player {
         double dx = MathUtil.angleModulus(positionRad - unwrappedMeasurement);
         double unwrappedRad = unwrappedMeasurement + dx;
         if (unwrappedRad > getMaxPositionRad()) {
-                return;
+            return;
         }
         if (unwrappedRad < getMinPositionRad()) {
-                return;
+            return;
         }
         setUnwrappedPosition(unwrappedRad, velocityRad_S, torqueNm);
     }
@@ -235,8 +249,12 @@ public class RotaryMechanism implements Player {
     public void periodic() {
         m_motor.periodic();
         m_sensor.periodic();
-        m_log_velocity.log(() -> getVelocityRad_S());
         m_log_position.log(() -> getWrappedPositionRad());
+        final double velocity = getVelocityRad_S();
+        m_log_velocity.log(() -> velocity);
+        double accel = (velocity - m_velocity) / TimedRobot100.LOOP_PERIOD_S;
+        m_velocity = velocity;
+        m_log_accel.log(() -> accel);
     }
 
     @Override

@@ -27,6 +27,11 @@ public interface BareMotor extends Player, TotalCurrentLog.Reporter {
     void setDutyCycle(double output);
 
     /**
+     * For tuning friction.
+     */
+    void setVoltage(double volts);
+
+    /**
      * Velocity feedback with friction, velocity, acceleration, and holding torque.
      * 
      * There are two kinds of implementations, closed-loop and open-loop.

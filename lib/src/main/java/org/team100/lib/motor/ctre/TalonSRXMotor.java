@@ -64,6 +64,11 @@ public class TalonSRXMotor implements BareMotor {
     }
 
     @Override
+    public void setVoltage(double volts) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setVelocity(double velocityRad_S, double torqueNm) {
         final double motorDutyCycle = velocityRad_S * FF_DUTY_RAD_S;
         setDutyCycle(motorDutyCycle);
