@@ -44,10 +44,10 @@ Khalil claims this C matrix:
 ```math
 C = 
 \begin{bmatrix}
-\frac{m_Bl_1l_2}{4}\dot{q_2}sin(q_1-q_2)&0&0&0\\
-0&0&0&0\\
-0&0&0&0\\
-0&0&0&0\\
+\frac{m_Bl_1l_2}{4}\dot{q_2}sin(q_1-q_2)&-\frac{m_Bl_1l_2}{4}(\dot{q_1}-\dot{q_2})sin(q_1-q_2)&0&0\\
+-\frac{m_Bl_1l_2}{4}(\dot{q_1}-\dot{q_2})sin(q_1-q_2)&-\frac{m_Bl_1l_2}{4}\dot{q_1}sin(q_1-q_2)&0&0\\
+0&0&\frac{m_Cl_3l_4}{4}\dot{q_4}sin(q_3-q_4)&-\frac{m_Cl_3l_4}{4}(\dot{q_3}-\dot{q_4})sin(q_3-q_4)\\
+0&0&-\frac{m_Cl_3l_4}{4}(\dot{q_3}-\dot{q_4})sin(q_3-q_4)&\frac{m_Cl_3l_4}{4}\dot{q_3}sin(q_3-q_4)\\
 \end{bmatrix}
 ```
 
@@ -55,7 +55,9 @@ C =
 
 For a horizontal mechanism, there's no gravity effect.
 
-TODO: the vertical case.
+```math
+G = 0
+```
 
 ## Equation of Motion
 
@@ -65,7 +67,35 @@ Start with the definition:
 \tau = M(q)\ddot{q} + C(q,\dot{q})\dot{q} + G(q)
 ```
 
-TODO: finish this
+Note that $\tau$ covers all four joints:
+```math
+\tau = 
+\begin{bmatrix}
+\tau_1\\
+\tau_2\\
+\tau_3\\
+\tau_4\\
+\end{bmatrix}
+```
+
+... but we only care about the grounded ones, $\tau_1$ and $\tau_4$, so we  can simplify:
+
+```math
+M = 
+\begin{bmatrix}
+(\frac{m_A}{3} + m_B)l_1^2 & \frac{m_Bl_1l_2}{4}cos(q_1-q_2) & 0 & 0 \\
+0 & 0 & \frac{m_Cl_3l_4}{4}cos(q_3-q_4) & (\frac{m_D}{3}+m_C)l_4^2 \\
+\end{bmatrix}
+```
+
+```math
+C = 
+\begin{bmatrix}
+\frac{m_Bl_1l_2}{4}\dot{q_2}sin(q_1-q_2)&-\frac{m_Bl_1l_2}{4}(\dot{q_1}-\dot{q_2})sin(q_1-q_2)&0&0\\
+
+0&0&-\frac{m_Cl_3l_4}{4}(\dot{q_3}-\dot{q_4})sin(q_3-q_4)&\frac{m_Cl_3l_4}{4}\dot{q_3}sin(q_3-q_4)\\
+\end{bmatrix}
+```
 
 
 ## References
