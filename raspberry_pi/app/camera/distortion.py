@@ -39,11 +39,13 @@ class Distortion:
                 self._dist = np.array(
                     [-0.2961790762, 0.09865662084, -0.0001707410996, 0.0002482554604]
                 )
+            
             case Identity.FUNNEL:
-                # Calibrated 07/09/2026
+                # Calibrated 07/14/26
                 self._dist = np.array(
-                    [0.01912500689, -0.009503859475, 0.002487117763, -0.0008741780275]
-                )   
+                    [-0.03226, 0.01730, 0.00105, 0.00284]
+                ) 
+   
             #
             # TODO: clean up the entries below
             #
