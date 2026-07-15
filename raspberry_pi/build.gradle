@@ -1,8 +1,8 @@
 plugins {
     id 'distribution'
+    id 'org.hidetake.ssh' version '2.12.0'
 }
 
-// to run this task, choose "distZip" from the vscode 
 distributions {
     main {
         distributionBaseName = 'app'
@@ -14,4 +14,30 @@ distributions {
             exclude '**/images/**'
         }
     }
+}
+
+remotes {
+    camera30 { host = '10.1.0.30'; user = 'pi'; password = 'raspberry'; timeoutSec = 1 }
+    camera31 { host = '10.1.0.31'; user = 'pi'; password = 'raspberry'; timeoutSec = 1 }
+    camera32 { host = '10.1.0.32'; user = 'pi'; password = 'raspberry'; timeoutSec = 1 }
+    camera33 { host = '10.1.0.33'; user = 'pi'; password = 'raspberry'; timeoutSec = 1 }
+}
+
+task 'Deploy Camera Code' { // pretty name for vscode
+    group = 'deploy'
+    description = 'zip, deploy, and restart all cameras'
+    dependsOn distZip
+    doLast {
+        ssh.run {
+            session(remotes) {
+                put from: file('runapp.py'), into: '/home/pi'
+                put from: distZip.archiveFile.get().asFile, into: '/home/pi'
+                execute 'supervisorctl restart app'
+            }
+        }
+    }
+}
+
+task 'deploy' { // short name for command-line
+    dependsOn 'Deploy Camera Code'
 }

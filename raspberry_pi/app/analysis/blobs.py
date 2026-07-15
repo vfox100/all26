@@ -120,7 +120,7 @@ class Blobs(ColorAnalysis):
                 final = np.array([1, xNormalized, yNormalized], dtype=np.float64)
                 rotation = Rotation3d(initial=initial, final=final)
 
-                targets.append(Target(servertime, rotation))
+                targets.append(Target(int(servertime), rotation))
                 if img_display is not None:
                     DisplayUtil.note(img_display, c, orig_cX, orig_cY)
 
