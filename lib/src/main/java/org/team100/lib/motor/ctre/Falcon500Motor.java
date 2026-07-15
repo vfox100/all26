@@ -35,7 +35,7 @@ public class Falcon500Motor extends Talon6Motor {
 
     @Override
     public double kTNm_amp() {
-        return 0.018;
+        return 0.03; // 0.018
     }
 
     @Override
