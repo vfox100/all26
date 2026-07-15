@@ -9,6 +9,7 @@ class CameraFactory:
 
     @staticmethod
     def get(identity: Identity) -> Camera:
+        print("\n*** CameraFactory selecting a Camera", flush=True)
         try:
             # import will fail if we're not running on a Raspberry Pi.
             from app.camera.real_camera import RealCamera

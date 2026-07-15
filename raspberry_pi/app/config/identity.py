@@ -77,5 +77,5 @@ class Identity(Enum):
         serial = _serial
         print(f"\n*** Coprocessor serial: {serial}")
         identity: Identity = Identity(serial)
-        print(f"\n*** Coprocessor identity: {identity.name}")
+        print(f"\n*** Coprocessor identity: {identity.name}", flush=True)
         return identity

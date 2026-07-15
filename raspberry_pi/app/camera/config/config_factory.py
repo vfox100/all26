@@ -1,5 +1,6 @@
 # pylint: disable=R0903,W0611
 
+from app.camera.config.config_ardu_mjpeg import ConfigArduMjpeg
 from app.camera.config.config_protocol import Config
 from app.camera.size import Size
 from app.config.identity import Identity
@@ -26,5 +27,7 @@ class ConfigFactory:
                 return ConfigGsColor(size)
             case Identity.SHOOTER:
                 return ConfigGsMono(size)
+            case Identity.CAMERA_FRONT:
+                return ConfigArduMjpeg(size)
             case _:
                 return ConfigGsMono(size)
