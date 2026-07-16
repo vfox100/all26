@@ -26,6 +26,7 @@ from app.util.timestamps import Timestamps
 
 
 def main() -> None:
+    print("\n*** main.py loop starting", flush=True)
     identity: Identity = Identity.get()
     done: Event = Event()  # to shut down all threads
     thread: Thread | None = None
@@ -42,9 +43,11 @@ def main() -> None:
         )
         camera_loop: CameraLoop = CameraLoop(camera, interpreter, done)
         thread = Thread(target=camera_loop.run)
+        print("\n*** Starting the main loop", flush=True)
         thread.start()
         # looper.run will return when done, so wait for that.
         thread.join()
+        print("\n*** Looper has exited", flush=True)
 
     finally:
         done.set()  # exit all threads cleanly
