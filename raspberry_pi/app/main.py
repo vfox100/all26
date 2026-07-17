@@ -24,8 +24,10 @@ from app.network.network_protocol import Network
 from app.network.real_network import RealNetwork
 from app.util.timestamps import Timestamps
 
-
 def main() -> None:
+    print("blarg")
+    time.sleep(5)
+    print("blarg")
     print("\n*** main.py loop starting", flush=True)
     identity: Identity = Identity.get()
     done: Event = Event()  # to shut down all threads

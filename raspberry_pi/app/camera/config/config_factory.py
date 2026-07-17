@@ -23,7 +23,7 @@ class ConfigFactory:
                 # return ConfigThriftyYuyv(size)
             case Identity.CLIMB_RIGHT:
                 return ConfigThriftyMjpeg(size)
-            case Identity.CLIMB_LEFT:
+            case Identity.CLIMB_LEFT | Identity.COLOR_DETECT_1:
                 return ConfigGsColor(size)
             case Identity.SHOOTER:
                 return ConfigGsMono(size)

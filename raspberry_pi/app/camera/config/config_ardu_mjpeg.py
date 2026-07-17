@@ -42,5 +42,5 @@ class ConfigArduMjpeg(Config):
             "AeEnable": False,
             #
             # EXPOSURE TIME (microseconds)
-            "ExposureTime": 500,
+            "ExposureTime": 1000,
         }

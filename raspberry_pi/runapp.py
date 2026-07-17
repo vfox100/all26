@@ -19,6 +19,7 @@ the little triangle on the upper right (up there ^^^).
 import os
 import sys
 import traceback
+import time
 
 if os.path.isfile("/home/pi/app.zip"):
     print("using the zip file")
@@ -32,4 +33,5 @@ except ImportError as e:
     print("".join(traceback.format_exception(e)))
     sys.exit("app import failed!")
 
+time.sleep(2.0)
 main.main()
