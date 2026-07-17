@@ -6,7 +6,6 @@ import org.team100.lib.geometry.rr.RRConfig;
 import org.team100.lib.geometry.rr.RRPosition;
 import org.team100.lib.kinematics.lynx_arm.AnalyticLynxArmKinematics;
 import org.team100.lib.kinematics.lynx_arm.LynxArmKinematics;
-import org.team100.lib.kinematics.rr.AnalyticRRKinematics;
 import org.team100.lib.kinematics.rr.RRKinematics;
 import org.team100.lib.motor.servo.CalibratedServo;
 import org.team100.lib.subsystems.lynxmotion_arm.commands.MoveCommandTwoDof;
@@ -72,7 +71,7 @@ public class LynxArmTwoDof extends SubsystemBase implements AutoCloseable {
         m_wrist.set(0);
         m_twist.set(0);
 
-        m_kinematics = new AnalyticRRKinematics(0.146, 0.298);
+        m_kinematics = new RRKinematics(0.146, 0.298);
         m_fullKinematics = AnalyticLynxArmKinematics.real();
 
         setPosition(HOME);
