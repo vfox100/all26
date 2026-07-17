@@ -3,6 +3,7 @@ package org.team100.lib.kinematics.rr;
 import org.team100.lib.geometry.rr.RRConfig;
 import org.team100.lib.geometry.rr.RRPosition;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 
 /**
@@ -61,7 +62,7 @@ public class AnalyticRRKinematics implements RRKinematics {
 
         if (Double.isNaN(q1) || Double.isNaN(q2))
             throw new IllegalArgumentException(String.format("invalid two-dof parameter %s", t));
-        return new RRConfig(q1, q2);
+        return new RRConfig(MathUtil.angleModulus(q1), MathUtil.angleModulus(q2));
     }
 
     @Override

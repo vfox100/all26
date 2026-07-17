@@ -14,8 +14,12 @@ import edu.wpi.first.math.geometry.Translation2d;
  * The cartesian coordinate orientation is with X vertical.
  */
 public class PRKinematics {
+    /** Rotating arm length, meters */
     private final double l;
 
+    /**
+     * @param l Rotating arm length, meters
+     */
     public PRKinematics(double l) {
         this.l = l;
     }
@@ -25,9 +29,9 @@ public class PRKinematics {
      * 
      * The forward kinematics are unique.
      */
-    public Translation2d forward(PRConfig joints) {
-        double x = joints.q1() + l * Math.cos(joints.q2());
-        double y = l * Math.sin(joints.q2());
+    public Translation2d forward(PRConfig q) {
+        double x = q.q1() + l * Math.cos(q.q2());
+        double y = l * Math.sin(q.q2());
         return new Translation2d(x, y);
     }
 
@@ -43,11 +47,13 @@ public class PRKinematics {
      * return null.
      */
     public PRConfig inverse(Translation2d t) {
-        double angle = Math.asin(t.getY() / l);
-        double height = t.getX() - l * Math.cos(angle);
-        if (Double.isNaN(angle) || Double.isNaN(height))
+        double x = t.getX();
+        double y = t.getY();
+        double q2 = Math.asin(y / l);
+        double q1 = x - Math.sqrt(l * l - y * y);
+        if (Double.isNaN(q2) || Double.isNaN(q1))
             return null;
-        return new PRConfig(height, angle);
+        return new PRConfig(q1, q2);
     }
 
     double l() {

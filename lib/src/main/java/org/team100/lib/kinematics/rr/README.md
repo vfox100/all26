@@ -71,9 +71,18 @@ q_1 = \gamma + \beta
 q_2 = \alpha + \pi
 ```
 
-## Jacobian
+## Velocity
 
-Differentiate the forward kinematics to get the Jacobian.
+the function for cartesian velocity, $\dot{x}$, can be written
+in terms of the Jacobian, $J$:
+
+```math
+\begin{equation}
+\dot{x} = J \dot{q}
+\end{equation}
+```
+
+To obtain the Jacobian, differentiate the forward kinematics:
 
 Using end-effector coordinates $(x,y)$:
 
@@ -109,5 +118,12 @@ l_1 cos(q_1) + l_2 cos(q_1+q_2) & l_2 cos(q_1+q_2) \\
 ```
 
 
+## Acceleration
 
+To find the acceleration, differentiate again and apply the product rule:
 
+```math
+\begin{equation}
+\ddot{x} = \dot{J}\dot{q} + J\ddot{q}
+\end{equation}
+```

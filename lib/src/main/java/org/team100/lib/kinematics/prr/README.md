@@ -16,6 +16,8 @@ Important classes here:
 
 The math, in brief:
 
+## Position
+
 The mechanism position is:
 
 ```math
@@ -53,6 +55,7 @@ J =
 \end{bmatrix}
 \end{equation}
 ```
+## Velocity
 
 So the function for cartesian velocity, $\dot{x}$, can be written:
 
@@ -69,6 +72,8 @@ And the inverse is
 \dot{q} = J^{-1}\dot{x}
 \end{equation}
 ```
+
+## Acceleration
 
 To find the acceleration, differentiate again and apply the product rule:
 
