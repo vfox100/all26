@@ -85,9 +85,23 @@ class Blobs(ColorAnalysis):
             mmnts: Moments = cv2.moments(contour)
 
             # reject too small (m00 is in pixels)
-            if mmnts["m00"] < 5000:
+            if mmnts["m00"] < 175:
                 continue
 
+            # reject if not round enough
+
+            # Roundness tolerance
+
+            # roundtolo = 0.85
+
+            # perimeter = cv2.arcLength(contour, True) ** 2
+
+            # In a circle, the area is c^2 over 4 pi
+            # fourpi = 4*3.14
+
+            # if cv2.contourArea(contour) < roundtolo * ( perimeter / fourpi):
+                continue
+            
             cX: int = int(mmnts["m10"] / mmnts["m00"])
             cY: int = int(mmnts["m01"] / mmnts["m00"])
 
