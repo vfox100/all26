@@ -39,7 +39,7 @@ public class RotaryMechanism implements Player {
     private final DoubleLogger m_log_filtered_velocity;
     LinearFilter lowPassFilter = LinearFilter.singlePoleIIR(0.2375, TimedRobot100.LOOP_PERIOD_S);
 
-    /** For computing acceleration. *
+    /** For computing acceleration. */
     private double m_velocity;
 
     /**
