@@ -13,6 +13,15 @@ and $q_2$, measured relative to the proximal link.
 
 Link lengths are $l_1$ and $l_2$.
 
+```math
+\begin{align}
+s_i &= sin(q_i)\\
+c_i &= cos(q_i) \\
+s_{ij} &= sin(q_i + q_j)\\
+c_{ij} &= cos(q_i + q_j)
+\end{align}
+```
+
 ## Forward kinematics
 
 ```math
@@ -23,9 +32,9 @@ y_1
 \end{bmatrix}
 =
 \begin{bmatrix}
-l_1 cos(q_1)\\
+l_1 c_1\\
 \\
-l_1 sin(q_1)
+l_1 s_1
 \end{bmatrix}
 ```
 ```math
@@ -36,15 +45,15 @@ y_2
 \end{bmatrix}
 =
 \begin{bmatrix}
-x_1 + l_2 cos(q_1 + q_2)\\
+x_1 + l_2 c_{12}\\
 \\
-y_1 + l_2 sin(q_1 + q_2)
+y_1 + l_2 s_{12}
 \end{bmatrix}
 =
 \begin{bmatrix}
-l_1 cos(q_1) + l_2 cos(q_1 + q_2)\\
+l_1 c_1 + l_2 c_{12}\\
 \\
-l_1 sin(q_1) + l_2 sin(q_1 + q_2)
+l_1 s_1 + l_2 s_{12}
 \end{bmatrix}
 ```
 
@@ -71,9 +80,18 @@ q_1 = \gamma + \beta
 q_2 = \alpha + \pi
 ```
 
-## Jacobian
+## Velocity
 
-Differentiate the forward kinematics to get the Jacobian.
+the function for cartesian velocity, $\dot{x}$, can be written
+in terms of the Jacobian, $J$:
+
+```math
+\begin{equation}
+\dot{x} = J \dot{q}
+\end{equation}
+```
+
+To obtain the Jacobian, differentiate the forward kinematics:
 
 Using end-effector coordinates $(x,y)$:
 
@@ -91,9 +109,11 @@ substituting:
 ```math
 J =
 \begin{bmatrix}
-\frac{\partial (l_1 cos(q_1) + l_2 cos(q_1 + q_2))}{\partial q_1} & \frac{\partial (l_1 cos(q_1) + l_2 cos(q_1 + q_2))}{\partial q_2} \\
+\frac{\partial}{\partial q_1} (l_1 c_1 + l_2 c_{12}) &
+\frac{\partial}{\partial q_2} (l_1 c_1 + l_2 c_{12}) \\
 \\
-\frac{\partial (l_1 sin(q_1) + l_2 sin(q_1 + q_2))}{\partial q_1} & \frac{\partial (l_1 sin(q_1) + l_2 sin(q_1 + q_2))}{\partial q_2} \\
+\frac{\partial}{\partial q_1} (l_1 s_1 + l_2 s_{12}) &
+\frac{\partial}{\partial q_2} (l_1 s_1 + l_2 s_{12}) \\
 \end{bmatrix}
 ```
 
@@ -102,12 +122,56 @@ and so:
 ```math
 J =
 \begin{bmatrix}
- -l_1 sin(q_1) - l_2 sin(q_1+q_2) & - l_2 sin(q_1+q_2) \\
+ -l_1 s_1 - l_2 s_{12} && - l_2 s_{12} \\
  \\
-l_1 cos(q_1) + l_2 cos(q_1+q_2) & l_2 cos(q_1+q_2) \\
+l_1 c_1 + l_2 c_{12} && l_2 c_{12} \\
 \end{bmatrix}
 ```
 
 
+## Acceleration
+
+To find the acceleration, differentiate again and apply the product rule:
+
+```math
+\begin{equation}
+\ddot{x} = \dot{J}\dot{q} + J\ddot{q}
+\end{equation}
+```
 
 
+Computing the time derivative of the Jacobian is simple enough, remembering
+to apply the chain rule:
+
+```math
+\begin{equation}
+\dot{J} =
+\begin{bmatrix}
+-l_1 c_1 \dot{q_1} - l_2 c_{12}(\dot{q_1}+\dot{q_2}) 
+&&
+-l_2c_{12}(\dot{q_1}+\dot{q_2}) \\
+\\
+-l_1s_1\dot{q_1}-l_2s_{12}(\dot{q_1}+\dot{q_2})
+&& 
+-l_2s_{12}(\dot{q_1}+\dot{q_2})
+\end{bmatrix}
+\end{equation}
+```
+
+
+To find the joint accelerations from the cartesian requires only the inverse of
+the Jacobian itself, not the inverse of the derivative:
+
+```math
+\begin{equation}
+\ddot{q} = J^{-1}(\ddot{x} - \dot{J}\dot{q})
+\end{equation}
+```
+
+Or
+
+```math
+\begin{equation}
+\ddot{q} = J^{-1}(\ddot{x} - \dot{J}J^{-1}\dot{x})
+\end{equation}
+```

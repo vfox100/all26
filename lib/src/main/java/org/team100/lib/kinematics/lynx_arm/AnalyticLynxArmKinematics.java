@@ -5,7 +5,6 @@ import java.util.OptionalDouble;
 import org.team100.lib.geometry.lynx_arm.LynxArmConfig;
 import org.team100.lib.geometry.lynx_arm.LynxArmPose;
 import org.team100.lib.geometry.rr.RRConfig;
-import org.team100.lib.kinematics.rr.AnalyticRRKinematics;
 import org.team100.lib.kinematics.rr.RRKinematics;
 
 import edu.wpi.first.math.MathUtil;
@@ -35,7 +34,7 @@ public class AnalyticLynxArmKinematics implements LynxArmKinematics {
         m_stickLength = stickLength;
         m_wristLength = wristLength;
         m_gripLength = gripLength;
-        twodof = new AnalyticRRKinematics(boomLength, stickLength);
+        twodof = new RRKinematics(boomLength, stickLength);
     }
 
     public static AnalyticLynxArmKinematics unit() {
